@@ -45,8 +45,8 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 FacetSynchronizer::FacetSynchronizer(
     Mesh & mesh, const ElementSynchronizer & element_synchronizer,
-    const ID & id, MemoryID memory_id)
-    : ElementSynchronizer(mesh, id, memory_id) {
+    const ID & id)
+    : ElementSynchronizer(mesh, id) {
 
   auto spatial_dimension = mesh.getSpatialDimension();
 
@@ -85,7 +85,7 @@ FacetSynchronizer::FacetSynchronizer(
   }
 
   ElementTypeMapArray<UInt> facet_global_connectivities(
-      "facet_global_connectivities", id, memory_id);
+      "facet_global_connectivities", id);
   facet_global_connectivities.initialize(
       mesh, _spatial_dimension = spatial_dimension - 1, _with_nb_element = true,
       _with_nb_nodes_per_element = true);
@@ -103,7 +103,7 @@ FacetSynchronizer::FacetSynchronizer(
   }
 
   /// init facet check tracking
-  ElementTypeMapArray<bool> facet_checked("facet_checked", id, memory_id);
+  ElementTypeMapArray<bool> facet_checked("facet_checked", id);
   std::map<UInt, ElementTypeMapArray<UInt>> recv_connectivities;
 
   /// Generate the recv scheme and connnectivities to send to the other

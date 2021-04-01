@@ -29,8 +29,7 @@ namespace akantu {
   })
 /* -------------------------------------------------------------------------- */
 
-void
-register_solid_mechanics_model(py::module & mod) {
+void register_solid_mechanics_model(py::module & mod) {
 
   py::class_<SolidMechanicsModelOptions>(mod, "SolidMechanicsModelOptions")
       .def(py::init<AnalysisMethod>(),
@@ -38,10 +37,10 @@ register_solid_mechanics_model(py::module & mod) {
 
   py::class_<SolidMechanicsModel, Model>(mod, "SolidMechanicsModel",
                                          py::multiple_inheritance())
-      .def(py::init<Mesh &, UInt, const ID &, const MemoryID &,
+      .def(py::init<Mesh &, UInt, const ID &,
                     const ModelType>(),
            py::arg("mesh"), py::arg("spatial_dimension") = _all_dimensions,
-           py::arg("id") = "solid_mechanics_model", py::arg("memory_id") = 0,
+           py::arg("id") = "solid_mechanics_model",
            py::arg("model_type") = ModelType::_solid_mechanics_model)
       .def(
           "initFull",
@@ -75,6 +74,11 @@ register_solid_mechanics_model(py::module & mod) {
            py::overload_cast<const std::string &>(
                &SolidMechanicsModel::getEnergy),
            py::arg("energy_id"))
+      .def("getEnergy",
+           py::overload_cast<const std::string &, const std::string &>(
+               &SolidMechanicsModel::getEnergy),
+           py::arg("energy_id"), py::arg("group_id"))
+
       .def_function(assembleStiffnessMatrix)
       .def_function(assembleInternalForces)
       .def_function(assembleMass)
@@ -91,13 +95,6 @@ register_solid_mechanics_model(py::module & mod) {
       .def_function_nocopy(getInternalForce)
       .def_function_nocopy(getBlockedDOFs)
       .def_function_nocopy(getMesh)
-      .def("dump", py::overload_cast<>(&SolidMechanicsModel::dump))
-      .def("dump",
-           py::overload_cast<const std::string &>(&SolidMechanicsModel::dump))
-      .def("dump", py::overload_cast<const std::string &, UInt>(
-                       &SolidMechanicsModel::dump))
-      .def("dump", py::overload_cast<const std::string &, Real, UInt>(
-                       &SolidMechanicsModel::dump))
       .def("getMaterial",
            py::overload_cast<UInt>(&SolidMechanicsModel::getMaterial),
            py::return_value_policy::reference)

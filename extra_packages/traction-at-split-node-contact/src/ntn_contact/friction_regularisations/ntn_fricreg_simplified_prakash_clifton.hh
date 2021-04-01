@@ -45,8 +45,7 @@ class NTNFricRegSimplifiedPrakashClifton : public NTNFricRegNoRegularisation {
   /* ------------------------------------------------------------------------ */
 public:
   NTNFricRegSimplifiedPrakashClifton(
-      NTNBaseContact & contact, const ID & id = "simplified_prakash_clifton",
-      const MemoryID & memory_id = 0);
+      NTNBaseContact & contact, const ID & id = "simplified_prakash_clifton");
   virtual ~NTNFricRegSimplifiedPrakashClifton(){};
 
   /* ------------------------------------------------------------------------ */

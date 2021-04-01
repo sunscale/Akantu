@@ -44,7 +44,7 @@ public:
       : model(model){};
 
   void operator()(Matrix<Real> & rho, const Element & element) const {
-    Real mat_rho = model.getMaterial(element).rho;
+    Real mat_rho = model.getMaterialByElement(element).rho;
     rho.set(mat_rho);
   }
 
@@ -53,16 +53,27 @@ private:
 };
 
 /* -------------------------------------------------------------------------- */
-void StructuralMechanicsModel::assembleMass() {
+void StructuralMechanicsModel::assembleMassMatrix() {
   AKANTU_DEBUG_IN();
 
-  assembleMass(_not_ghost);
+  if (not need_to_reassemble_mass) {
+    return;
+  }
+
+  if (not getDOFManager().hasMatrix("M")) {
+    getDOFManager().getNewMatrix("M", getMatrixType("M"));
+  }
+
+  this->getDOFManager().zeroMatrix("M");
+  assembleMassMatrix(_not_ghost);
+
+  need_to_reassemble_mass = false;
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void StructuralMechanicsModel::assembleMass(GhostType ghost_type) {
+void StructuralMechanicsModel::assembleMassMatrix(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
   auto & fem = getFEEngineClass<MyFEEngineType>();
   ComputeRhoFunctorStruct compute_rho(*this);

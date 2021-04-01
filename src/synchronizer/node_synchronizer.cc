@@ -36,10 +36,9 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 NodeSynchronizer::NodeSynchronizer(Mesh & mesh, const ID & id,
-                                   MemoryID memory_id,
                                    const bool register_to_event_manager,
                                    EventHandlerPriority event_priority)
-    : SynchronizerImpl<UInt>(mesh.getCommunicator(), id, memory_id),
+    : SynchronizerImpl<UInt>(mesh.getCommunicator(), id),
       mesh(mesh) {
   AKANTU_DEBUG_IN();
 

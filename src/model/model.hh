@@ -31,7 +31,6 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
-#include "aka_memory.hh"
 #include "aka_named_argument.hh"
 #include "fe_engine.hh"
 #include "mesh.hh"
@@ -53,13 +52,13 @@ class DumperIOHelper;
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 
-class Model : public Memory, public ModelSolver, public MeshEventHandler {
+class Model : public ModelSolver, public MeshEventHandler {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   Model(Mesh & mesh, const ModelType & type, UInt dim = _all_dimensions,
-        const ID & id = "model", const MemoryID & memory_id = 0);
+        const ID & id = "model");
 
   ~Model() override;
 
@@ -165,10 +164,6 @@ public:
 
 protected:
   template <typename T>
-  void allocNodalField(Array<T> *& array, UInt nb_component,
-                       const ID & name);
-
-  template <typename T>
   void allocNodalField(std::unique_ptr<Array<T>> & array, UInt nb_component,
                        const ID & name) const;
 
@@ -213,7 +208,7 @@ public:
   AKANTU_GET_MACRO(AnalysisMethod, method, AnalysisMethod);
 
   /* ------------------------------------------------------------------------ */
-  /* Pack and unpack helper functions                                         */
+  /* Pack and unpack hexlper functions                                         */
   /* ------------------------------------------------------------------------ */
 public:
   inline UInt getNbIntegrationPoints(const Array<Element> & elements,
@@ -311,7 +306,15 @@ public:
   void setDirectoryToDumper(const std::string & dumper_name,
                             const std::string & directory);
 
+
+  /* ------------------------------------------------------------------------ */
+  virtual void dump(const std::string & dumper_name);
+  virtual void dump(const std::string & dumper_name, UInt step);
+  virtual void dump(const std::string & dumper_name, Real time, UInt step);
+  /* ------------------------------------------------------------------------ */
   virtual void dump();
+  virtual void dump(UInt step);
+  virtual void dump(Real time, UInt step);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -319,6 +322,8 @@ public:
 protected:
   friend std::ostream & operator<<(std::ostream & /*stream*/,
                                    const Model & /*_this*/);
+
+  ID id;
 
   /// analysis method check the list in akantu::AnalysisMethod
   AnalysisMethod method;
@@ -340,6 +345,9 @@ protected:
 
   /// parser to the pointer to use
   Parser & parser;
+
+  /// default ElementKind for dumper
+  ElementKind dumper_default_element_kind{_ek_regular};
 };
 
 /// standard output stream operator

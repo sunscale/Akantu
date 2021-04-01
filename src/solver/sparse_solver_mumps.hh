@@ -49,8 +49,7 @@ class SparseSolverMumps : public SparseSolver {
   /* ------------------------------------------------------------------------ */
 public:
   SparseSolverMumps(DOFManagerDefault & dof_manager, const ID & matrix_id,
-                    const ID & id = "sparse_solver_mumps",
-                    const MemoryID & memory_id = 0);
+                    const ID & id = "sparse_solver_mumps");
 
   ~SparseSolverMumps() override;
 

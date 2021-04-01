@@ -55,13 +55,13 @@ endif()
 set(AKANTU_MAJOR_VERSION 4)
 set(AKANTU_MINOR_VERSION 0)
 set(AKANTU_PATCH_VERSION 0)
-set(AKANTU_COPYRIGHT "2010-2020, EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)")
+set(AKANTU_COPYRIGHT "2010-2021, EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)")
 set(AKANTU_MAINTAINER "Nicolas Richart")
-set(AKANTU_HOMEPAGE_URL "htpps://akantu.ch")
+set(AKANTU_HOMEPAGE_URL "https://akantu.ch")
 
 if(CMAKE_VERSION VERSION_GREATER 3.12)
   project(Akantu
-    HOMEPAGE_URL "htpps://akantu.ch")
+    HOMEPAGE_URL "https://akantu.ch")
 else()
   project(Akantu)
 endif()
@@ -174,7 +174,7 @@ add_subdirectory(src)
 #===============================================================================
 # Documentation
 #===============================================================================
-if(AKANTU_DOCUMENTATION_DEVELOPER_MANUAL OR AKANTU_DOCUMENTATION_USER_MANUAL)
+if(AKANTU_DOCUMENTATION OR AKANTU_DOCUMENTATION_MANUAL)
   add_subdirectory(doc)
 else()
   set(AKANTU_DOC_EXCLUDE_FILES "${PROJECT_SOURCE_DIR}/doc/manual" CACHE INTERNAL "")

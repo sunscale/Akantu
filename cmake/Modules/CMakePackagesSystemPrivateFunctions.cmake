@@ -28,6 +28,11 @@
 #
 #===============================================================================
 
+if (DEFINED CMAKE_PACKAGES_SYSTEM_PRIVATE_FUNCTIONS_LOADED)
+  return()
+endif()
+set(CMAKE_PACKAGES_SYSTEM_PRIVATE_FUNCTIONS_LOADED TRUE)
+
 # ==============================================================================
 # "Private" Accessors
 # ==============================================================================
@@ -160,6 +165,10 @@ function(_package_load_third_party_script pkg_name)
     endif()
 
     include(FindPackageHandleStandardArgs)
+    if (NOT _required_vars)
+      message(FATAL_ERROR "The package ${_name} does not define any of the variables ${_u_name}_INCLUDE_DIR nor ${_u_name}_LIBRARIES")
+    endif()
+
     if(CMAKE_VERSION VERSION_GREATER 2.8.12)
       find_package_handle_standard_args(${_name}
         REQUIRED_VARS ${_required_vars}
@@ -387,6 +396,10 @@ endfunction()
 # ------------------------------------------------------------------------------
 function(_package_add_to_export_list pkg_name)
   _package_add_to_variable(EXPORT_LIST ${pkg_name} ${ARGN})
+endfunction()
+
+function(_package_remove_from_export_list pkg_name)
+  _package_remove_from_variable(EXPORT_LIST ${pkg_name} ${ARGN})
 endfunction()
 
 function(_package_get_export_list pkg_name export_list)

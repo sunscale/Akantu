@@ -94,8 +94,8 @@ public:
                        FacetsCohesiveIntegrationOrderFunctor>;
 
   SolidMechanicsModelCohesive(Mesh & mesh, UInt dim = _all_dimensions,
-                              const ID & id = "solid_mechanics_model_cohesive",
-                              const MemoryID & memory_id = 0);
+                              const ID & id = "solid_mechanics_model_cohesive"
+                              );
 
   ~SolidMechanicsModelCohesive() override;
 

@@ -28,7 +28,7 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
-package_declare(documentation_user_manual
+package_declare(documentation_manual
   DESCRIPTION "Build the user manual.")
 
 package_declare_documentation(documentation_manual
@@ -39,7 +39,7 @@ package_declare_documentation(documentation_manual
 "  > sudo apt-get install install rubber texlive texlive-science texlive-latex-extra"
 "\\end{command}")
 
-package_set_package_system_dependency(documentation_user_manual deb-src
+package_set_package_system_dependency(documentation_manual deb-src
   rubber
   texlive-fonts-recommended
   texlive-science
@@ -50,6 +50,6 @@ package_set_package_system_dependency(documentation_user_manual deb-src
   texlive-bibtex-extra
   )
 
-package_declare_extra_files_to_package(documentation_user_manual
+package_declare_extra_files_to_package(documentation_manual
   MANUAL version-definition.tex.in
   PROJECT cmake/Modules/FindInkscape.cmake)

@@ -39,8 +39,8 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 SparseSolver::SparseSolver(DOFManager & dof_manager, const ID & matrix_id,
-                           const ID & id, const MemoryID & memory_id)
-    : Memory(id, memory_id), Parsable(ParserType::_solver, id),
+                           const ID & id)
+    : Parsable(ParserType::_solver, id),
       _dof_manager(dof_manager), matrix_id(matrix_id),
       communicator(dof_manager.getCommunicator()) {
   AKANTU_DEBUG_IN();

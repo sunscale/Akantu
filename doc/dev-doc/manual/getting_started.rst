@@ -1,10 +1,10 @@
 Getting Started
 ===============
 
-Compiling Akantu
-----------------
+Compiling ``Akantu``
+--------------------
 
-Akantu is a `CMake <https://cmake.org/>`_ project, so to configure it, you can either
+``Akantu`` is a `CMake <https://cmake.org/>`_ project, so to configure it, you can either
 follow the usual way::
 
   > cd akantu
@@ -15,16 +15,17 @@ follow the usual way::
   > make
   > make install
 
-All the Akantu options are documented in Appendix app:package-dependencies.
+All the ``Akantu`` options are documented in Appendix app:package-dependencies.
 
 Writing a ``main`` function
 ---------------------------
 
-Akantu first needs to be initialized. The memory management included in the core
-library handles the correct allocation and de-allocation of vectors, structures
-and/or objects. Moreover, in parallel computations, the initialization procedure
-performs the communication setup. This is achieved by the function
-:cpp:func:`initialize <akantu::initialize>` that is used as follows::
+``Akantu`` first needs to be initialized. The memory management included in the
+core library handles the correct allocation and de-allocation of vectors,
+structures and/or objects. Moreover, in parallel computations, the
+initialization procedure performs the communication setup. This is achieved by
+the function :cpp:func:`initialize <akantu::initialize>` that is used as
+follows::
 
     #include "aka_common.hh"
     #include "..."
@@ -32,22 +33,24 @@ performs the communication setup. This is achieved by the function
     using namespace akantu;
 
     int main(int argc, char *argv[]) {
-	initialize("input_file.dat", argc, argv);
+  initialize("input_file.dat", argc, argv);
 
-	// your code ...
+  // your code ...
 
     }
 
 The :cpp:func:`initialize <akantu::initialize>` function takes the text inpute
-file and the program parameters which can be parsed by Akantu in due form (see
+file and the program parameters which can be parsed by ``Akantu`` in due form (see
 sect:parser). Obviously it is necessary to include all files needed in main. In
 this manual all provided code implies the usage of ``akantu`` as
 namespace.
 
+.. _loading mesh:
+
 Creating and Loading a Mesh
 ---------------------------
 
-In its current state, Akantu supports three types of meshes: Gmsh, Abaqus and
+In its current state, ``Akantu`` supports three types of meshes: Gmsh, Abaqus and
 Diana. Once a :cpp:class:`akantu::Mesh` object is created with a given spatial
 dimension, it can be filled by reading a mesh input file. The method
 :cpp:func:`read <akantu::Mesh::read>` of the class :cpp:class:`Mesh
@@ -70,7 +73,7 @@ named ``physical_names``. The geometrical tag is stored as a :cpp:type:`UInt
 Using Arrays
 ------------
 
-Data in Akantu can be stored in data containers implemented by the
+Data in ``Akantu`` can be stored in data containers implemented by the
 :cpp:class:`akantu::Array` class. In its most basic usage, the :cpp:class:`Array
 <akantu::Array>` class implemented in \akantu is similar to the ``std::vector``
 class of the Standard Template Library (STL) for C++. A simple :cpp:class:`Array
@@ -79,9 +82,9 @@ type) can be generated with::
 
   Array<type> example_array(nb_element);
 
-where ``type`` usually is ``Real``, ``Int``, ``UInt`` or ``bool``.
-Each value is associated to an index, so that data can be accessed by
-typing::
+where ``type`` usually is :cpp:type:`Real <akantu::Real>`, :cpp:type:`Int
+<akantu::Int>`, :cpp:type:`UInt <akantu::UInt>` or ``bool``. Each value is
+associated to an index, so that data can be accessed by typing::
 
   auto & val = example_array(index);
 
@@ -102,27 +105,30 @@ the number of components for the sequences is not specified, the
 default value of 1 is used. Here is a list of some basic operations
 that can be performed on :cpp:class:`Array <akantu::Array>`:
 
-  - ``resize(size)`` change the size of the :cpp:class:`Array <akantu::Array>`.
-  - ``clear()`` set all entries of the :cpp:class:`Array <akantu::Array>` to
-    zero.
-  - ``set(t)`` set all entries of the :cpp:class:`Array <akantu::Array>` to
-    ``t``.
-  - ``copy(const Array<T> & other)`` copy another :cpp:class:`Array
-    <akantu::Array>` into the current one. The two :cpp:class:`Array
-    <akantu::Array>` should have the same number of components.
-  - ``push_back(tuple)`` append a tuple with the correct number of components at
-    the end of the :cpp:class:`Array <akantu::Array>`.
-  - ``erase(i)`` erase the value at the i-th position.
-  - ``find(value)`` search ``value`` in the current :cpp:class:`Array
-    <akantu::Array>`. Return position index of the first occurence or -1 if not
-    found.
-  - ``storage()`` Return the address of the allocated memory of the
-    :cpp:class:`Array <akantu::Array>`.
+  - :cpp:func:`resize(size) <akantu::ArrayDataLayer::resize>` change the size of
+    the :cpp:class:`Array <akantu::Array>`.
+  - :cpp:func:`clear <akantu::Array::clear>` reset the size of the
+    :cpp:class:`Array <akantu::Array>` to zero. (*warning* this changed in >
+    v4.0)
+  - :cpp:func:`set(t) <akantu::Array::set>` set all entries of the
+    :cpp:class:`Array <akantu::Array>` to ``t``.
+  - :cpp:func:`copy(const Array & other) <akantu::Array::copy>` copy another
+    :cpp:class:`Array <akantu::Array>` into the current one. The two
+    :cpp:class:`Arrays <akantu::Array>` should have the same number of
+    components.
+  - :cpp:func:`push_back(tuple) <akantu::Array::push_back>` append a tuple with
+    the correct number of components at the end of the :cpp:class:`Array <akantu::Array>`.
+  - :cpp:func:`erase(i) <akantu::Array::erase>` erase the value at the i-th position.
+  - :cpp:func:`find(value) <akantu::Array::find>` search ``value`` in the
+    current :cpp:class:`Array <akantu::Array>`. Return position index of the
+    first occurence or -1 if not found.
+  - :cpp:func:`storage() <akantu::Array::storage>` Return the address of the
+    allocated memory of the :cpp:class:`Array <akantu::Array>`.
 
 Array iterators
 -------------------
 
-It is very common in Akantu to loop over arrays to perform a specific treatment.
+It is very common in ``Akantu`` to loop over arrays to perform a specific treatment.
 This ranges from geometric calculation on nodal quantities to tensor algebra (in
 constitutive laws for example). The :cpp:class:`Array <akantu::Array>` object
 has the possibility to request iterators in order to make the writing of loops
@@ -137,8 +143,8 @@ can be performed like::
     // do what you need ....
   }
 
-In that example, each ``coords`` is a ``Vector<Real>`` containing
-geometrical array of size ``spatial_dimension`` and the iteration is
+In that example, each ``coords`` is a :cpp:class:`Vector\<Real\> <akantu::Vector>`
+containing geometrical array of size ``spatial_dimension`` and the iteration is
 conveniently performed by the :cpp:class:`Array <akantu::Array>` iterator.
 
 The :cpp:class:`Array <akantu::Array>` object is intensively used to store
@@ -153,12 +159,12 @@ can loop over the stored tensors by::
      // stress is of type `const Matrix<Real>&`
    }
 
-In that last example, the :cpp:class:`Matrix <akantu::Matrix>` objects are
+In that last example, the :cpp:class:`Matrix\<Real\> <akantu::Matrix>` objects are
 ``spatial_dimension`` :math:`\times` ``spatial_dimension`` matrices. The light
-objects :cpp:class:`Matrix <akantu::Matrix>` and :cpp:class:`Vector
-<akantu::Vector>` can be used and combined to do most common linear algebra. If
-the number of component is 1, it is possible to use :cpp:func:`make_view
-<akantu::make_view>` to this effect.
+objects :cpp:class:`Matrix\<T\> <akantu::Matrix>` and
+:cpp:class:`Vector\<T\> <akantu::Vector>` can be used and combined to do most
+common linear algebra. If the number of component is 1, it is possible to use
+:cpp:func:`make_view <akantu::make_view>` to this effect.
 
 
 In general, a mesh consists of several kinds of elements. Consequently, the
@@ -166,10 +172,11 @@ amount of data to be stored can differ for each element type. The
 straightforward example is the connectivity array, namely the sequences of nodes
 belonging to each element (linear triangular elements have fewer nodes than,
 say, rectangular quadratic elements etc.). A particular data structure called
-:cpp:class:`ElementTypeMapArray <akantu::ElementTypeMapArray>` is provided to
-easily manage this kind of data. It consists of a group of ``Arrays``, each
+:cpp:class:`ElementTypeMapArray\<T\> <akantu::ElementTypeMapArray>` is provided
+to easily manage this kind of data. It consists of a group of ``Arrays``, each
 associated to an element type. The following code can retrieve the
-``ElementTypeMapArray`` which stores the connectivity arrays for a mesh::
+:cpp:class:`ElementTypeMapArray\<UInt\> <akantu::ElementTypeMapArray>` which
+stores the connectivity arrays for a mesh::
 
   const ElementTypeMapArray<UInt> & connectivities =
     mesh.getConnectivities();
@@ -185,9 +192,9 @@ of code.
 Vector & Matrix
 ```````````````
 
-The :cpp:class:`Array <akantu::Array>` iterators as presented in the previous
-section can be shaped as :cpp:class:`Vector <akantu::Vector>` or
-:cpp:class:`Matrix <akantu::Matrix>`. This objects represent 1st and 2nd order
+The :cpp:class:`Array\<T\> <akantu::Array>` iterators as presented in the previous
+section can be shaped as :cpp:class:`Vector\<T\> <akantu::Vector>` or
+:cpp:class:`Matrix\<T\> <akantu::Matrix>`. This objects represent 1st and 2nd order
 tensors. As such they come with some functionalities that we will present a bit
 more into detail in this here.
 
@@ -218,8 +225,7 @@ more into detail in this here.
     element-wise operators that sum, substract, multiply or divide all the
     component of ``v`` by the scalar ``s``
   - ``v += x``, ``v -= x`` sums or substracts the vector ``x`` to/from ``v``
-  - ``v.mul(A, x, alpha)`` stores the result of :math:`\alpha \boldsymbol{A}
-  \vec{x}` in ``v``, :math:`\alpha` is equal to 1 by default
+  - ``v.mul(A, x, alpha)`` stores the result of :math:`\alpha \boldsymbol{A} \vec{x}` in ``v``, :math:`\alpha` is equal to 1 by default
   - ``v.solve(A, b)`` stores the result of the resolution of the system
     :math:`\boldsymbol{A} \vec{x} = \vec{b}` in ``v``
   - ``v.crossProduct(v1, v2)`` computes the cross product of ``v1`` and ``v2``

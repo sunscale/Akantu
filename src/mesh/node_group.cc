@@ -41,9 +41,9 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 NodeGroup::NodeGroup(const std::string & name, const Mesh & mesh,
-                     const std::string & id, const MemoryID & memory_id)
-    : Memory(id, memory_id), name(name),
-      node_group(alloc<UInt>(std::string(this->id + ":nodes"), 0, 1)) {
+                     const std::string & id)
+    : name(name),
+      node_group(0, 1, std::string(id + ":nodes")) {
 #if defined(AKANTU_USE_IOHELPER)
   this->registerDumper<DumperParaview>("paraview_" + name, name, true);
   auto field = std::make_shared<dumpers::NodalField<Real, true>>(
@@ -58,7 +58,7 @@ NodeGroup::~NodeGroup() = default;
 /* -------------------------------------------------------------------------- */
 void NodeGroup::clear() { node_group.resize(0); }
 /* -------------------------------------------------------------------------- */
-//bool NodeGroup::empty() { return node_group.empty(); }
+// bool NodeGroup::empty() { return node_group.empty(); }
 /* -------------------------------------------------------------------------- */
 void NodeGroup::optimize() {
   std::sort(node_group.begin(), node_group.end());

@@ -38,11 +38,10 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 NonLinearSolverLinear::NonLinearSolverLinear(
     DOFManagerDefault & dof_manager,
-    const NonLinearSolverType & non_linear_solver_type, const ID & id,
-    UInt memory_id)
-    : NonLinearSolver(dof_manager, non_linear_solver_type, id, memory_id),
+    const NonLinearSolverType & non_linear_solver_type, const ID & id)
+    : NonLinearSolver(dof_manager, non_linear_solver_type, id),
       dof_manager(dof_manager),
-      solver(dof_manager, "J", id + ":sparse_solver", memory_id) {
+      solver(dof_manager, "J", id + ":sparse_solver") {
 
   this->supported_type.insert(NonLinearSolverType::_linear);
   this->checkIfTypeIsSupported();
@@ -67,6 +66,11 @@ void NonLinearSolverLinear::solve(SolverCallback & solver_callback) {
   this->solver.solve();
 
   solver_callback.corrector();
+
+  if (solver_callback.canSplitResidual()) {
+    solver_callback.assembleResidual("internal");
+  }
+
   solver_callback.afterSolveStep(true);
 }
 

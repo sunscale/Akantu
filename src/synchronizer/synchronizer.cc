@@ -38,12 +38,11 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-Synchronizer::Synchronizer(const Communicator & comm, const ID & id,
-                           MemoryID memory_id)
-    : Memory(id, memory_id), communicator(comm) {
+Synchronizer::Synchronizer(const Communicator & comm, const ID & id)
+    : communicator(comm) {
   int max_tag = comm.getMaxTag();
 
-  this->hash_id = std::hash<std::string>()(this->getID());
+  this->hash_id = std::hash<std::string>()(id);
   if (max_tag != 0) {
     this->hash_id = this->hash_id % max_tag;
   }

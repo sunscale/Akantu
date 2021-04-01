@@ -43,13 +43,11 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-MeshPartition::MeshPartition(Mesh & mesh, UInt spatial_dimension,
-                             const ID & id, const MemoryID & memory_id)
-    : Memory(id, memory_id), mesh(mesh), spatial_dimension(spatial_dimension),
-      partitions("partition", id, memory_id),
-      ghost_partitions("ghost_partition", id, memory_id),
-      ghost_partitions_offset("ghost_partition_offset", id, memory_id),
-      saved_connectivity("saved_connectivity", id, memory_id) {
+MeshPartition::MeshPartition(Mesh & mesh, UInt spatial_dimension, const ID & id)
+    : mesh(mesh), spatial_dimension(spatial_dimension),
+      partitions("partition", id), ghost_partitions("ghost_partition", id),
+      ghost_partitions_offset("ghost_partition_offset", id),
+      saved_connectivity("saved_connectivity", id) {
   AKANTU_DEBUG_IN();
 
   UInt nb_total_element = 0;
@@ -96,9 +94,9 @@ Element MeshPartition::unlinearized(UInt lin_element) {
  */
 void MeshPartition::buildDualGraph(
     Array<Int> & dxadj, Array<Int> & dadjncy, Array<Int> & edge_loads,
-    const std::function<Int(const Element &, const Element &)> &edge_load_func,
+    const std::function<Int(const Element &, const Element &)> & edge_load_func,
     Array<Int> & vertex_loads,
-    const std::function<Int(const Element &)> &vertex_load_func) {
+    const std::function<Int(const Element &)> & vertex_load_func) {
 
   CSR<Element> nodes_to_elements;
   MeshUtils::buildNode2Elements(mesh, nodes_to_elements);
@@ -109,7 +107,8 @@ void MeshPartition::buildDualGraph(
   for_each_element(
       mesh,
       [&](auto && element) {
-        const auto & conn = const_cast<const Mesh &>(mesh).getConnectivity(element);
+        const auto & conn =
+            const_cast<const Mesh &>(mesh).getConnectivity(element);
         std::map<Element, UInt> hits;
 
         // count the number of nodes shared with a given element
@@ -141,8 +140,8 @@ void MeshPartition::buildDualGraph(
             continue;
           }
 
-        /// Patch in order to prevent neighboring cohesive elements
-        /// from detecting each other
+      /// Patch in order to prevent neighboring cohesive elements
+      /// from detecting each other
 #if defined(AKANTU_COHESIVE_ELEMENT)
           auto element_kind = element.kind();
           auto adjacent_element_kind = adjacent_element.kind();
@@ -201,7 +200,6 @@ void MeshPartition::buildDualGraph(
     }
   }
 }
-
 
 /* -------------------------------------------------------------------------- */
 void MeshPartition::fillPartitionInformation(
@@ -273,7 +271,8 @@ void MeshPartition::fillPartitionInformation(
 
   // All Facets
   for (Int sp = spatial_dimension - 1; sp >= 0; --sp) {
-    for (const auto & type : mesh.elementTypes(sp, _not_ghost, _ek_not_defined)) {
+    for (const auto & type :
+         mesh.elementTypes(sp, _not_ghost, _ek_not_defined)) {
       UInt nb_element = mesh.getNbElement(type);
 
       auto & partition = partitions.alloc(nb_element, 1, type, _not_ghost);
@@ -296,7 +295,7 @@ void MeshPartition::fillPartitionInformation(
           continue;
         }
         Element min_elem{_max_element_type, std::numeric_limits<UInt>::max(),
-              *(ghost_type_t{}.end())};
+                         *(ghost_type_t{}.end())};
         UInt min_part(std::numeric_limits<UInt>::max());
         std::set<UInt> adjacent_parts;
 
@@ -379,8 +378,7 @@ void MeshPartition::restoreConnectivity() {
 }
 
 /* -------------------------------------------------------------------------- */
-bool MeshPartition::hasPartitions(ElementType type,
-                                  GhostType ghost_type) {
+bool MeshPartition::hasPartitions(ElementType type, GhostType ghost_type) {
   return partitions.exists(type, ghost_type);
 }
 

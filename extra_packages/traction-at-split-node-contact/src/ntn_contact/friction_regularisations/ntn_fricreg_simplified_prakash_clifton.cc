@@ -37,8 +37,8 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 NTNFricRegSimplifiedPrakashClifton::NTNFricRegSimplifiedPrakashClifton(
-    NTNBaseContact & contact, const ID & id, const MemoryID & memory_id)
-    : NTNFricRegNoRegularisation(contact, id, memory_id),
+    NTNBaseContact & contact, const ID & id)
+    : NTNFricRegNoRegularisation(contact, id),
       t_star(0, 1, 0., id + ":t_star", 0., "t_star"),
       spc_internal(0, 1, 0., id + ":spc_internal", 0., "spc_internal") {
   AKANTU_DEBUG_IN();

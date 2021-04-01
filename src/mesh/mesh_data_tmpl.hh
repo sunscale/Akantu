@@ -120,7 +120,7 @@ inline void MeshData::registerElementalData(const ID & name,
 template <typename T>
 ElementTypeMapArray<T> & MeshData::allocElementalData(const ID & name) {
   auto dataset =
-      std::make_unique<ElementTypeMapArray<T>>(name, _id, _memory_id);
+      std::make_unique<ElementTypeMapArray<T>>(name, _id);
   auto * dataset_typed = dataset.get();
   elemental_data[name] = std::move(dataset);
   typecode_map[MeshDataType::_elemental][name] = getTypeCode<T>();

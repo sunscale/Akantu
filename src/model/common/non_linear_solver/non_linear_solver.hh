@@ -29,7 +29,6 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
-#include "aka_memory.hh"
 #include "parsable.hh"
 /* -------------------------------------------------------------------------- */
 #include <set>
@@ -45,14 +44,14 @@ class SolverCallback;
 
 namespace akantu {
 
-class NonLinearSolver : private Memory, public Parsable {
+class NonLinearSolver : public Parsable {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   NonLinearSolver(DOFManager & dof_manager,
                   const NonLinearSolverType & non_linear_solver_type,
-                  const ID & id = "non_linear_solver", UInt memory_id = 0);
+                  const ID & id = "non_linear_solver");
   ~NonLinearSolver() override;
 
   /* ------------------------------------------------------------------------ */
@@ -83,6 +82,8 @@ protected:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
+  ID id;
+
   DOFManager & _dof_manager;
 
   /// type of non linear solver

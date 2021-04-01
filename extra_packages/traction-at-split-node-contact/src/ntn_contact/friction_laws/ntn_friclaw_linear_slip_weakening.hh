@@ -45,8 +45,7 @@ class NTNFricLawLinearSlipWeakening : public NTNFricLawCoulomb<Regularisation> {
   /* ------------------------------------------------------------------------ */
 public:
   NTNFricLawLinearSlipWeakening(NTNBaseContact & contact,
-                                const ID & id = "linear_slip_weakening",
-                                const MemoryID & memory_id = 0);
+                                const ID & id = "linear_slip_weakening");
   virtual ~NTNFricLawLinearSlipWeakening(){};
 
   /* ------------------------------------------------------------------------ */

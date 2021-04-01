@@ -28,6 +28,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "structural_mechanics_model.hh"
+#include "mesh_accessor.hh"
 /* -------------------------------------------------------------------------- */
 #include <iostream>
 /* -------------------------------------------------------------------------- */
@@ -37,12 +38,11 @@
 using namespace akantu;
 
 // Linear load function
-static void lin_load(double * position, double * load,
-                     __attribute__((unused)) Real * normal,
-                     __attribute__((unused)) UInt surface_id) {
-  memset(load, 0, sizeof(Real) * 3);
-  if (position[0] <= 10) {
-    load[1] = -6000;
+static void lin_load(const Array<Real> & nodes, Array<Real>& load) {
+  for(auto &&data : zip(make_view(nodes, 2), make_view(load, 3))) {
+    if (std::get<0>(data)[_y] <= 10) {
+      std::get<1>(data)[_y] = -6000;
+    }
   }
 }
 /* -------------------------------------------------------------------------- */
@@ -57,12 +57,12 @@ int main(int argc, char * argv[]) {
   UInt nb_nodes_2 = nb_nodes - nb_nodes_1 - 1;
   UInt nb_element = nb_nodes - 1;
 
-  Array<Real> & nodes = const_cast<Array<Real> &>(beams.getNodes());
+  MeshAccessor mesh_accessor(beams);
+  Array<Real> & nodes = mesh_accessor.getNodes();
   nodes.resize(nb_nodes);
 
   beams.addConnectivityType(_bernoulli_beam_2);
-  Array<UInt> & connectivity =
-      const_cast<Array<UInt> &>(beams.getConnectivity(_bernoulli_beam_2));
+  Array<UInt> & connectivity = mesh_accessor.getConnectivity(_bernoulli_beam_2);
   connectivity.resize(nb_element);
 
   for (UInt i = 0; i < nb_nodes; ++i) {
@@ -81,6 +81,8 @@ int main(int argc, char * argv[]) {
     connectivity(i, 0) = i;
     connectivity(i, 1) = i + 1;
   }
+
+  mesh_accessor.makeReady();
 
   // Defining the materials
   StructuralMechanicsModel model(beams);
@@ -104,7 +106,7 @@ int main(int argc, char * argv[]) {
 
   const Real M = -3600; // Momentum at 3
 
-  Array<Real> & forces = model.getForce();
+  Array<Real> & forces = model.getExternalForce();
   Array<Real> & displacement = model.getDisplacement();
   Array<bool> & boundary = model.getBlockedDOFs();
   const Array<Real> & N_M = model.getStress(_bernoulli_beam_2);
@@ -120,7 +122,10 @@ int main(int argc, char * argv[]) {
 
   forces(nb_nodes - 1, 2) += M;
 
-  model.computeForcesFromFunction<_bernoulli_beam_2>(lin_load, _bft_traction);
+  Array<Real> load(nodes.size(), 3);
+  lin_load(nodes, load);
+
+  model.computeForcesByGlobalTractionArray(load, _bernoulli_beam_2);
 
   // Defining the boundary conditions
   boundary(0, 0) = true;
@@ -129,30 +134,14 @@ int main(int argc, char * argv[]) {
   boundary(nb_nodes_1, 1) = true;
   boundary(nb_nodes - 1, 1) = true;
 
-  // Solve
-  Real error;
-  model.assembleStiffnessMatrix();
-
-  UInt count = 0;
   model.addDumpFieldVector("displacement");
   model.addDumpField("rotation");
   model.addDumpFieldVector("force");
   model.addDumpField("momentum");
 
-  do {
-    if (count != 0)
-      std::cerr << count << " - " << error << std::endl;
-    model.updateResidual();
-    model.solve();
-    count++;
-  } while (!model.testConvergenceIncrement(1e-10, error) && count < 10);
-  std::cerr << count << " - " << error << std::endl;
+  model.solveStep();
 
-  /* --------------------------------------------------------------------------
-   */
   // Post-Processing
-
-  model.computeStresses();
   std::cout << " d1 = " << displacement(nb_nodes_1, 2) << std::endl;
   std::cout << " d2 = " << displacement(nb_nodes - 1, 2) << std::endl;
   std::cout << " M1 = " << N_M(0, 1) << std::endl;

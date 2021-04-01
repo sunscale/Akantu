@@ -54,8 +54,8 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-GroupManager::GroupManager(Mesh & mesh, const ID & id, const MemoryID & mem_id)
-    : id(id), memory_id(mem_id), mesh(mesh) {
+GroupManager::GroupManager(Mesh & mesh, const ID & id)
+    : id(id), mesh(mesh) {
 
   AKANTU_DEBUG_OUT();
 }
@@ -83,7 +83,7 @@ NodeGroup & GroupManager::createNodeGroup(const std::string & group_name,
   sstr << this->id << ":" << group_name << "_node_group";
 
   auto && ptr =
-      std::make_unique<NodeGroup>(group_name, mesh, sstr.str(), memory_id);
+      std::make_unique<NodeGroup>(group_name, mesh, sstr.str());
 
   auto & node_group = *ptr;
 
@@ -141,7 +141,7 @@ ElementGroup & GroupManager::createElementGroup(const std::string & group_name,
 
   auto && ptr = std::make_unique<ElementGroup>(
       group_name, mesh, new_node_group, dimension,
-      this->id + ":" + group_name + "_element_group", memory_id);
+      this->id + ":" + group_name + "_element_group");
 
   auto & element_group = *ptr;
 
@@ -197,7 +197,7 @@ ElementGroup & GroupManager::createElementGroup(const std::string & group_name,
 
   auto && ptr = std::make_unique<ElementGroup>(
       group_name, mesh, node_group, dimension,
-      id + ":" + group_name + "_element_group", memory_id);
+      id + ":" + group_name + "_element_group");
 
   auto & element_group = *ptr;
   element_groups[group_name] = std::move(ptr);
@@ -501,7 +501,7 @@ UInt GroupManager::createClusters(UInt element_dimension,
 
   if (nb_proc > 1 && mesh.isDistributed()) {
     element_to_fragment =
-        new ElementTypeMapArray<UInt>("element_to_fragment", id, memory_id);
+        new ElementTypeMapArray<UInt>("element_to_fragment", id);
 
     element_to_fragment->initialize(
         mesh, _nb_component = 1, _spatial_dimension = element_dimension,
@@ -511,7 +511,7 @@ UInt GroupManager::createClusters(UInt element_dimension,
     tmp_cluster_name_prefix = "tmp_" + tmp_cluster_name_prefix;
   }
 
-  ElementTypeMapArray<bool> seen_elements("seen_elements", id, memory_id);
+  ElementTypeMapArray<bool> seen_elements("seen_elements", id);
   seen_elements.initialize(mesh, _spatial_dimension = element_dimension,
                            _element_kind = _ek_not_defined,
                            _with_nb_element = true);

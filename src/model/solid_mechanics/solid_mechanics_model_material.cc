@@ -114,7 +114,7 @@ void SolidMechanicsModel::instantiateMaterials() {
     }
 
     this->non_local_manager = std::make_unique<NonLocalManager>(
-        *this, *this, id + ":non_local_manager", memory_id);
+        *this, *this, id + ":non_local_manager");
     break;
   }
 #endif
@@ -204,36 +204,21 @@ void SolidMechanicsModel::reassignMaterial() {
   std::vector<Array<Element>> element_to_add(materials.size());
   std::vector<Array<Element>> element_to_remove(materials.size());
 
-  Element element;
-  for (auto ghost_type : ghost_types) {
-    element.ghost_type = ghost_type;
-
-    for (auto type :
-         mesh.elementTypes(spatial_dimension, ghost_type, _ek_not_defined)) {
-      element.type = type;
-
-      UInt nb_element = mesh.getNbElement(type, ghost_type);
-      Array<UInt> & mat_indexes = material_index(type, ghost_type);
-
-      for (UInt el = 0; el < nb_element; ++el) {
-        element.element = el;
-
-        UInt old_material = mat_indexes(el);
-        UInt new_material = (*material_selector)(element);
-
-        if (old_material != new_material) {
-          element_to_add[new_material].push_back(element);
-          element_to_remove[old_material].push_back(element);
-        }
-      }
+  for_each_element(mesh, [&](auto && element) {
+    auto old_material = material_index(element);
+    auto new_material = (*material_selector)(element);
+    if (old_material != new_material) {
+      element_to_add[new_material].push_back(element);
+      element_to_remove[old_material].push_back(element);
     }
-  }
+  });
 
-  UInt mat_index = 0;
-  for (auto mat_it = materials.begin(); mat_it != materials.end();
-       ++mat_it, ++mat_index) {
-    (*mat_it)->removeElements(element_to_remove[mat_index]);
-    (*mat_it)->addElements(element_to_add[mat_index]);
+  for (auto && data : enumerate(materials)) {
+    auto mat_index = std::get<0>(data);
+    auto & mat = *std::get<1>(data);
+
+    mat.removeElements(element_to_remove[mat_index]);
+    mat.addElements(element_to_add[mat_index]);
   }
 
   AKANTU_DEBUG_OUT();
@@ -243,7 +228,6 @@ void SolidMechanicsModel::reassignMaterial() {
 void SolidMechanicsModel::applyEigenGradU(
     const Matrix<Real> & prescribed_eigen_grad_u, const ID & material_name,
     const GhostType ghost_type) {
-
   AKANTU_DEBUG_ASSERT(prescribed_eigen_grad_u.size() ==
                           spatial_dimension * spatial_dimension,
                       "The prescribed grad_u is not of the good size");

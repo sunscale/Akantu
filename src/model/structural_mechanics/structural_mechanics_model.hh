@@ -75,8 +75,7 @@ public:
       FEEngineTemplate<IntegratorGauss, ShapeStructural, _ek_structural>;
 
   StructuralMechanicsModel(Mesh & mesh, UInt dim = _all_dimensions,
-                           const ID & id = "structural_mechanics_model",
-                           const MemoryID & memory_id = 0);
+                           const ID & id = "structural_mechanics_model");
 
   ~StructuralMechanicsModel() override;
 
@@ -100,6 +99,19 @@ public:
 
   /// callback to assemble the residual (rhs)
   void assembleResidual() override;
+
+  void assembleResidual(const ID & residual_part) override;
+
+  bool canSplitResidual() override { return false; }
+
+  /// compute kinetic energy
+  Real getKineticEnergy();
+
+  /// compute potential energy
+  Real getPotentialEnergy();
+
+  /// compute the specified energy
+  Real getEnergy(const ID & energy);
 
   /* ------------------------------------------------------------------------ */
   /* Virtual methods from Model                                               */
@@ -136,22 +148,11 @@ protected:
   void assembleStiffnessMatrix();
 
   /// assemble the mass matrix for consistent mass resolutions
-  void assembleMass();
-
-  /// TODO remove
-  void computeRotationMatrix(ElementType type);
+  void assembleMassMatrix();
 
 protected:
-  /// compute Rotation Matrices
-  template <const ElementType type>
-  void computeRotationMatrix(__attribute__((unused)) Array<Real> & rotations) {}
-
-  /* ------------------------------------------------------------------------ */
-  /* Mass (structural_mechanics_model_mass.cc) */
-  /* ------------------------------------------------------------------------ */
-
   /// assemble the mass matrix for either _ghost or _not_ghost elements
-  void assembleMass(GhostType ghost_type);
+  void assembleMassMatrix(GhostType ghost_type);
 
   /// computes rho
   void computeRho(Array<Real> & rho, ElementType type, GhostType ghost_type);
@@ -162,7 +163,6 @@ protected:
   /* ------------------------------------------------------------------------ */
 private:
   template <ElementType type> void assembleStiffnessMatrix();
-  template <ElementType type> void assembleMass();
   template <ElementType type> void computeStressOnQuad();
   template <ElementType type>
   void computeTangentModuli(Array<Real> & tangent_moduli);
@@ -191,7 +191,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// set the value of the time step
-  // void setTimeStep(Real time_step, const ID & solver_id = "") override;
+  void setTimeStep(Real time_step, const ID & solver_id = "") override;
 
   /// return the dimension of the system space
   AKANTU_GET_MACRO(SpatialDimension, spatial_dimension, UInt);
@@ -224,25 +224,48 @@ public:
 
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE(Set_ID, set_ID, UInt);
 
-  void addMaterial(StructuralMaterial & material) {
-    materials.push_back(material);
-  }
+  /**
+   * \brief	This function adds the `StructuralMaterial` material to the list of
+   * materials managed by *this.
+   *
+   * It is important that this function might invalidate all references to
+   * structural materials, that were previously optained by `getMaterial()`.
+   *
+   * \param  material The new material.
+   *
+   * \return The ID of the material that was added.
+   *
+   * \note The return type is is new.
+   */
+  UInt addMaterial(StructuralMaterial & material, const ID & name = "");
 
-  const StructuralMaterial & getMaterial(const Element & element) const {
-    return materials[element_material(element)];
-  }
+  const StructuralMaterial &
+  getMaterialByElement(const Element & element) const;
+
+  /**
+   * \brief	Returns the ith material of *this.
+   * \param  i		The ith material
+   */
+  const StructuralMaterial & getMaterial(UInt material_index) const;
+
+  const StructuralMaterial & getMaterial(const ID & name) const;
+
+  /**
+   * \brief	Returns the number of the different materials inside *this.
+   */
+  UInt getNbMaterials() const { return materials.size(); }
 
   /* ------------------------------------------------------------------------ */
   /* Boundaries (structural_mechanics_model_boundary.cc)                      */
   /* ------------------------------------------------------------------------ */
 public:
   /// Compute Linear load function set in global axis
-  template <ElementType type>
-  void computeForcesByGlobalTractionArray(const Array<Real> & tractions);
+  void computeForcesByGlobalTractionArray(const Array<Real> & traction_global,
+                                          ElementType type);
 
   /// Compute Linear load function set in local axis
-  template <ElementType type>
-  void computeForcesByLocalTractionArray(const Array<Real> & tractions);
+  void computeForcesByLocalTractionArray(const Array<Real> & tractions,
+                                         ElementType type);
 
   /// compute force vector from a function(x,y,momentum) that describe stresses
   // template <ElementType type>
@@ -260,25 +283,25 @@ private:
   Real f_m2a;
 
   /// displacements array
-  Array<Real> * displacement_rotation{nullptr};
+  std::unique_ptr<Array<Real>> displacement_rotation;
 
   /// velocities array
-  Array<Real> * velocity{nullptr};
+  std::unique_ptr<Array<Real>> velocity;
 
   /// accelerations array
-  Array<Real> * acceleration{nullptr};
+  std::unique_ptr<Array<Real>> acceleration;
 
   /// forces array
-  Array<Real> * internal_force{nullptr};
+  std::unique_ptr<Array<Real>> internal_force;
 
   /// forces array
-  Array<Real> * external_force{nullptr};
+  std::unique_ptr<Array<Real>> external_force;
 
   /// lumped mass array
-  Array<Real> * mass{nullptr};
+  std::unique_ptr<Array<Real>> mass;
 
   /// boundaries array
-  Array<bool> * blocked_dofs{nullptr};
+  std::unique_ptr<Array<bool>> blocked_dofs;
 
   /// stress array
   ElementTypeMapArray<Real> stress;
@@ -300,10 +323,16 @@ private:
   /// flag defining if the increment must be computed or not
   bool increment_flag;
 
+  bool need_to_reassemble_mass{true};
+  bool need_to_reassemble_stiffness{true};
+
   /* ------------------------------------------------------------------------ */
   std::vector<StructuralMaterial> materials;
+  std::map<std::string, UInt> materials_names_to_id;
 };
 
 } // namespace akantu
+
+#include "structural_mechanics_model_inline_impl.hh"
 
 #endif /* AKANTU_STRUCTURAL_MECHANICS_MODEL_HH_ */

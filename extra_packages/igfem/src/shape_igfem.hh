@@ -27,8 +27,7 @@ template <> class ShapeLagrange<_ek_igfem> : public ShapeFunctions {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  ShapeLagrange(const Mesh & mesh, const ID & id = "shape_igfem",
-                const MemoryID & memory_id = 0);
+  ShapeLagrange(const Mesh & mesh, const ID & id = "shape_igfem");
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

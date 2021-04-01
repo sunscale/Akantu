@@ -563,8 +563,7 @@ void MeshUtils::flipFacets(
 
   /// get global connectivity for local mesh
   ElementTypeMapArray<UInt> local_global_connectivities(
-      "local_global_connectivity", mesh_facets.getID(),
-      mesh_facets.getMemoryID());
+      "local_global_connectivity", mesh_facets.getID());
 
   local_global_connectivities.initialize(
       mesh_facets, _spatial_dimension = spatial_dimension - 1,
@@ -682,8 +681,7 @@ void MeshUtils::fillElementToSubElementsData(Mesh & mesh) {
   }
 
   UInt spatial_dimension = mesh.getSpatialDimension();
-  ElementTypeMapArray<Real> barycenters("barycenter_tmp", mesh.getID(),
-                                        mesh.getMemoryID());
+  ElementTypeMapArray<Real> barycenters("barycenter_tmp", mesh.getID());
   barycenters.initialize(mesh, _nb_component = spatial_dimension,
                          _spatial_dimension = _all_dimensions);
 

@@ -35,9 +35,8 @@ namespace akantu {
 template <class Regularisation>
 NTNFricLawLinearSlipWeakeningNoHealing<Regularisation>::
     NTNFricLawLinearSlipWeakeningNoHealing(NTNBaseContact & contact,
-                                           const ID & id,
-                                           const MemoryID & memory_id)
-    : NTNFricLawLinearSlipWeakening<Regularisation>(contact, id, memory_id) {
+                                           const ID & id)
+    : NTNFricLawLinearSlipWeakening<Regularisation>(contact, id) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();

@@ -1,0 +1,10 @@
+\documentclass[tikz,convert={outfile=\jobname.svg}]{standalone}
+%\usetikzlibrary{...}% tikz package already loaded by 'tikz' option
+\begin{document}
+\begin{tikzpicture}% Example:
+	\draw[thick,latex-latex] (0,5) node[left] {$\sigma$} |- (5,0) node (x) [right, below] {$\varepsilon$};
+	\draw[thin] (1.5,1.5) -- (2.5,1.5) -- (2.5,2.5) node [midway, right] {E};
+	\draw[very thick,color=red] (0,0) -- (4,4);
+	\draw[very thick,latex-latex,color=red] (1,1) -- (3,3);
+\end{tikzpicture}
+\end{document}

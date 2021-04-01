@@ -30,9 +30,8 @@
 #
 #===============================================================================
 
-add_mesh( cohesive_intrinsic_mesh triangle.geo 2 2)
+#add_mesh( cohesive_intrinsic_mesh triangle.geo 2 2)
 register_example(cohesive_intrinsic
   SOURCES cohesive_intrinsic.cc
-  DEPENDS cohesive_intrinsic_mesh
-  FILES_TO_COPY material.dat)
-
+  #DEPENDS cohesive_intrinsic_mesh
+  FILES_TO_COPY material.dat triangle.msh)

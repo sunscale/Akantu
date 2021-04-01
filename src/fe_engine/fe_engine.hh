@@ -29,7 +29,6 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_memory.hh"
 #include "element_type_map.hh"
 #include "mesh_events.hh"
 /* -------------------------------------------------------------------------- */
@@ -56,13 +55,13 @@ namespace akantu {
  * containing  the
  * shape functions and the integration method
  */
-class FEEngine : protected Memory, public MeshEventHandler {
+class FEEngine : public MeshEventHandler {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   FEEngine(Mesh & mesh, UInt element_dimension = _all_dimensions,
-           const ID & id = "fem", MemoryID memory_id = 0);
+           const ID & id = "fem");
 
   ~FEEngine() override;
 
@@ -342,10 +341,14 @@ public:
   /// fe_engine_template.hh)
   virtual const Integrator & getIntegratorInterface() const = 0;
 
+  AKANTU_GET_MACRO(ID, id, ID);
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
+  ID id;
+
   /// spatial dimension of the problem
   UInt element_dimension;
 

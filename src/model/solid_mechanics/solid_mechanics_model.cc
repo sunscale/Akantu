@@ -65,15 +65,13 @@ namespace akantu {
  * @param dim spatial  dimension of the problem, if dim =  0 (default value) the
  * dimension of the problem is assumed to be the on of the mesh
  * @param id an id to identify the model
- * @param memory_id the id of the memory
  * @param model_type this is an internal parameter for inheritance purposes
  */
 SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
-                                         const MemoryID & memory_id,
                                          const ModelType model_type)
-    : Model(mesh, model_type, dim, id, memory_id),
-      material_index("material index", id, memory_id),
-      material_local_numbering("material local numbering", id, memory_id) {
+    : Model(mesh, model_type, dim, id),
+      material_index("material index", id),
+      material_local_numbering("material local numbering", id) {
   AKANTU_DEBUG_IN();
 
   this->registerFEEngineObject<MyFEEngineType>("SolidMechanicsFEEngine", mesh,
@@ -692,6 +690,7 @@ Real SolidMechanicsModel::getEnergy(const std::string & energy_id) {
   AKANTU_DEBUG_OUT();
   return energy;
 }
+
 /* -------------------------------------------------------------------------- */
 Real SolidMechanicsModel::getEnergy(const std::string & energy_id,
                                     ElementType type, UInt index) {
@@ -711,6 +710,23 @@ Real SolidMechanicsModel::getEnergy(const std::string & energy_id,
 }
 
 /* -------------------------------------------------------------------------- */
+Real SolidMechanicsModel::getEnergy(const ID & energy_id,
+                                    const ID & group_id) {
+  auto && group = mesh.getElementGroup(group_id);
+  auto energy = 0.;
+  for(auto && type : group.elementTypes()) {
+    for(auto el : group.getElementsIterable(type)) {
+      energy += getEnergy(energy_id, el);
+    }
+  }
+
+  /// reduction sum over all processors
+  mesh.getCommunicator().allReduce(energy, SynchronizerOperation::_sum);
+
+  return energy;
+}
+
+/* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
                                           const NewElementsEvent & event) {
   AKANTU_DEBUG_IN();
@@ -722,8 +738,7 @@ void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
       mesh, _element_kind = _ek_not_defined, _with_nb_element = true,
       _default_value = UInt(-1));
 
-  ElementTypeMapArray<UInt> filter("new_element_filter", this->getID(),
-                                   this->getMemoryID());
+  ElementTypeMapArray<UInt> filter("new_element_filter", this->getID());
 
   for (const auto & elem : element_list) {
     if (mesh.getSpatialDimension(elem.type) != spatial_dimension) {
@@ -902,7 +917,7 @@ void SolidMechanicsModel::insertIntegrationPointsInNeighborhoods(
     }
 
     ElementTypeMapArray<Real> quadrature_points_coordinates(
-        "quadrature_points_coordinates_tmp_nl", this->id, this->memory_id);
+        "quadrature_points_coordinates_tmp_nl", this->id);
     quadrature_points_coordinates.initialize(this->getFEEngine(),
                                              _nb_component = spatial_dimension,
                                              _ghost_type = ghost_type);

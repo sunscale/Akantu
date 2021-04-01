@@ -72,9 +72,8 @@ namespace heat_transfer {
 } // namespace heat_transfer
 
 /* -------------------------------------------------------------------------- */
-HeatTransferModel::HeatTransferModel(Mesh & mesh, UInt dim, const ID & id,
-                                     const MemoryID & memory_id)
-    : Model(mesh, ModelType::_heat_transfer_model, dim, id, memory_id),
+HeatTransferModel::HeatTransferModel(Mesh & mesh, UInt dim, const ID & id)
+    : Model(mesh, ModelType::_heat_transfer_model, dim, id),
       temperature_gradient("temperature_gradient", id),
       temperature_on_qpoints("temperature_on_qpoints", id),
       conductivity_on_qpoints("conductivity_on_qpoints", id),
@@ -128,18 +127,6 @@ void HeatTransferModel::initModel() {
 /* -------------------------------------------------------------------------- */
 FEEngine & HeatTransferModel::getFEEngineBoundary(const ID & name) {
   return aka::as_type<FEEngine>(getFEEngineClassBoundary<FEEngineType>(name));
-}
-
-/* -------------------------------------------------------------------------- */
-template <typename T>
-void HeatTransferModel::allocNodalField(Array<T> *& array, const ID & name) {
-  if (array == nullptr) {
-    UInt nb_nodes = mesh.getNbNodes();
-    std::stringstream sstr_disp;
-    sstr_disp << id << ":" << name;
-
-    array = &(alloc<T>(sstr_disp.str(), nb_nodes, 1, T()));
-  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -226,10 +213,10 @@ void HeatTransferModel::initSolver(TimeStepSolverType time_step_solver_type,
                                    NonLinearSolverType /*unused*/) {
   DOFManager & dof_manager = this->getDOFManager();
 
-  this->allocNodalField(this->temperature, "temperature");
-  this->allocNodalField(this->external_heat_rate, "external_heat_rate");
-  this->allocNodalField(this->internal_heat_rate, "internal_heat_rate");
-  this->allocNodalField(this->blocked_dofs, "blocked_dofs");
+  this->allocNodalField(this->temperature, 1, "temperature");
+  this->allocNodalField(this->external_heat_rate, 1, "external_heat_rate");
+  this->allocNodalField(this->internal_heat_rate, 1, "internal_heat_rate");
+  this->allocNodalField(this->blocked_dofs, 1, "blocked_dofs");
 
   if (!dof_manager.hasDOFs("temperature")) {
     dof_manager.registerDOFs("temperature", *this->temperature, _dst_nodal);
@@ -238,7 +225,7 @@ void HeatTransferModel::initSolver(TimeStepSolverType time_step_solver_type,
 
   if (time_step_solver_type == TimeStepSolverType::_dynamic ||
       time_step_solver_type == TimeStepSolverType::_dynamic_lumped) {
-    this->allocNodalField(this->temperature_rate, "temperature_rate");
+    this->allocNodalField(this->temperature_rate, 1, "temperature_rate");
 
     if (!dof_manager.hasDOFsDerivatives("temperature", 1)) {
       dof_manager.registerDOFsDerivative("temperature", 1,
@@ -700,7 +687,7 @@ std::shared_ptr<dumpers::Field> HeatTransferModel::createNodalFieldBool(
     __attribute__((unused)) bool padding_flag) {
 
   std::map<std::string, Array<bool> *> uint_nodal_fields;
-  uint_nodal_fields["blocked_dofs"] = blocked_dofs;
+  uint_nodal_fields["blocked_dofs"] = blocked_dofs.get();
 
   auto field = mesh.createNodalField(uint_nodal_fields[field_name], group_name);
   return field;
@@ -718,11 +705,11 @@ std::shared_ptr<dumpers::Field> HeatTransferModel::createNodalFieldReal(
   }
 
   std::map<std::string, Array<Real> *> real_nodal_fields;
-  real_nodal_fields["temperature"] = temperature;
-  real_nodal_fields["temperature_rate"] = temperature_rate;
-  real_nodal_fields["external_heat_rate"] = external_heat_rate;
-  real_nodal_fields["internal_heat_rate"] = internal_heat_rate;
-  real_nodal_fields["increment"] = increment;
+  real_nodal_fields["temperature"] = temperature.get();
+  real_nodal_fields["temperature_rate"] = temperature_rate.get();
+  real_nodal_fields["external_heat_rate"] = external_heat_rate.get();
+  real_nodal_fields["internal_heat_rate"] = internal_heat_rate.get();
+  real_nodal_fields["increment"] = increment.get();
 
   std::shared_ptr<dumpers::Field> field =
       mesh.createNodalField(real_nodal_fields[field_name], group_name);
@@ -765,54 +752,27 @@ std::shared_ptr<dumpers::Field> HeatTransferModel::createElementalField(
 #else
 /* -------------------------------------------------------------------------- */
 std::shared_ptr<dumpers::Field> HeatTransferModel::createElementalField(
-    __attribute__((unused)) const std::string & field_name,
-    __attribute__((unused)) const std::string & group_name,
-    __attribute__((unused)) bool padding_flag,
-    __attribute__((unused)) ElementKind element_kind) {
+    const std::string & /* field_name*/, const std::string & /*group_name*/,
+    bool /*padding_flag*/, ElementKind /*element_kind*/) {
   return nullptr;
 }
 
 /* -------------------------------------------------------------------------- */
-std::shared_ptr<dumpers::Field> HeatTransferModel::createNodalFieldBool(
-    __attribute__((unused)) const std::string & field_name,
-    __attribute__((unused)) const std::string & group_name,
-    __attribute__((unused)) bool padding_flag) {
+std::shared_ptr<dumpers::Field>
+HeatTransferModel::createNodalFieldBool(const std::string & /*field_name*/,
+                                        const std::string & /*group_name*/,
+                                        bool /*padding_flag*/) {
   return nullptr;
 }
 
 /* -------------------------------------------------------------------------- */
-std::shared_ptr<dumpers::Field> HeatTransferModel::createNodalFieldReal(
-    __attribute__((unused)) const std::string & field_name,
-    __attribute__((unused)) const std::string & group_name,
-    __attribute__((unused)) bool padding_flag) {
+std::shared_ptr<dumpers::Field>
+HeatTransferModel::createNodalFieldReal(const std::string & /*field_name*/,
+                                        const std::string & /*group_name*/,
+                                        bool /*padding_flag*/) {
   return nullptr;
 }
 #endif
-
-/* -------------------------------------------------------------------------- */
-void HeatTransferModel::dump(const std::string & dumper_name) {
-  mesh.dump(dumper_name);
-}
-
-/* -------------------------------------------------------------------------- */
-void HeatTransferModel::dump(const std::string & dumper_name, UInt step) {
-  mesh.dump(dumper_name, step);
-}
-
-/* ------------------------------------------------------------------------- */
-void HeatTransferModel::dump(const std::string & dumper_name, Real time,
-                             UInt step) {
-  mesh.dump(dumper_name, time, step);
-}
-
-/* -------------------------------------------------------------------------- */
-void HeatTransferModel::dump() { mesh.dump(); }
-
-/* -------------------------------------------------------------------------- */
-void HeatTransferModel::dump(UInt step) { mesh.dump(step); }
-
-/* -------------------------------------------------------------------------- */
-void HeatTransferModel::dump(Real time, UInt step) { mesh.dump(time, step); }
 
 /* -------------------------------------------------------------------------- */
 inline UInt HeatTransferModel::getNbData(const Array<UInt> & indexes,

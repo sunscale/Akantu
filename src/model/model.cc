@@ -41,9 +41,8 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-Model::Model(Mesh & mesh, const ModelType & type, UInt dim, const ID & id,
-             const MemoryID & memory_id)
-    : Memory(id, memory_id), ModelSolver(mesh, type, id, memory_id), mesh(mesh),
+Model::Model(Mesh & mesh, const ModelType & type, UInt dim, const ID & id)
+    : ModelSolver(mesh, type, id), mesh(mesh),
       spatial_dimension(dim == _all_dimensions ? mesh.getSpatialDimension()
                                                : dim),
       parser(getStaticParser()) {
@@ -196,18 +195,17 @@ void Model::setBaseNameToDumper(const std::string & dumper_name,
 
 void Model::addDumpFieldToDumper(const std::string & dumper_name,
                                  const std::string & field_id) {
-
-  this->addDumpGroupFieldToDumper(dumper_name, field_id, "all", _ek_regular,
-                                  false);
+  this->addDumpGroupFieldToDumper(dumper_name, field_id, "all",
+                                  dumper_default_element_kind, false);
 }
 
 /* -------------------------------------------------------------------------- */
 void Model::addDumpGroupField(const std::string & field_id,
                               const std::string & group_name) {
-
   ElementGroup & group = mesh.getElementGroup(group_name);
   this->addDumpGroupFieldToDumper(group.getDefaultDumperName(), field_id,
-                                  group_name, _ek_regular, false);
+                                  group_name, dumper_default_element_kind,
+                                  false);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -229,8 +227,8 @@ void Model::removeDumpGroupFieldFromDumper(const std::string & dumper_name,
 /* -------------------------------------------------------------------------- */
 void Model::addDumpFieldVectorToDumper(const std::string & dumper_name,
                                        const std::string & field_id) {
-  this->addDumpGroupFieldToDumper(dumper_name, field_id, "all", _ek_regular,
-                                  true);
+  this->addDumpGroupFieldToDumper(dumper_name, field_id, "all",
+                                  dumper_default_element_kind, true);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -246,14 +244,14 @@ void Model::addDumpGroupFieldVectorToDumper(const std::string & dumper_name,
                                             const std::string & field_id,
                                             const std::string & group_name) {
   this->addDumpGroupFieldToDumper(dumper_name, field_id, group_name,
-                                  _ek_regular, true);
+                                  dumper_default_element_kind, true);
 }
 /* -------------------------------------------------------------------------- */
 
 void Model::addDumpFieldTensorToDumper(const std::string & dumper_name,
                                        const std::string & field_id) {
-  this->addDumpGroupFieldToDumper(dumper_name, field_id, "all", _ek_regular,
-                                  true);
+  this->addDumpGroupFieldToDumper(dumper_name, field_id, "all",
+                                  dumper_default_element_kind, true);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -314,24 +312,51 @@ void Model::addDumpGroupFieldToDumper(const std::string & dumper_name,
 }
 
 /* -------------------------------------------------------------------------- */
-
-void Model::dump() { mesh.dump(); }
+void Model::dump(const std::string & dumper_name) {
+  mesh.dump(dumper_name);
+}
 
 /* -------------------------------------------------------------------------- */
+void Model::dump(const std::string & dumper_name, UInt step) {
+  mesh.dump(dumper_name, step);
+}
 
+/* ------------------------------------------------------------------------- */
+void Model::dump(const std::string & dumper_name, Real time,
+                             UInt step) {
+  mesh.dump(dumper_name, time, step);
+}
+
+/* -------------------------------------------------------------------------- */
+void Model::dump() {
+  auto default_dumper = mesh.getDefaultDumperName();
+  this->dump(default_dumper);
+}
+
+/* -------------------------------------------------------------------------- */
+void Model::dump(UInt step) {
+  auto default_dumper = mesh.getDefaultDumperName();
+  this->dump(default_dumper, step);
+}
+
+/* -------------------------------------------------------------------------- */
+void Model::dump(Real time, UInt step) {
+  auto default_dumper = mesh.getDefaultDumperName();
+  this->dump(default_dumper, time, step);
+}
+
+/* -------------------------------------------------------------------------- */
 void Model::setDirectory(const std::string & directory) {
   mesh.setDirectory(directory);
 }
 
 /* -------------------------------------------------------------------------- */
-
 void Model::setDirectoryToDumper(const std::string & dumper_name,
                                  const std::string & directory) {
   mesh.setDirectoryToDumper(dumper_name, directory);
 }
 
 /* -------------------------------------------------------------------------- */
-
 void Model::setTextModeToDumper() { mesh.setTextModeToDumper(); }
 
 /* -------------------------------------------------------------------------- */

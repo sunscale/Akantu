@@ -52,9 +52,9 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 ElementGroup::ElementGroup(const std::string & group_name, const Mesh & mesh,
                            NodeGroup & node_group, UInt dimension,
-                           const std::string & id, const MemoryID & mem_id)
-    : Memory(id, mem_id), mesh(mesh), name(group_name),
-      elements("elements", id, mem_id), node_group(node_group),
+                           const std::string & id)
+    : mesh(mesh), name(group_name),
+      elements("elements", id), node_group(node_group),
       dimension(dimension) {
   AKANTU_DEBUG_IN();
 

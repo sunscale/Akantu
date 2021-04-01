@@ -72,8 +72,7 @@ private:
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  GroupManager(Mesh & mesh, const ID & id = "group_manager",
-               const MemoryID & mem_id = 0);
+  GroupManager(Mesh & mesh, const ID & id = "group_manager");
   virtual ~GroupManager();
 
   /* ------------------------------------------------------------------------ */
@@ -326,8 +325,6 @@ private:
 protected:
   /// id to create element and node groups
   ID id;
-  /// memory_id to create element and node groups
-  MemoryID memory_id;
 
   /// list of the node groups managed
   NodeGroups node_groups;

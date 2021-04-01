@@ -76,9 +76,8 @@ namespace akantu {
 // }
 
 /* -------------------------------------------------------------------------- */
-NTNBaseContact::NTNBaseContact(SolidMechanicsModel & model, const ID & id,
-                               const MemoryID & memory_id)
-    : Memory(id, memory_id), Dumpable(), model(model),
+NTNBaseContact::NTNBaseContact(SolidMechanicsModel & model, const ID & id)
+    : id(id), model(model),
       slaves(0, 1, 0, id + ":slaves", std::numeric_limits<UInt>::quiet_NaN(),
              "slaves"),
       normals(0, model.getSpatialDimension(), 0, id + ":normals",
@@ -92,8 +91,7 @@ NTNBaseContact::NTNBaseContact(SolidMechanicsModel & model, const ID & id,
                              "lumped_boundary_slaves"),
       impedance(0, 1, 0, id + ":impedance",
                 std::numeric_limits<Real>::quiet_NaN(), "impedance"),
-      contact_surfaces(), slave_elements("slave_elements", id, memory_id),
-      node_to_elements() {
+      slave_elements("slave_elements", id) {
   AKANTU_DEBUG_IN();
 
   auto & boundary_fem = this->model.getFEEngineBoundary();
@@ -514,7 +512,7 @@ void NTNBaseContact::addDumpFieldToDumper(const std::string & dumper_name,
   internalAddDumpFieldToDumper(                                                \
       dumper_name, field_id,                                                   \
       std::make_unique<                                                        \
-          dumpers::NodalField<type, true, Array<type>, Array<UInt>>>(           \
+          dumpers::NodalField<type, true, Array<type>, Array<UInt>>>(          \
           field, 0, 0, &nodal_filter))
 
   if (field_id == "displacement") {
@@ -550,9 +548,9 @@ void NTNBaseContact::addDumpFieldToDumper(const std::string & dumper_name,
                                  std::make_unique<dumpers::NodalField<Real>>(
                                      this->lumped_boundary_slaves.getArray()));
   } else if (field_id == "impedance") {
-    internalAddDumpFieldToDumper(
-        dumper_name, field_id,
-        std::make_unique<dumpers::NodalField<Real>>(this->impedance.getArray()));
+    internalAddDumpFieldToDumper(dumper_name, field_id,
+                                 std::make_unique<dumpers::NodalField<Real>>(
+                                     this->impedance.getArray()));
   } else {
     std::cerr << "Could not add field '" << field_id
               << "' to the dumper. Just ignored it." << std::endl;

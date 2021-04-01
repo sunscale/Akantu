@@ -43,10 +43,10 @@ namespace akantu {
 template <template <ElementKind, class> class I, template <ElementKind> class S,
           ElementKind kind, class IntegrationOrderFunctor>
 FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::FEEngineTemplate(
-    Mesh & mesh, UInt spatial_dimension, const ID & id, MemoryID memory_id)
-    : FEEngine(mesh, spatial_dimension, id, memory_id),
-      integrator(mesh, spatial_dimension, id, memory_id),
-      shape_functions(mesh, spatial_dimension, id, memory_id) {}
+    Mesh & mesh, UInt spatial_dimension, const ID & id)
+    : FEEngine(mesh, spatial_dimension, id),
+      integrator(mesh, spatial_dimension, id),
+      shape_functions(mesh, spatial_dimension, id) {}
 
 /* -------------------------------------------------------------------------- */
 template <template <ElementKind, class> class I, template <ElementKind> class S,
@@ -726,8 +726,7 @@ inline void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
   UInt spatial_dimension = this->mesh.getSpatialDimension();
 
   ElementTypeMapArray<Real> quadrature_points_coordinates(
-      "quadrature_points_coordinates_for_interpolation", getID(),
-      getMemoryID());
+      "quadrature_points_coordinates_for_interpolation", getID());
 
   quadrature_points_coordinates.initialize(*this,
                                            _nb_component = spatial_dimension);
@@ -752,9 +751,9 @@ inline void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
         const ElementTypeMapArray<UInt> * element_filter) const {
 
   ElementTypeMapArray<Real> interpolation_points_coordinates_matrices(
-      "interpolation_points_coordinates_matrices", id, memory_id);
+      "interpolation_points_coordinates_matrices", id);
   ElementTypeMapArray<Real> quad_points_coordinates_inv_matrices(
-      "quad_points_coordinates_inv_matrices", id, memory_id);
+      "quad_points_coordinates_inv_matrices", id);
 
   initElementalFieldInterpolationFromIntegrationPoints(
       interpolation_points_coordinates,

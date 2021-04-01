@@ -44,9 +44,8 @@ class MIIASYMContact : public NTRFContact {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  MIIASYMContact(SolidMechanicsModel & model, const ID & id = "contact",
-                 const MemoryID & memory_id = 0);
-  virtual ~MIIASYMContact() = default;
+  MIIASYMContact(SolidMechanicsModel & model, const ID & id = "contact");
+  ~MIIASYMContact() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -57,25 +56,26 @@ public:
 
   /// compute contact pressure -> do nothing because can only compute it in
   /// equilibrium
-  virtual void computeContactPressure(){};
+  void computeContactPressure() override{};
 
   /// compute relative normal field (only value that has to be multiplied with
   /// the normal)
   /// WARNING: this is only valid for the acceleration in equilibrium
-  virtual void computeRelativeNormalField(const Array<Real> & field,
-                                          Array<Real> & rel_normal_field) const;
+  void
+  computeRelativeNormalField(const Array<Real> & field,
+                             Array<Real> & rel_normal_field) const override;
 
   /// compute relative tangential field (complet array)
   /// relative to master nodes
-  virtual void
+  void
   computeRelativeTangentialField(const Array<Real> & field,
-                                 Array<Real> & rel_tang_field) const;
+                                 Array<Real> & rel_tang_field) const override;
 
   /// compute contact pressure that is used over the entire time
   virtual void computeContactPressureInEquilibrium();
 
   /// function to print the contain of the class
-  virtual void printself(std::ostream & stream, int indent = 0) const;
+  void printself(std::ostream & stream, int indent = 0) const override;
 };
 
 /// standard output stream operator

@@ -28,8 +28,7 @@ class FacetSynchronizer : public ElementSynchronizer {
 public:
   FacetSynchronizer(Mesh & mesh,
                     const ElementSynchronizer & element_synchronizer,
-                    const ID & id = "facet_synchronizer",
-                    MemoryID memory_id = 0);
+                    const ID & id = "facet_synchronizer");
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

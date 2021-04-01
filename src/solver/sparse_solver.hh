@@ -30,7 +30,6 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_memory.hh"
 #include "communicator_event_handler.hh"
 #include "parsable.hh"
 /* -------------------------------------------------------------------------- */
@@ -50,15 +49,13 @@ class DOFManager;
 
 namespace akantu {
 
-class SparseSolver : protected Memory,
-                     public Parsable,
-                     public CommunicatorEventHandler {
+class SparseSolver : public Parsable, public CommunicatorEventHandler {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   SparseSolver(DOFManager & dof_manager, const ID & matrix_id,
-               const ID & id = "solver", const MemoryID & memory_id = 0);
+               const ID & id = "solver");
 
   ~SparseSolver() override;
   /* ------------------------------------------------------------------------ */

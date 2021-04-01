@@ -35,9 +35,9 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 ShapeFunctions::ShapeFunctions(const Mesh & mesh, UInt spatial_dimension,
-                               const ID & id, const MemoryID & memory_id)
-    : Memory(id, memory_id), shapes("shapes_generic", id, memory_id),
-      shapes_derivatives("shapes_derivatives_generic", id, memory_id),
+                               const ID & id)
+    : shapes("shapes_generic", id),
+      shapes_derivatives("shapes_derivatives_generic", id),
       mesh(mesh), _spatial_dimension(spatial_dimension) {}
 
 /* -------------------------------------------------------------------------- */
@@ -62,16 +62,16 @@ ShapeFunctions::initElementalFieldInterpolationFromIntegrationPoints(
     nb_element_filter = element_filter.size();
   }
 
-  UInt nb_quad_per_element =
+  auto nb_quad_per_element =
       GaussIntegrationElement<type>::getNbQuadraturePoints();
-  UInt nb_interpolation_points_per_elem =
+  auto nb_interpolation_points_per_elem =
       interpolation_points_coordinates.size() / nb_element;
 
   AKANTU_DEBUG_ASSERT(interpolation_points_coordinates.size() % nb_element == 0,
                       "Number of interpolation points should be a multiple of "
                       "total number of elements");
 
-  if (!quad_points_coordinates_inv_matrices.exists(type, ghost_type)) {
+  if (not quad_points_coordinates_inv_matrices.exists(type, ghost_type)) {
     quad_points_coordinates_inv_matrices.alloc(
         nb_element_filter, nb_quad_per_element * nb_quad_per_element, type,
         ghost_type);

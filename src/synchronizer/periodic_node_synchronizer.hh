@@ -37,8 +37,7 @@ namespace akantu {
 class PeriodicNodeSynchronizer : public NodeSynchronizer {
 public:
   PeriodicNodeSynchronizer(
-      Mesh & mesh, const ID & id = "periodic_node_synchronizer",
-      MemoryID memory_id = 0, bool register_to_event_manager = true,
+      Mesh & mesh, const ID & id = "periodic_node_synchronizer", bool register_to_event_manager = true,
       EventHandlerPriority event_priority = _ehp_synchronizer);
 
   /* ------------------------------------------------------------------------ */

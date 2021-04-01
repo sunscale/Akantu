@@ -9,6 +9,7 @@
 #include "py_mesh.hh"
 #include "py_model.hh"
 #include "py_parser.hh"
+#include "py_solver.hh"
 
 #if defined(AKANTU_USE_IOHELPER)
 #include "py_dumpable.hh"
@@ -24,12 +25,16 @@
 #endif
 
 #if defined(AKANTU_COHESIVE_ELEMENT)
+#include "py_fragment_manager.hh"
 #include "py_solid_mechanics_model_cohesive.hh"
 #endif
 
-
 #if defined(AKANTU_PHASE_FIELD)
 #include "py_phase_field_model.hh"
+#endif
+
+#if defined(AKANTU_STRUCTURAL_MECHANICS)
+#include "py_structural_mechanics_model.hh"
 #endif
 
 /* -------------------------------------------------------------------------- */
@@ -49,6 +54,7 @@ void register_all(pybind11::module & mod) {
   register_error(mod);
   register_functions(mod);
   register_parser(mod);
+  register_solvers(mod);
 
   register_group_manager(mod);
 #if defined(AKANTU_USE_IOHELPER)
@@ -71,6 +77,11 @@ void register_all(pybind11::module & mod) {
 
 #if defined(AKANTU_COHESIVE_ELEMENT)
   register_solid_mechanics_model_cohesive(mod);
+  register_fragment_manager(mod);
+#endif
+
+#if defined(AKANTU_STRUCTURAL_MECHANICS)
+  register_structural_mechanics_model(mod);
 #endif
 
 #if defined(AKANTU_PHASE_FIELD)
@@ -85,8 +96,8 @@ void register_all(pybind11::module & mod) {
 PYBIND11_MODULE(py11_akantu, mod) {
   mod.doc() = "Akantu python interface";
 
-  static py::exception<akantu::debug::Exception>
-      akantu_exception(mod, "Exception");
+  static py::exception<akantu::debug::Exception> akantu_exception(mod,
+                                                                  "Exception");
 
   py::register_exception_translator([](std::exception_ptr ptr) {
     try {

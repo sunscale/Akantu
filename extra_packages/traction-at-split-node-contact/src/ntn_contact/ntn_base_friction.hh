@@ -59,13 +59,12 @@ inline void ParameterTyped<akantu::SynchronizedArray<Real>>::setTyped<Real>(
 }
 
 /* -------------------------------------------------------------------------- */
-class NTNBaseFriction : protected Memory, public Parsable, public Dumpable {
+class NTNBaseFriction : public Parsable, public Dumpable {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NTNBaseFriction(NTNBaseContact & contact, const ID & id = "friction",
-                  const MemoryID & memory_id = 0);
+  NTNBaseFriction(NTNBaseContact & contact, const ID & id = "friction");
   virtual ~NTNBaseFriction() = default;
 
   /* ------------------------------------------------------------------------ */

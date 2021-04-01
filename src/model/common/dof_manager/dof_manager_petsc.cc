@@ -86,15 +86,14 @@ DOFManagerPETSc::DOFDataPETSc::DOFDataPETSc(const ID & dof_id)
     : DOFData(dof_id) {}
 
 /* -------------------------------------------------------------------------- */
-DOFManagerPETSc::DOFManagerPETSc(const ID & id, const MemoryID & memory_id)
-    : DOFManager(id, memory_id) {
+DOFManagerPETSc::DOFManagerPETSc(const ID & id)
+    : DOFManager(id) {
   init();
 }
 
 /* -------------------------------------------------------------------------- */
-DOFManagerPETSc::DOFManagerPETSc(Mesh & mesh, const ID & id,
-                                 const MemoryID & memory_id)
-    : DOFManager(mesh, id, memory_id) {
+DOFManagerPETSc::DOFManagerPETSc(Mesh & mesh, const ID & id)
+    : DOFManager(mesh, id) {
   init();
 }
 
@@ -297,9 +296,8 @@ const SolverVectorPETSc & DOFManagerPETSc::getResidual() const {
 static bool dof_manager_is_registered [[gnu::unused]] =
     DOFManagerFactory::getInstance().registerAllocator(
         "petsc",
-        [](Mesh & mesh, const ID & id,
-           const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
-          return std::make_unique<DOFManagerPETSc>(mesh, id, mem_id);
+        [](Mesh & mesh, const ID & id) -> std::unique_ptr<DOFManager> {
+          return std::make_unique<DOFManagerPETSc>(mesh, id);
         });
 
 } // namespace akantu

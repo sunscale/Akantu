@@ -46,9 +46,8 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 FragmentManager::FragmentManager(SolidMechanicsModelCohesive & model,
-                                 bool dump_data, const ID & id,
-                                 const MemoryID & memory_id)
-    : GroupManager(model.getMesh(), id, memory_id), model(model),
+                                 bool dump_data, const ID & id)
+    : GroupManager(model.getMesh(), id), model(model),
       mass_center(0, model.getSpatialDimension(), "mass_center"),
       mass(0, model.getSpatialDimension(), "mass"),
       velocity(0, model.getSpatialDimension(), "velocity"),
@@ -127,7 +126,7 @@ public:
 private:
   struct IsUnbrokenFunctor {
     IsUnbrokenFunctor(const Real & max_damage) : max_damage(max_damage) {}
-    bool operator()(const Real & x) const  { return x < max_damage; }
+    bool operator()(const Real & x) const { return x < max_damage; }
     const Real max_damage;
   };
 
@@ -348,12 +347,13 @@ void FragmentManager::computeInertiaMoments() {
 }
 
 /* -------------------------------------------------------------------------- */
-void FragmentManager::computeAllData() {
+void FragmentManager::computeAllData(Real damage_limit) {
   AKANTU_DEBUG_IN();
 
-  buildFragments();
+  buildFragments(damage_limit);
   computeVelocity();
   computeInertiaMoments();
+  computeNbElementsPerFragment();
 
   AKANTU_DEBUG_OUT();
 }

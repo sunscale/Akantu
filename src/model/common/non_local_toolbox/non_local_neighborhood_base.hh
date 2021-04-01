@@ -49,8 +49,7 @@ class NonLocalNeighborhoodBase : public NeighborhoodBase, public Parsable {
 public:
   NonLocalNeighborhoodBase(Model & model,
                            const ElementTypeMapReal & quad_coordinates,
-                           const ID & id = "non_local_neighborhood",
-                           const MemoryID & memory_id = 0);
+                           const ID & id = "non_local_neighborhood");
   ~NonLocalNeighborhoodBase() override;
 
   /* ------------------------------------------------------------------------ */

@@ -41,9 +41,8 @@ class ShapeLagrangeBase : public ShapeFunctions {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  ShapeLagrangeBase(const Mesh & mesh, UInt spatial_dimension,
-                    ElementKind kind, const ID & id = "shape_lagrange",
-                    const MemoryID & memory_id = 0);
+  ShapeLagrangeBase(const Mesh & mesh, UInt spatial_dimension, ElementKind kind,
+                    const ID & id = "shape_lagrange");
   ~ShapeLagrangeBase() override;
 
   /* ------------------------------------------------------------------------ */
@@ -53,15 +52,13 @@ public:
   /// computes the shape functions for given interpolation points
   virtual void computeShapesOnIntegrationPoints(
       const Array<Real> & nodes, const Matrix<Real> & integration_points,
-      Array<Real> & shapes, ElementType type,
-      GhostType ghost_type,
+      Array<Real> & shapes, ElementType type, GhostType ghost_type,
       const Array<UInt> & filter_elements = empty_filter) const;
 
   /// computes the shape functions derivatives for given interpolation points
   virtual void computeShapeDerivativesOnIntegrationPoints(
       const Array<Real> & nodes, const Matrix<Real> & integration_points,
-      Array<Real> & shape_derivatives, ElementType type,
-      GhostType ghost_type,
+      Array<Real> & shape_derivatives, ElementType type, GhostType ghost_type,
       const Array<UInt> & filter_elements = empty_filter) const = 0;
 
   /// function to print the containt of the class

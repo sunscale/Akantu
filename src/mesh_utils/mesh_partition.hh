@@ -38,16 +38,15 @@
 
 namespace akantu {
 
-class MeshPartition : protected Memory {
+class MeshPartition {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   MeshPartition(Mesh & mesh, UInt spatial_dimension,
-                const ID & id = "MeshPartitioner",
-                const MemoryID & memory_id = 0);
+                const ID & id = "MeshPartitioner");
 
-  ~MeshPartition() override;
+  virtual ~MeshPartition();
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -109,7 +108,7 @@ protected:
   /* ------------------------------------------------------------------------ */
 protected:
   /// id
-  std::string id;
+  ID id;
 
   /// the mesh to partition
   Mesh & mesh;

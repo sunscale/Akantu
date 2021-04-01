@@ -44,9 +44,8 @@ class NTNContact : public NTNBaseContact {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NTNContact(SolidMechanicsModel & model, const ID & id = "contact",
-             const MemoryID & memory_id = 0);
-  virtual ~NTNContact(){};
+  NTNContact(SolidMechanicsModel & model, const ID & id = "contact");
+  ~NTNContact() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

@@ -45,8 +45,7 @@ class NTNFricRegNoRegularisation : public NTNBaseFriction {
   /* ------------------------------------------------------------------------ */
 public:
   NTNFricRegNoRegularisation(NTNBaseContact & contact,
-                             const ID & id = "no_regularisation",
-                             const MemoryID & memory_id = 0);
+                             const ID & id = "no_regularisation");
   virtual ~NTNFricRegNoRegularisation(){};
 
   /* ------------------------------------------------------------------------ */

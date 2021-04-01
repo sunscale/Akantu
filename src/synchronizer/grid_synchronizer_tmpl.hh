@@ -38,10 +38,10 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 template <typename E>
 GridSynchronizer::GridSynchronizer(Mesh & mesh, const SpatialGrid<E> & grid,
-                                   const ID & id, MemoryID memory_id,
+                                   const ID & id,
                                    const bool register_to_event_manager,
                                    EventHandlerPriority event_priority)
-    : ElementSynchronizer(mesh, id, memory_id, register_to_event_manager,
+    : ElementSynchronizer(mesh, id, register_to_event_manager,
                           event_priority) {
   AKANTU_DEBUG_IN();
 
@@ -55,9 +55,9 @@ GridSynchronizer::GridSynchronizer(
     Mesh & mesh, const SpatialGrid<E> & grid,
     SynchronizerRegistry & synchronizer_registry,
     const std::set<SynchronizationTag> & tags_to_register, const ID & id,
-    MemoryID memory_id, const bool register_to_event_manager,
+    const bool register_to_event_manager,
     EventHandlerPriority event_priority)
-    : GridSynchronizer(mesh, grid, id, memory_id, register_to_event_manager,
+    : GridSynchronizer(mesh, grid, id, register_to_event_manager,
                        event_priority) {
   AKANTU_DEBUG_IN();
 

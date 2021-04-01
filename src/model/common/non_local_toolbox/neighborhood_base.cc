@@ -41,10 +41,8 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 NeighborhoodBase::NeighborhoodBase(Model & model,
                                    const ElementTypeMapReal & quad_coordinates,
-                                   const ID & id, const MemoryID & memory_id)
-    : Memory(id, memory_id), model(model), neighborhood_radius(0.),
-      spatial_grid(nullptr), is_creating_grid(false),
-      grid_synchronizer(nullptr), quad_coordinates(quad_coordinates),
+                                   const ID & id)
+    : id(id), model(model), quad_coordinates(quad_coordinates),
       spatial_dimension(this->model.getMesh().getSpatialDimension()) {
 
   AKANTU_DEBUG_IN();
@@ -276,7 +274,8 @@ void NeighborhoodBase::onElementsRemoved(
                           "A local quadrature_point "
                               << q
                               << " as been removed instead of "
-                          "just being renumbered: " << id);
+                                 "just being renumbered: "
+                              << id);
       q.element = q_new_el;
       nb_quad = fem.getNbIntegrationPoints(q.type, q.ghost_type);
       q.global_num = nb_quad * q.element + q.num_point;

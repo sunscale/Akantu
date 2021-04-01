@@ -94,7 +94,7 @@ SolidMechanicsModel::flattenInternal(const std::string & field_name,
   auto it = this->registered_internals.find(key);
   if (it == this->registered_internals.end()) {
     auto internal = std::make_unique<ElementTypeMapArray<Real>>(
-        field_name, this->id, this->memory_id);
+        field_name, this->id);
 
     internal_flat = internal.get();
     this->registered_internals[key] = std::move(internal);
@@ -292,24 +292,21 @@ SolidMechanicsModel::createNodalFieldBool(const std::string &,
 }
 
 #endif
-/* --------------------------------------------------------------------------
- */
+/* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::dump(const std::string & dumper_name) {
   this->onDump();
   EventManager::sendEvent(SolidMechanicsModelEvent::BeforeDumpEvent());
   mesh.dump(dumper_name);
 }
 
-/* --------------------------------------------------------------------------
- */
+/* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::dump(const std::string & dumper_name, UInt step) {
   this->onDump();
   EventManager::sendEvent(SolidMechanicsModelEvent::BeforeDumpEvent());
   mesh.dump(dumper_name, step);
 }
 
-/* -------------------------------------------------------------------------
- */
+/* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::dump(const std::string & dumper_name, Real time,
                                UInt step) {
   this->onDump();

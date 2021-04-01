@@ -58,7 +58,7 @@ private:
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual ~EventHandlerManager() { event_handlers.clear(); }
+  virtual ~EventHandlerManager() = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

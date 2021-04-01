@@ -73,12 +73,10 @@ public:
    * @param primitive_mesh mesh of the embedded reinforcement
    * @param spatial_dimension the spatial dimension to be considered by this model
    * @param id the id of the model
-   * @param memory_id the id of the memory manager to use
    */
   EmbeddedInterfaceModel(Mesh & mesh, Mesh & primitive_mesh,
                          UInt spatial_dimension = _all_dimensions,
-                         const ID & id = "embedded_interface_model",
-                         const MemoryID & memory_id = 0);
+                         const ID & id = "embedded_interface_model");
 
   /// Destructor
   ~EmbeddedInterfaceModel() override;

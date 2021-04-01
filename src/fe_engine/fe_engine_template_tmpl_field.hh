@@ -92,7 +92,7 @@ namespace fe_engine {
          const std::function<void(Matrix<Real> &, const Element &)> &          \
              field_funct,                                                      \
          const ID & lumped, const ID & dof_id, DOFManager & dof_manager,       \
-         ElementType type, GhostType ghost_type) {                     \
+         ElementType type, GhostType ghost_type) {                             \
       AKANTU_BOOST_KIND_ELEMENT_SWITCH(ASSEMBLE_LUMPED, kind);                 \
     }                                                                          \
   };
@@ -335,7 +335,7 @@ namespace fe_engine {
          const std::function<void(Matrix<Real> &, const Element &)> &          \
              field_funct,                                                      \
          const ID & matrix_id, const ID & dof_id, DOFManager & dof_manager,    \
-         ElementType type, GhostType ghost_type) {                     \
+         ElementType type, GhostType ghost_type) {                             \
       AKANTU_BOOST_KIND_ELEMENT_SWITCH(ASSEMBLE_MATRIX, kind);                 \
     }                                                                          \
   };
@@ -363,6 +363,71 @@ void FEEngineTemplate<I, S, kind, IOF>::assembleFieldMatrix(
   AKANTU_DEBUG_OUT();
 }
 
+namespace fe_engine {
+  namespace details {
+    template <ElementKind kind> struct ShapesForMassHelper {
+      template <ElementType type, class ShapeFunctions>
+      static auto getShapes(ShapeFunctions & shape_functions,
+                            const Matrix<Real> & integration_points,
+                            const Array<Real> & nodes,
+                            UInt & nb_degree_of_freedom, UInt nb_element,
+                            GhostType ghost_type) {
+
+        UInt shapes_size = ElementClass<type>::getShapeSize();
+        Array<Real> shapes(0, shapes_size);
+
+        shape_functions.template computeShapesOnIntegrationPoints<type>(
+            nodes, integration_points, shapes, ghost_type);
+
+        UInt nb_integration_points = integration_points.cols();
+        UInt vect_size = nb_integration_points * nb_element;
+        UInt lmat_size = nb_degree_of_freedom * shapes_size;
+
+        // Extending the shape functions
+        /// \todo move this in the shape functions as Voigt format shapes to
+        /// have the code in common with the structural elements
+        auto shapes_voigt = std::make_unique<Array<Real>>(
+            vect_size, lmat_size * nb_degree_of_freedom, 0.);
+        auto mshapes_it = shapes_voigt->begin(nb_degree_of_freedom, lmat_size);
+        auto shapes_it = shapes.begin(shapes_size);
+
+        for (UInt q = 0; q < vect_size; ++q, ++mshapes_it, ++shapes_it) {
+          for (UInt d = 0; d < nb_degree_of_freedom; ++d) {
+            for (UInt s = 0; s < shapes_size; ++s) {
+              (*mshapes_it)(d, s * nb_degree_of_freedom + d) = (*shapes_it)(s);
+            }
+          }
+        }
+
+        return shapes_voigt;
+      }
+    };
+
+#if defined(AKANTU_STRUCTURAL_MECHANICS)
+    template <> struct ShapesForMassHelper<_ek_structural> {
+      template <ElementType type, class ShapeFunctions>
+      static auto getShapes(ShapeFunctions & shape_functions,
+                            const Matrix<Real> & integration_points,
+                            const Array<Real> & nodes,
+                            UInt & nb_degree_of_freedom, UInt /*nb_element*/,
+                            GhostType ghost_type) {
+
+        auto nb_unknown = ElementClass<type>::getNbStressComponents();
+        auto nb_degree_of_freedom_ = ElementClass<type>::getNbDegreeOfFreedom();
+        auto nb_nodes_per_element = ElementClass<type>::getNbNodesPerElement();
+        auto shapes = std::make_unique<Array<Real>>(
+            0, nb_unknown * nb_nodes_per_element * nb_degree_of_freedom_);
+        nb_degree_of_freedom = nb_unknown;
+        shape_functions.template computeShapesMassOnIntegrationPoints<type>(
+            nodes, integration_points, *shapes, ghost_type);
+
+        return shapes;
+      }
+    };
+#endif
+  } // namespace details
+} // namespace fe_engine
+  //
 /* -------------------------------------------------------------------------- */
 /**
  * @f$ \tilde{M}_{i} = \sum_j M_{ij} = \sum_j \int \rho \varphi_i \varphi_j dV =
@@ -377,11 +442,6 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::assembleFieldMatrix(
     GhostType ghost_type) const {
   AKANTU_DEBUG_IN();
 
-  UInt shapes_size = ElementClass<type>::getShapeSize();
-  UInt nb_degree_of_freedom = dof_manager.getDOFs(dof_id).getNbComponent();
-  UInt lmat_size = nb_degree_of_freedom * shapes_size;
-  UInt nb_element = mesh.getNbElement(type, ghost_type);
-
   // \int N * N  so degree 2 * degree of N
   const UInt polynomial_degree =
       2 * ElementClassProperty<type>::polynomial_degree;
@@ -390,44 +450,34 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::assembleFieldMatrix(
   Matrix<Real> integration_points =
       integrator.template getIntegrationPoints<type, polynomial_degree>();
 
-  UInt nb_integration_points = integration_points.cols();
-  UInt vect_size = nb_integration_points * nb_element;
+  UInt nb_degree_of_freedom = dof_manager.getDOFs(dof_id).getNbComponent();
+  UInt nb_element = mesh.getNbElement(type, ghost_type);
 
   // getting the shapes on the integration points
-  Array<Real> shapes(0, shapes_size);
-  shape_functions.template computeShapesOnIntegrationPoints<type>(
-      mesh.getNodes(), integration_points, shapes, ghost_type);
+  auto shapes_voigt =
+      fe_engine::details::ShapesForMassHelper<kind>::template getShapes<type>(
+          shape_functions, integration_points, mesh.getNodes(),
+          nb_degree_of_freedom, nb_element, ghost_type);
 
-  // Extending the shape functions
-  /// \todo move this in the shape functions as Voigt format shapes to have the
-  /// code in common with the structural elements
-  Array<Real> modified_shapes(vect_size, lmat_size * nb_degree_of_freedom, 0.);
-  Array<Real> local_mat(vect_size, lmat_size * lmat_size);
-  auto mshapes_it = modified_shapes.begin(nb_degree_of_freedom, lmat_size);
-  auto shapes_it = shapes.begin(shapes_size);
-
-  for (UInt q = 0; q < vect_size; ++q, ++mshapes_it, ++shapes_it) {
-    for (UInt d = 0; d < nb_degree_of_freedom; ++d) {
-      for (UInt s = 0; s < shapes_size; ++s) {
-        (*mshapes_it)(d, s * nb_degree_of_freedom + d) = (*shapes_it)(s);
-      }
-    }
-  }
+  auto vect_size = shapes_voigt->size();
 
   // getting the value to assemble on the integration points
   Array<Real> field(vect_size, nb_degree_of_freedom);
   fe_engine::details::fillField(field_funct, field, nb_element,
-                                nb_integration_points, type, ghost_type);
+                                integration_points.cols(), type, ghost_type);
+
+  auto lmat_size = shapes_voigt->getNbComponent() / nb_degree_of_freedom;
 
   // computing \rho * N
-  mshapes_it = modified_shapes.begin(nb_degree_of_freedom, lmat_size);
-  auto lmat = local_mat.begin(lmat_size, lmat_size);
+  Array<Real> local_mat(vect_size, lmat_size * lmat_size);
+  auto N_it = shapes_voigt->begin(nb_degree_of_freedom, lmat_size);
+  auto lmat_it = local_mat.begin(lmat_size, lmat_size);
   auto field_it = field.begin_reinterpret(nb_degree_of_freedom, field.size());
 
-  for (UInt q = 0; q < vect_size; ++q, ++lmat, ++mshapes_it, ++field_it) {
+  for (UInt q = 0; q < vect_size; ++q, ++lmat_it, ++N_it, ++field_it) {
     const auto & rho = *field_it;
-    const auto & N = *mshapes_it;
-    auto & mat = *lmat;
+    const auto & N = *N_it;
+    auto & mat = *lmat_it;
 
     Matrix<Real> Nt = N.transpose();
     for (UInt d = 0; d < Nt.cols(); ++d) {

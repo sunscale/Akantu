@@ -49,7 +49,7 @@ template <class Material, typename T>
 InternalFieldTmpl<Material, T>::InternalFieldTmpl(
     const ID & id, Material & material, FEEngine & fem,
     const ElementTypeMapArray<UInt> & element_filter)
-    : ElementTypeMapArray<T>(id, material.getID(), material.getMemoryID()),
+    : ElementTypeMapArray<T>(id, material.getID()),
       material(material), fem(&fem), element_filter(element_filter),
       spatial_dimension(material.getSpatialDimension()) {}
 
@@ -58,7 +58,7 @@ template <class Material, typename T>
 InternalFieldTmpl<Material, T>::InternalFieldTmpl(
     const ID & id, Material & material, UInt dim, FEEngine & fem,
     const ElementTypeMapArray<UInt> & element_filter)
-    : ElementTypeMapArray<T>(id, material.getID(), material.getMemoryID()),
+    : ElementTypeMapArray<T>(id, material.getID()),
       material(material), fem(&fem), element_filter(element_filter),
       spatial_dimension(dim) {}
 

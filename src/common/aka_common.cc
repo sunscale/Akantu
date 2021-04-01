@@ -31,7 +31,6 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "aka_random_generator.hh"
-#include "aka_static_memory.hh"
 #include "communicator.hh"
 
 #include "cppargparse.hh"
@@ -57,7 +56,6 @@ void initialize(int & argc, char **& argv) {
 /* -------------------------------------------------------------------------- */
 void initialize(const std::string & input_file, int & argc, char **& argv) {
   AKANTU_DEBUG_IN();
-  StaticMemory::getStaticMemory();
   Communicator & comm = Communicator::getStaticCommunicator(argc, argv);
 
   Tag::setMaxTag(comm.getMaxTag());
@@ -119,20 +117,7 @@ void initialize(const std::string & input_file, int & argc, char **& argv) {
 }
 
 /* -------------------------------------------------------------------------- */
-void finalize() {
-  AKANTU_DEBUG_IN();
-
-  // if (StaticCommunicator::isInstantiated()) {
-  //   StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-  //   delete &comm;
-  // }
-
-  if (StaticMemory::isInstantiated()) {
-    delete &(StaticMemory::getStaticMemory());
-  }
-
-  AKANTU_DEBUG_OUT();
-}
+void finalize() { }
 
 /* -------------------------------------------------------------------------- */
 void readInputFile(const std::string & input_file) {

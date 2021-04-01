@@ -51,10 +51,8 @@ class DOFManagerDefault : public DOFManager {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  DOFManagerDefault(const ID & id = "dof_manager_default",
-                    const MemoryID & memory_id = 0);
-  DOFManagerDefault(Mesh & mesh, const ID & id = "dof_manager_default",
-                    const MemoryID & memory_id = 0);
+  DOFManagerDefault(const ID & id = "dof_manager_default");
+  DOFManagerDefault(Mesh & mesh, const ID & id = "dof_manager_default");
   ~DOFManagerDefault() override;
 
 protected:

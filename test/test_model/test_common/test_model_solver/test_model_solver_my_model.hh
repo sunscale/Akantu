@@ -58,7 +58,7 @@ class MyModel : public ModelSolver,
 public:
   MyModel(Real F, Mesh & mesh, bool lumped,
           const ID & dof_manager_type = "default")
-      : ModelSolver(mesh, ModelType::_model, "model_solver", 0),
+      : ModelSolver(mesh, ModelType::_model, "model_solver"),
         nb_dofs(mesh.getNbNodes()), nb_elements(mesh.getNbElement(_segment_2)),
         lumped(lumped), E(1.), A(1.), rho(1.), mesh(mesh),
         displacement(nb_dofs, 1, "disp"), velocity(nb_dofs, 1, "velo"),
