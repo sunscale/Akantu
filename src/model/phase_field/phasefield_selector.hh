@@ -6,7 +6,8 @@
  * @date creation: Sun Mar 1 2020
  * @date last modification: Sun Mar 1 2020
  *
- * @brief  class describing how to choose a phasefield for a given element
+ * @brief class describing how to choose a phasefield variable
+ * function for a given element
  *
  * @section LICENSE
  *

@@ -6,7 +6,7 @@
  * @date creation: Fri Jun 18 2020
  * @date last modification: Mon Jan 29 2020
  *
- * @brief  Phasefield exponential
+ * @brief  Phasefield law for approximating discrete crack as an exponential
  *
  * @section LICENSE
  *

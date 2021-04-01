@@ -66,6 +66,10 @@ public:
   /// initialize the dof manager based on the used chosen solver type
   void initDOFManager(const ID & solver_type);
 
+  /* ------------------------------------------------------------------------ */
+  /* Methods                                                                  */
+  /* ------------------------------------------------------------------------ */
+
 protected:
   /// initialize the dof manager based on the used chosen solver type
   void initDOFManager(const ParserSection & section, const ID & solver_type);
@@ -79,10 +83,7 @@ public:
   /// model
   std::tuple<ParserSection, bool> getParserSection();
 
-  /* ------------------------------------------------------------------------ */
-  /* Methods                                                                  */
-  /* ------------------------------------------------------------------------ */
-public:
+  
   /// solve a step using a given pre instantiated time step solver and
   /// nondynamic linear solver
   virtual void solveStep(const ID & solver_id = "");

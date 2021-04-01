@@ -6,7 +6,7 @@
  * @date creation: Sun Jul 30 2018
  * @date last modification: Mon Feb 05 2018
  *
- * @brief  Model of Phase Field
+ * @brief  Model class for Phase Field problem
  *
  * @section LICENSE
  *
@@ -311,13 +311,10 @@ private:
   /// damage array
   Array<Real> * damage{nullptr};
 
-  /// damage array at the previous time step (used in finite deformation)
+  /// damage array at the previous time step
   Array<Real> * previous_damage{nullptr};
 
-  /// increment of damage
-  Array<Real> * damage_increment{nullptr};
-
-  /// boundary vector
+  /// boundary vector 
   Array<bool> * blocked_dofs{nullptr};
 
   /// external force vector

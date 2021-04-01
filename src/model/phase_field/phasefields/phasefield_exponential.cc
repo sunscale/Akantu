@@ -6,7 +6,8 @@
  * @date creation: Mon Mar 3 2020
  * @date last modification: Mon Mar 3 2020
  *
- * @brief  Specialization of the phasefield class for exponential field
+ * @brief  Specialization of the phasefield law class for exponential type
+ * law
  *
  * @section LICENSE
  *

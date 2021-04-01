@@ -91,7 +91,7 @@ PhaseFieldModel::~PhaseFieldModel() = default;
 
 /* -------------------------------------------------------------------------- */
 MatrixType PhaseFieldModel::getMatrixType(const ID & matrix_id) {
-  if (matrix_id == "K" or matrix_id == "M") {
+  if (matrix_id == "K" ) {
     return _symmetric;
   }
   return _mt_not_defined;
@@ -273,12 +273,10 @@ void PhaseFieldModel::initSolver(TimeStepSolverType time_step_solver_type,
   this->allocNodalField(this->internal_force, 1, "internal_force");
   this->allocNodalField(this->blocked_dofs, 1, "blocked_dofs");
   this->allocNodalField(this->previous_damage, 1, "previous_damage");
-  this->allocNodalField(this->damage_increment, 1, "damage_increment");
 
   if (!dof_manager.hasDOFs("damage")) {
     dof_manager.registerDOFs("damage", *this->damage, _dst_nodal);
     dof_manager.registerBlockedDOFs("damage", *this->blocked_dofs);
-    dof_manager.registerDOFsIncrement("damage", *this->damage_increment);
     dof_manager.registerDOFsPrevious("damage", *this->previous_damage);
   }
 
@@ -354,29 +352,6 @@ void PhaseFieldModel::beforeSolveStep() {
   for (auto & phasefield : phasefields) {
     phasefield->beforeSolveStep();
   }
-  
-  // compute the history of local elements
-  //AKANTU_DEBUG_INFO("Compute phi history");
-  //this->computePhiHistoryOnQuadPoints(_not_ghost);
-
-  // communicate the history
-  //AKANTU_DEBUG_INFO("Send data for synchronization");
-  //this->asynchronousSynchronize(SynchronizationTag::_pfm_history);
-
-  // finalize communications
-  //AKANTU_DEBUG_INFO("Wait distant history");
-  //this->waitEndSynchronize(SynchronizationTag::_pfm_history);
-
-  //this->computeDamageEnergyDensityOnQuadPoints(_not_ghost);
-
-  // communicate the energy density
-  //AKANTU_DEBUG_INFO("Send data for synchronization");
-  //this->asynchronousSynchronize(SynchronizationTag::_pfm_energy);
-
-  // finalize communications
-  //AKANTU_DEBUG_INFO("Wait distant energy density");
-  //this->waitEndSynchronize(SynchronizationTag::_pfm_energy);
-
 }
 
 /* -------------------------------------------------------------------------- */
@@ -390,7 +365,6 @@ void PhaseFieldModel::afterSolveStep(bool converged) {
     auto & prev_dam = std::get<1>(values);
 
     dam -= prev_dam;
-    //dam = std::min(1., 2 * dam - dam * dam);
     prev_dam = dam;
   }
 }
@@ -436,12 +410,6 @@ void PhaseFieldModel::assembleInternalForces() {
   
   this->internal_force->zero();
   
-  // compute the driving forces of local elements
-  //AKANTU_DEBUG_INFO("Compute local driving forces");
-  // for (auto & phasefield : phasefields) {
-  //  phasefield->computeAllDrivingForces(_not_ghost);
-  //}
-
   // communicate the driving forces
   AKANTU_DEBUG_INFO("Send data for residual assembly");
   this->asynchronousSynchronize(SynchronizationTag::_pfm_driving);
@@ -458,10 +426,7 @@ void PhaseFieldModel::assembleInternalForces() {
 
   // assemble the residual due to ghost elements
   AKANTU_DEBUG_INFO("Assemble residual for ghost elements");
-  //for (auto & phasefield : phasefields) {
-  //  phasefield->assembleInternalForces(_ghost);
-  //}
-
+ 
   AKANTU_DEBUG_OUT();
 }
   
@@ -518,52 +483,12 @@ UInt PhaseFieldModel::getNbData(const Array<Element> & elements,
 void PhaseFieldModel::packData(__attribute__((unused)) CommunicationBuffer & buffer,
                                __attribute__((unused)) const Array<Element> & elements,
                                __attribute__((unused)) const SynchronizationTag & tag) const {
-
-  /*switch (tag) {
-  case SynchronizationTag::_pfm_damage: {
-    packNodalDataHelper(*damage, buffer, elements, mesh);
-    break;
-  }
-  case SynchronizationTag::_pfm_driving: {
-    packElementalDataHelper(driving_force_on_qpoints, buffer, elements, true, getFEEngine());
-    break;
-  }
-  case SynchronizationTag::_pfm_history: {
-    packElementalDataHelper(phi_history_on_qpoints, buffer, elements, true, getFEEngine());
-    break;
-  }
-  case SynchronizationTag::_pfm_energy: {
-    packElementalDataHelper(damage_energy_density_on_qpoints, buffer, elements, true, getFEEngine());
-    break;
-  }
-  default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
-  }*/
 }
 
 /* -------------------------------------------------------------------------- */
 void PhaseFieldModel::unpackData(__attribute__((unused)) CommunicationBuffer & buffer,
                                  __attribute__((unused)) const Array<Element> & elements,
                                  __attribute__((unused)) const SynchronizationTag & tag) {
-
-  /*switch (tag) {
-  case SynchronizationTag::_pfm_damage: {
-    unpackNodalDataHelper(*damage, buffer, elements, mesh);
-    break;
-  }
-  case SynchronizationTag::_pfm_driving: {
-    unpackElementalDataHelper(driving_force_on_qpoints, buffer, elements, true, getFEEngine());
-    break;
-  }
-  case SynchronizationTag::_pfm_history: {
-    unpackElementalDataHelper(phi_history_on_qpoints, buffer, elements, true, getFEEngine());
-    break;
-  }
-  case SynchronizationTag::_pfm_energy: {
-    unpackElementalDataHelper(damage_energy_density_on_qpoints, buffer, elements, true, getFEEngine());
-    break;
-  }
-  default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
-  }*/
 }
 
 /* -------------------------------------------------------------------------- */
@@ -649,12 +574,6 @@ PhaseFieldModel::createNodalFieldReal(const std::string & field_name,
                                       const std::string & group_name,
                                       bool) {
 
-  if (field_name == "capacity_lumped") {
-    AKANTU_EXCEPTION(
-        "Capacity lumped is a nodal field now stored in the DOF manager."
-        "Therefore it cannot be used by a dumper anymore");
-  }
-
   std::map<std::string, Array<Real> *> real_nodal_fields;
   real_nodal_fields["damage"] = damage;
   real_nodal_fields["external_force"] = external_force;
@@ -677,22 +596,8 @@ PhaseFieldModel::createElementalField(const std::string & field_name,
     return mesh.createElementalField<UInt, dumpers::ElementPartitionField>(
         mesh.getConnectivities(), group_name, this->spatial_dimension,
         element_kind);
-  } /*else if (field_name == "damage_gradient") {
-    ElementTypeMap<UInt> nb_data_per_elem =
-        this->mesh.getNbDataPerElem(damage_gradient);
-
-    return mesh.createElementalField<Real, dumpers::InternalMaterialField>(
-        damage_gradient, group_name, this->spatial_dimension, element_kind,
-        nb_data_per_elem);
-  } else if (field_name == "damage_energy") {
-    ElementTypeMap<UInt> nb_data_per_elem =
-        this->mesh.getNbDataPerElem(damage_energy_on_qpoints);
-
-    return mesh.createElementalField<Real, dumpers::InternalMaterialField>(
-        damage_energy_on_qpoints, group_name, this->spatial_dimension,
-        element_kind, nb_data_per_elem);
-	}*/
-
+  }
+  
   std::shared_ptr<dumpers::Field> field;
   return field;
 }

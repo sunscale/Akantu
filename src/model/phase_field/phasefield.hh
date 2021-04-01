@@ -6,7 +6,7 @@
  * @date creation: Mon Mar 2 2020
  * @date last modification: Mon Mar 2 2020
  *
- * @brief  Mother class for all phasfields
+ * @brief  Mother class for all phasefield laws
  *
  * @section LICENSE
  *
@@ -114,9 +114,6 @@ public:
 
   /// compute the driving force for this phasefield
   virtual void computeAllDrivingForces(GhostType ghost_type = _not_ghost);
-
-  /// compute the driving force for this phasefield
-  //virtual void computeAllDrivingEnergy(GhostType ghost_type = _not_ghost);
   
   /// save the phi in the phi internal field if needed
   virtual void savePreviousState();
@@ -237,7 +234,7 @@ protected:
   /// phasefield name
   std::string name;
 
-  /// The model to witch the phasefield belong
+  /// The model to whch the phasefield belong
   PhaseFieldModel & model;
 
   /// length scale parameter
@@ -295,11 +292,6 @@ inline std::ostream & operator<<(std::ostream & stream,
 
 } // namespace akantu
 
-
-//namespace akantu {
-//using PhaseFieldFactory =
-//    Factory<PhaseField, ID, UInt, const ID &, PhaseFieldModel &, const ID &>;
-//}
 
 #include "phasefield_inline_impl.cc"
 
