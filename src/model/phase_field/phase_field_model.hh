@@ -66,7 +66,6 @@ public:
 
   PhaseFieldModel(Mesh & mesh, UInt spatial_dimension = _all_dimensions,
                   const ID & id = "phase_field_model",
-                  const MemoryID & memory_id = 0,
 		  const ModelType model_type = ModelType::_phase_field_model);
 
   ~PhaseFieldModel() override;
@@ -309,19 +308,19 @@ private:
   UInt n_iter;
 
   /// damage array
-  Array<Real> * damage{nullptr};
+  std::unique_ptr<Array<Real>> damage;
 
   /// damage array at the previous time step
-  Array<Real> * previous_damage{nullptr};
+  std::unique_ptr<Array<Real>> previous_damage;
 
   /// boundary vector 
-  Array<bool> * blocked_dofs{nullptr};
+  std::unique_ptr<Array<bool>> blocked_dofs;
 
   /// external force vector
-  Array<Real> * external_force{nullptr};
+  std::unique_ptr<Array<Real>> external_force;
 
   /// residuals array
-  Array<Real> * internal_force{nullptr};
+  std::unique_ptr<Array<Real>> internal_force;
 
   /// Arrays containing the phasefield index for each element
   ElementTypeMapArray<UInt> phasefield_index;

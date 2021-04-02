@@ -45,9 +45,8 @@ namespace akantu {
 
 CouplerSolidPhaseField::CouplerSolidPhaseField(Mesh & mesh, UInt dim,
                                                const ID & id,
-                                               const MemoryID & memory_id,
-                                               const ModelType model_type)
-    : Model(mesh, model_type, dim, id, memory_id) {
+					       const ModelType model_type)
+    : Model(mesh, model_type, dim, id) {
 
   AKANTU_DEBUG_IN();
 
@@ -65,9 +64,9 @@ CouplerSolidPhaseField::CouplerSolidPhaseField(Mesh & mesh, UInt dim,
   this->registerDataAccessor(*this);
 
   solid = new SolidMechanicsModel(mesh, Model::spatial_dimension,
-                                  "solid_mechanics_model", 0);
+                                  "solid_mechanics_model");
   phase = new PhaseFieldModel(mesh, Model::spatial_dimension,
-                                   "phase_field_model", 0);
+			      "phase_field_model");
 
   if (this->mesh.isDistributed()) {
     auto & synchronizer = this->mesh.getElementSynchronizer();

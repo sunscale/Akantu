@@ -39,10 +39,10 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 template <class Material, typename T>
 InternalFieldTmpl<Material, T>::InternalFieldTmpl(const ID & id, Material & material)
-    : ElementTypeMapArray<T>(id, material.getID(), material.getMemoryID()),
-      material(material), fem(&(material.getModel().getFEEngine())),
-      element_filter(material.getElementFilter()),
-      spatial_dimension(material.getModel().getSpatialDimension()) {}
+  : ElementTypeMapArray<T>(id, material.getID()), 
+  material(material), fem(&(material.getModel().getFEEngine())),
+  element_filter(material.getElementFilter()),
+  spatial_dimension(material.getModel().getSpatialDimension()) {}
 
 /* -------------------------------------------------------------------------- */
 template <class Material, typename T>
@@ -66,8 +66,7 @@ InternalFieldTmpl<Material, T>::InternalFieldTmpl(
 template <class Material, typename T>
 InternalFieldTmpl<Material, T>::InternalFieldTmpl(const ID & id,
 						  const InternalFieldTmpl<Material, T> & other)
-    : ElementTypeMapArray<T>(id, other.material.getID(),
-                             other.material.getMemoryID()),
+    : ElementTypeMapArray<T>(id, other.material.getID()),
       material(other.material), fem(other.fem),
       element_filter(other.element_filter), default_value(other.default_value),
       spatial_dimension(other.spatial_dimension),

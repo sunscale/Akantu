@@ -30,7 +30,6 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_factory.hh"
-#include "aka_memory.hh"
 #include "data_accessor.hh"
 #include "parsable.hh"
 #include "parser.hh"
@@ -58,8 +57,7 @@ using InternalPhaseField = InternalFieldTmpl<PhaseField, T>;
 using PhaseFieldFactory =
   Factory<PhaseField, ID, UInt, const ID &, PhaseFieldModel &, const ID &>;
   
-class PhaseField : public Memory,
-		   public DataAccessor<Element>,
+class PhaseField : public DataAccessor<Element>,
 		   public Parsable {
 
   /* ------------------------------------------------------------------------ */
@@ -177,9 +175,9 @@ public:
   AKANTU_GET_MACRO(Name, name, const std::string &);
 
   AKANTU_GET_MACRO(Model, model, const PhaseFieldModel &)
-
-  AKANTU_GET_MACRO(ID, Memory::getID(), const ID &);
   
+  AKANTU_GET_MACRO(ID, id, const ID &);
+
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(Strain, strain, Real);
 
   AKANTU_GET_MACRO(Strain, strain, const ElementTypeMapArray<Real> &);
@@ -228,6 +226,8 @@ protected:
 
   
 protected:
+  ID id;
+
   /// Link to the fem object in the model
   FEEngine & fem;
 

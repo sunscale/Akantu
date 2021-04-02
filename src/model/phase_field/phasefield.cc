@@ -37,10 +37,10 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 PhaseField::PhaseField(PhaseFieldModel & model, const ID & id)
-  : Memory(id, model.getMemoryID()), Parsable(ParserType::_phasefield, id),
+  : Parsable(ParserType::_phasefield, id), id(id),
     fem(model.getFEEngine()), name(""), model(model),
     spatial_dimension(this->model.getSpatialDimension()),
-    element_filter("element_filter", id, this->memory_id),
+    element_filter("element_filter", id),
     damage("damage", *this), phi("phi", *this),
     strain("strain", *this), driving_force("driving_force", *this),
     damage_energy("damage_energy", *this),
@@ -61,10 +61,10 @@ PhaseField::PhaseField(PhaseFieldModel & model, const ID & id)
 /* -------------------------------------------------------------------------- */
   PhaseField::PhaseField(PhaseFieldModel & model, UInt dim, const Mesh & mesh,
 			 FEEngine & fe_engine, const ID & id)
-  : Memory(id, model.getMemoryID()), Parsable(ParserType::_phasefield, id),
+    : Parsable(ParserType::_phasefield, id), id(id),
     fem(fe_engine), name(""), model(model),
     spatial_dimension(this->model.getSpatialDimension()),
-    element_filter("element_filter", id, this->memory_id),
+    element_filter("element_filter", id),
     damage("damage", *this, dim, fe_engine, this->element_filter),
     phi("phi", *this, dim, fe_engine, this->element_filter),
     strain("strain", *this, dim, fe_engine, this->element_filter),

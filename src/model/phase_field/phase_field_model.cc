@@ -53,11 +53,10 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 PhaseFieldModel::PhaseFieldModel(Mesh & mesh, UInt dim, const ID & id,
-                                 const MemoryID & memory_id,
-                                 const ModelType model_type)
-    : Model(mesh, model_type, dim, id, memory_id),
-      phasefield_index("phasefield index", id, memory_id),
-      phasefield_local_numbering("phasefield local numbering", id, memory_id) {
+				 const ModelType model_type)
+    : Model(mesh, model_type, dim, id),
+      phasefield_index("phasefield index", id),
+      phasefield_local_numbering("phasefield local numbering", id) {
 
   AKANTU_DEBUG_IN();
    
@@ -560,7 +559,7 @@ PhaseFieldModel::createNodalFieldBool(const std::string & field_name,
                                       bool) {
 
   std::map<std::string, Array<bool> *> uint_nodal_fields;
-  uint_nodal_fields["blocked_dofs"] = blocked_dofs;
+  uint_nodal_fields["blocked_dofs"] = blocked_dofs.get();
 
   return mesh.createNodalField(uint_nodal_fields[field_name], group_name);
 
@@ -575,9 +574,9 @@ PhaseFieldModel::createNodalFieldReal(const std::string & field_name,
                                       bool) {
 
   std::map<std::string, Array<Real> *> real_nodal_fields;
-  real_nodal_fields["damage"] = damage;
-  real_nodal_fields["external_force"] = external_force;
-  real_nodal_fields["internal_force"] = internal_force;
+  real_nodal_fields["damage"] = damage.get();
+  real_nodal_fields["external_force"] = external_force.get();
+  real_nodal_fields["internal_force"] = internal_force.get();
 
   return mesh.createNodalField(real_nodal_fields[field_name], group_name);
 

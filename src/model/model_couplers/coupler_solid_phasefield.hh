@@ -72,7 +72,6 @@ public:
   CouplerSolidPhaseField(
       Mesh & mesh, UInt spatial_dimension = _all_dimensions,
       const ID & id = "coupler_solid_phasefield",
-      const MemoryID & memory_id = 0,
       const ModelType model_type = ModelType::_coupler_solid_phasefield);
 
   ~CouplerSolidPhaseField() override;
