@@ -160,8 +160,13 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::computeTraction(
       *friction_force_it = tau * tangent_unit_vector;
 
       /// update residual_sliding
+      if ( friction_penalty == 0) {
+          *res_sliding_it =
+          tangential_opening_norm;
+      } else {
       *res_sliding_it =
           tangential_opening_norm - (std::abs(tau) / friction_penalty);
+      }
     } else {
       friction_force_it->zero();
     }
