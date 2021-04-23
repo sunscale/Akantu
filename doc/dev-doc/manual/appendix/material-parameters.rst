@@ -36,8 +36,8 @@ Parameters:
 - ``alpha``: (*Real*) Viscous propertion (default is 0)
 
 
-Linear elastic anisotropic
-------------------------
+Linear elastic orthotropic
+--------------------------
 
 Keyword: :ref:`elastic_orthotropic <sect-smm-linear-elastic-orthotropic>`
 
@@ -85,6 +85,10 @@ Parameters:
 - ``Eta``: (*Real*) Viscosity
 - ``Ev``: (*Real*) Stiffness of viscous element
 
+Energies:
+
+- ``dissipated``: energy dissipated with viscosity
+
 
 Elasto-plastic linear isotropic hardening
 -----------------------------------------
@@ -119,6 +123,10 @@ Parameters:
 - ``Yd``: (*Random*) Hardening modulus
 - ``Sd``: (*Real*) Damage energy
 
+Energies:
+
+- ``dissipated``: energy dissipated in damage
+
 
 Mazars
 ------
@@ -136,3 +144,7 @@ Parameters:
 - ``Bc``: (*Real*) Compression decay shape
 - ``K0``: (*Real*) Damage threshold
 - ``beta``: (*Real*) Shear parameter
+
+Energies:
+
+- ``dissipated``: energy dissipated in damage
