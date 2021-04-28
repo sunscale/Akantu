@@ -53,9 +53,7 @@ int main(int argc, char *argv[]){
   PhaseField & chocolate = model.getPhaseField("chocolate");
   PhaseField & chewing_gum = model.getPhaseField("chewing-gum");
   PhaseField & candy = model.getPhaseField("candy");
-
-  const Real gc = chocolate.getParam("gc");
-  
+ 
 
   UInt chocolate_element = chocolate.getElementFilter(_segment_2)(0, 0);
   UInt chewing_gum_element = chewing_gum.getElementFilter(_segment_2)(0, 0);
