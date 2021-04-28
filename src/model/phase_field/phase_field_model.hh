@@ -108,7 +108,7 @@ protected:
   getDefaultSolverID(const AnalysisMethod & method) override;
 
   ModelSolverOptions
-  getDefaultSolverOptions(const TimeStepSolverType & type) const;
+  getDefaultSolverOptions(const TimeStepSolverType & type) const override;
 
   /// function to print the containt of the class
   void printself(std::ostream & stream, int indent = 0) const override;
@@ -288,17 +288,17 @@ public:
                        UInt spatial_dimension,
                        ElementKind kind) override;
 
-  virtual void dump(const std::string & dumper_name);
+  virtual void dump(const std::string & dumper_name) override;
 
-  virtual void dump(const std::string & dumper_name, UInt step);
+  virtual void dump(const std::string & dumper_name, UInt step) override;
 
-  virtual void dump(const std::string & dumper_name, Real time, UInt step);
+  virtual void dump(const std::string & dumper_name, Real time, UInt step) override;
 
   void dump() override;
 
-  virtual void dump(UInt step);
+  virtual void dump(UInt step) override;
 
-  virtual void dump(Real time, UInt step);
+  virtual void dump(Real time, UInt step) override;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
