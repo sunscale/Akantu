@@ -1,6 +1,6 @@
 import scipy.sparse as _aka_sparse
 import numpy as _aka_np
-import py11_akantu
+import .py11_akantu
 
 private_keys = set(dir(py11_akantu)) - set(dir())
 
@@ -54,3 +54,7 @@ class AkantuSparseMatrix (_aka_sparse.coo_matrix):
 FromStress = py11_akantu.FromHigherDim
 FromTraction = py11_akantu.FromSameDim
 py11_akantu.__initialize()
+
+from ._version import get_versions  # NOQA(402@)
+__version__ = get_versions()['version']
+del get_versions
