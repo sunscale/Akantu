@@ -28,17 +28,17 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
+if(NOT SKBUILD)
+  package_get_all_include_directories(
+    AKANTU_LIBRARY_INCLUDE_DIRS
+    )
 
-package_get_all_include_directories(
-  AKANTU_LIBRARY_INCLUDE_DIRS
-  )
-
-package_get_all_external_informations(
-  PRIVATE_INCLUDE AKANTU_PRIVATE_EXTERNAL_INCLUDE_DIR
-  INTERFACE_INCLUDE AKANTU_INTERFACE_EXTERNAL_INCLUDE_DIR
-  LIBRARIES AKANTU_EXTERNAL_LIBRARIES
-  )
-
+  package_get_all_external_informations(
+    PRIVATE_INCLUDE AKANTU_PRIVATE_EXTERNAL_INCLUDE_DIR
+    INTERFACE_INCLUDE AKANTU_INTERFACE_EXTERNAL_INCLUDE_DIR
+    LIBRARIES AKANTU_EXTERNAL_LIBRARIES
+    )
+endif()
 
 set(PYAKANTU_SRCS
   py_aka_common.cc
@@ -91,8 +91,8 @@ if (_is_activated)
     )
 endif()
 
-
 pybind11_add_module(py11_akantu ${PYAKANTU_SRCS})
+
 # to avoid compilation warnings from pybind11
 target_include_directories(py11_akantu
   SYSTEM BEFORE
@@ -101,19 +101,24 @@ target_include_directories(py11_akantu
   PRIVATE ${PYTHON_INCLUDE_DIRS})
 
 target_link_libraries(py11_akantu PUBLIC akantu)
-set_target_properties(py11_akantu PROPERTIES DEBUG_POSTFIX "")
+set_target_properties(py11_akantu PROPERTIES
+  DEBUG_POSTFIX ""
+  LIBRARY_OUTPUT_DIRECTORY akantu)
 
-set(_python_install_dir
-  ${CMAKE_INSTALL_LIBDIR}/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/site-packages)
+file(COPY akantu DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+if(NOT SKBUILD)
+  set(_python_install_dir
+    ${CMAKE_INSTALL_LIBDIR}/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/site-packages)
+else()
+  set(_python_install_dir .)
+endif()
 
 install(TARGETS py11_akantu
   LIBRARY DESTINATION ${_python_install_dir})
 
-install(DIRECTORY akantu
-  DESTINATION ${_python_install_dir}
-  FILES_MATCHING PATTERN "*.py")
-
-
-configure_file(setup.py.in
-  "${CMAKE_CURRENT_BINARY_DIR}/setup.py" @ONLY)
-
+if(NOT SKBUILD)
+  install(DIRECTORY akantu
+    DESTINATION ${_python_install_dir}
+    FILES_MATCHING PATTERN "*.py")
+endif()
