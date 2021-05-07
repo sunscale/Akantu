@@ -101,7 +101,11 @@ target_include_directories(py11_akantu
   PRIVATE ${PYTHON_INCLUDE_DIRS})
 
 target_link_libraries(py11_akantu PUBLIC akantu)
-set_target_properties(py11_akantu PROPERTIES DEBUG_POSTFIX "")
+set_target_properties(py11_akantu PROPERTIES
+  DEBUG_POSTFIX ""
+  LIBRARY_OUTPUT_DIRECTORY akantu)
+
+file(COPY akantu DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 if(NOT SKBUILD)
   set(_python_install_dir
