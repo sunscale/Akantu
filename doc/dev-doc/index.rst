@@ -14,6 +14,7 @@ Akantu: a FEM library
    ./manual/fe_engine.rst
    ./manual/solidmechanicsmodel.rst
    ./manual/heattransfermodel.rst
+   ./manual/phasefieldmodel.rst
    ./manual/structuralmechanicsmodel.rst
    ./manual/io.rst
 
