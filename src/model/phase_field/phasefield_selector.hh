@@ -39,22 +39,26 @@
 #ifndef __AKANTU_PHASEFIELD_SELECTOR_HH__
 #define __AKANTU_PHASEFIELD_SELECTOR_HH__
 
+namespace akantu {
+class PhaseFieldModel;
+} // namespace akantu
+
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 
-class PhaseFieldModel;
-
 /**
- * main class to assign same or different phasefields for different
- * elements
+ * main class to assign same or different phasefield constitutive laws to
+ * different elements
  */
-class PhaseFieldSelector : public std::enable_shared_from_this<PhaseFieldSelector> {
+class PhaseFieldSelector
+    : public std::enable_shared_from_this<PhaseFieldSelector> {
 public:
   PhaseFieldSelector() = default;
   virtual ~PhaseFieldSelector() = default;
   virtual inline UInt operator()(const Element & element) {
-    if (fallback_selector)
+    if (fallback_selector) {
       return (*fallback_selector)(element);
+    }
 
     return fallback_value;
   }
@@ -73,7 +77,7 @@ public:
     return this->fallback_selector;
   }
 
-  inline UInt getFallbackValue() { return this->fallback_value; }
+  inline UInt getFallbackValue() const { return this->fallback_value; }
 
 protected:
   UInt fallback_value{0};
@@ -91,14 +95,17 @@ public:
       : phasefield_index(phasefield_index) {}
 
   UInt operator()(const Element & element) override {
-    if (not phasefield_index.exists(element.type, element.ghost_type))
+    if (not phasefield_index.exists(element.type, element.ghost_type)) {
       return PhaseFieldSelector::operator()(element);
+    }
 
-    const auto & phase_indexes = phasefield_index(element.type, element.ghost_type);
+    const auto & phase_indexes =
+        phasefield_index(element.type, element.ghost_type);
     if (element.element < phase_indexes.size()) {
       auto && tmp_phase = phase_indexes(element.element);
-      if (tmp_phase != UInt(-1))
+      if (tmp_phase != UInt(-1)) {
         return tmp_phase;
+      }
     }
 
     return PhaseFieldSelector::operator()(element);
@@ -116,8 +123,8 @@ template <typename T>
 class ElementDataPhaseFieldSelector : public PhaseFieldSelector {
 public:
   ElementDataPhaseFieldSelector(const ElementTypeMapArray<T> & element_data,
-                              const PhaseFieldModel & model,
-                              UInt first_index = 1)
+                                const PhaseFieldModel & model,
+                                UInt first_index = 1)
       : element_data(element_data), model(model), first_index(first_index) {}
 
   inline T elementData(const Element & element) {
@@ -152,8 +159,8 @@ template <typename T>
 class MeshDataPhaseFieldSelector : public ElementDataPhaseFieldSelector<T> {
 public:
   MeshDataPhaseFieldSelector(const std::string & name,
-                           const PhaseFieldModel & model,
-                           UInt first_index = 1);
+                             const PhaseFieldModel & model,
+                             UInt first_index = 1);
 };
 
 } // namespace akantu
