@@ -66,8 +66,7 @@ public:
 public:
   inline void initShapeFunctions(const Array<Real> & nodes,
                                  const Matrix<Real> & integration_points,
-                                 ElementType type,
-                                 GhostType ghost_type);
+                                 ElementType type, GhostType ghost_type);
 
   /// extract the nodal values and store them per element
   template <ElementType type, class ReduceFunction>
@@ -85,8 +84,7 @@ public:
 
   void computeShapeDerivativesOnIntegrationPoints(
       const Array<Real> & nodes, const Matrix<Real> & integration_points,
-      Array<Real> & shape_derivatives, ElementType type,
-      GhostType ghost_type,
+      Array<Real> & shape_derivatives, ElementType type, GhostType ghost_type,
       const Array<UInt> & filter_elements) const override;
 
   /// pre compute all shapes on the element integration points from natural
@@ -138,7 +136,7 @@ public:
 
   template <ElementType type>
   void computeBtDB(const Array<Real> & /*Ds*/, Array<Real> & /*BtDBs*/,
-                   UInt /*order_d*/, GhostType/*ghost_type*/,
+                   UInt /*order_d*/, GhostType /*ghost_type*/,
                    const Array<UInt> & /*filter_elements*/) const {
     AKANTU_TO_IMPLEMENT();
   }

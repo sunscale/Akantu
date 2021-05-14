@@ -37,14 +37,13 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 PhaseField::PhaseField(PhaseFieldModel & model, const ID & id)
-  : Parsable(ParserType::_phasefield, id), id(id),
-    fem(model.getFEEngine()), name(""), model(model),
-    spatial_dimension(this->model.getSpatialDimension()),
-    element_filter("element_filter", id),
-    damage("damage", *this), phi("phi", *this),
-    strain("strain", *this), driving_force("driving_force", *this),
-    damage_energy("damage_energy", *this),
-    damage_energy_density("damage_energy_density", *this) {
+    : Parsable(ParserType::_phasefield, id), id(id), fem(model.getFEEngine()),
+      model(model), spatial_dimension(this->model.getSpatialDimension()),
+      element_filter("element_filter", id), damage("damage", *this),
+      phi("phi", *this), strain("strain", *this),
+      driving_force("driving_force", *this),
+      damage_energy("damage_energy", *this),
+      damage_energy_density("damage_energy_density", *this) {
 
   AKANTU_DEBUG_IN();
 
@@ -59,47 +58,47 @@ PhaseField::PhaseField(PhaseFieldModel & model, const ID & id)
 }
 
 /* -------------------------------------------------------------------------- */
-  PhaseField::PhaseField(PhaseFieldModel & model, UInt dim, const Mesh & mesh,
-			 FEEngine & fe_engine, const ID & id)
-    : Parsable(ParserType::_phasefield, id), id(id),
-    fem(fe_engine), name(""), model(model),
-    spatial_dimension(this->model.getSpatialDimension()),
-    element_filter("element_filter", id),
-    damage("damage", *this, dim, fe_engine, this->element_filter),
-    phi("phi", *this, dim, fe_engine, this->element_filter),
-    strain("strain", *this, dim, fe_engine, this->element_filter),
-    driving_force("driving_force", *this, dim, fe_engine, this->element_filter),
-    damage_energy("damage_energy", *this, dim, fe_engine, this->element_filter),
-    damage_energy_density("damage_energy_density", *this, dim, fe_engine,
-			  this->element_filter){
+PhaseField::PhaseField(PhaseFieldModel & model, UInt dim, const Mesh & mesh,
+                       FEEngine & fe_engine, const ID & id)
+    : Parsable(ParserType::_phasefield, id), id(id), fem(fe_engine),
+      model(model), spatial_dimension(this->model.getSpatialDimension()),
+      element_filter("element_filter", id),
+      damage("damage", *this, dim, fe_engine, this->element_filter),
+      phi("phi", *this, dim, fe_engine, this->element_filter),
+      strain("strain", *this, dim, fe_engine, this->element_filter),
+      driving_force("driving_force", *this, dim, fe_engine,
+                    this->element_filter),
+      damage_energy("damage_energy", *this, dim, fe_engine,
+                    this->element_filter),
+      damage_energy_density("damage_energy_density", *this, dim, fe_engine,
+                            this->element_filter) {
 
   AKANTU_DEBUG_IN();
 
   /// for each connectivity types allocate the element filer array of the
   /// material
-  element_filter.initialize(mesh,
-                            _spatial_dimension = spatial_dimension,
+  element_filter.initialize(mesh, _spatial_dimension = spatial_dimension,
                             _element_kind = _ek_regular);
   this->initialize();
 
   AKANTU_DEBUG_OUT();
 }
 
-/* -------------------------------------------------------------------------- */  
+/* -------------------------------------------------------------------------- */
 PhaseField::~PhaseField() = default;
 
 /* -------------------------------------------------------------------------- */
 void PhaseField::initialize() {
   registerParam("name", name, std::string(), _pat_parsable | _pat_readable);
   registerParam("l0", l0, Real(0.), _pat_parsable | _pat_readable,
-		"length scale parameter");
+                "length scale parameter");
   registerParam("gc", g_c, _pat_parsable | _pat_readable,
-		"critical local fracture energy density");
+                "critical local fracture energy density");
   registerParam("E", E, _pat_parsable | _pat_readable, "Young's modulus");
   registerParam("nu", nu, _pat_parsable | _pat_readable, "Poisson ratio");
 
   damage.initialize(1);
-  
+
   phi.initialize(1);
   driving_force.initialize(1);
 
@@ -125,19 +124,22 @@ void PhaseField::initPhaseField() {
 void PhaseField::resizeInternals() {
   AKANTU_DEBUG_IN();
   for (auto it = internal_vectors_real.begin();
-       it != internal_vectors_real.end(); ++it)
+       it != internal_vectors_real.end(); ++it) {
     it->second->resize();
+  }
 
   for (auto it = internal_vectors_uint.begin();
-       it != internal_vectors_uint.end(); ++it)
+       it != internal_vectors_uint.end(); ++it) {
     it->second->resize();
+  }
 
   for (auto it = internal_vectors_bool.begin();
-       it != internal_vectors_bool.end(); ++it)
+       it != internal_vectors_bool.end(); ++it) {
     it->second->resize();
+  }
+
   AKANTU_DEBUG_OUT();
 }
-  
 
 /* -------------------------------------------------------------------------- */
 void PhaseField::updateInternalParameters() {
@@ -154,18 +156,18 @@ void PhaseField::computeAllDrivingForces(GhostType ghost_type) {
 
   for (const auto & type :
        element_filter.elementTypes(spatial_dimension, ghost_type)) {
-    Array<UInt> & elem_filter = element_filter(type, ghost_type);
+    auto & elem_filter = element_filter(type, ghost_type);
 
-    if (elem_filter.size() == 0)
+    if (elem_filter.empty()) {
       continue;
-    
+    }
+
     computeDrivingForce(type, ghost_type);
   }
 
   AKANTU_DEBUG_OUT();
-  
 }
-  
+
 /* -------------------------------------------------------------------------- */
 void PhaseField::assembleInternalForces(GhostType ghost_type) {
 
@@ -174,31 +176,30 @@ void PhaseField::assembleInternalForces(GhostType ghost_type) {
   Array<Real> & internal_force = model.getInternalForce();
 
   for (auto type : element_filter.elementTypes(_ghost_type = ghost_type)) {
-  
-    Array<UInt> & elem_filter = element_filter(type, ghost_type);
-    if (elem_filter.size() == 0)
+    auto & elem_filter = element_filter(type, ghost_type);
+    if (elem_filter.empty()) {
       continue;
- 
-    UInt nb_element = elem_filter.size();
-    UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-    UInt nb_quadrature_points = fem.getNbIntegrationPoints(type, ghost_type);
+    }
+
+    auto nb_element = elem_filter.size();
+    auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
+    auto nb_quadrature_points = fem.getNbIntegrationPoints(type, ghost_type);
 
     Array<Real> nt_driving_force(nb_quadrature_points, nb_nodes_per_element);
     fem.computeNtb(driving_force(type, ghost_type), nt_driving_force, type,
-		   ghost_type, elem_filter);
-    
+                   ghost_type, elem_filter);
+
     Array<Real> int_nt_driving_force(nb_element, nb_nodes_per_element);
-    fem.integrate(nt_driving_force, int_nt_driving_force,
-		  nb_nodes_per_element, type, ghost_type, elem_filter);
+    fem.integrate(nt_driving_force, int_nt_driving_force, nb_nodes_per_element,
+                  type, ghost_type, elem_filter);
 
     model.getDOFManager().assembleElementalArrayLocalArray(
-	 int_nt_driving_force, internal_force, type, ghost_type, 1,
-	 elem_filter);
+        int_nt_driving_force, internal_force, type, ghost_type, 1, elem_filter);
   }
 
   AKANTU_DEBUG_OUT();
 }
- 
+
 /* -------------------------------------------------------------------------- */
 void PhaseField::assembleStiffnessMatrix(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
@@ -206,17 +207,15 @@ void PhaseField::assembleStiffnessMatrix(GhostType ghost_type) {
   AKANTU_DEBUG_INFO("Assemble the new stiffness matrix");
 
   for (auto type : element_filter.elementTypes(spatial_dimension, ghost_type)) {
-
-    Array<UInt> & elem_filter = element_filter(type, ghost_type);
-    if (elem_filter.size() == 0) {
+    auto & elem_filter = element_filter(type, ghost_type);
+    if (elem_filter.empty()) {
       AKANTU_DEBUG_OUT();
       return;
     }
-    
+
     auto nb_element = elem_filter.size();
     auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
     auto nb_quadrature_points = fem.getNbIntegrationPoints(type, ghost_type);
-
 
     auto nt_b_n = std::make_unique<Array<Real>>(
         nb_element * nb_quadrature_points,
@@ -247,7 +246,7 @@ void PhaseField::assembleStiffnessMatrix(GhostType ghost_type) {
                   type, ghost_type, elem_filter);
 
     model.getDOFManager().assembleElementalMatricesToMatrix(
-		  "K", "damage", *K_n, type, _not_ghost, _symmetric, elem_filter);
+        "K", "damage", *K_n, type, _not_ghost, _symmetric, elem_filter);
 
     /// compute @f$ K_{\grad d} = \int_e \mathbf{B}^t * \mathbf{W} *
     /// \mathbf{B}@f$
@@ -258,11 +257,11 @@ void PhaseField::assembleStiffnessMatrix(GhostType ghost_type) {
                   type, ghost_type, elem_filter);
 
     model.getDOFManager().assembleElementalMatricesToMatrix(
-		 "K", "damage", *K_b, type, _not_ghost, _symmetric, elem_filter);
+        "K", "damage", *K_b, type, _not_ghost, _symmetric, elem_filter);
   }
 
   AKANTU_DEBUG_OUT();
-}  
+}
 
 /* -------------------------------------------------------------------------- */
 void PhaseField::beforeSolveStep() {
@@ -271,25 +270,24 @@ void PhaseField::beforeSolveStep() {
 }
 
 /* -------------------------------------------------------------------------- */
-void PhaseField::afterSolveStep() {
+void PhaseField::afterSolveStep() {}
 
-}
-  
 /* -------------------------------------------------------------------------- */
 void PhaseField::savePreviousState() {
   AKANTU_DEBUG_IN();
 
-  for (auto pair : internal_vectors_real)
-    if (pair.second->hasHistory())
+  for (auto pair : internal_vectors_real) {
+    if (pair.second->hasHistory()) {
       pair.second->saveCurrentValues();
+    }
+  }
 
   AKANTU_DEBUG_OUT();
 }
-  
-  
+
 /* -------------------------------------------------------------------------- */
 void PhaseField::printself(std::ostream & stream, int indent) const {
- std::string space(indent, AKANTU_INDENT);
+  std::string space(indent, AKANTU_INDENT);
   std::string type = getID().substr(getID().find_last_of(':') + 1);
 
   stream << space << "PhaseField Material " << type << " [" << std::endl;
@@ -297,5 +295,4 @@ void PhaseField::printself(std::ostream & stream, int indent) const {
   stream << space << "]" << std::endl;
 }
 
-  
-}
+} // namespace akantu
