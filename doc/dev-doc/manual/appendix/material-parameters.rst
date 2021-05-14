@@ -15,6 +15,10 @@ Parameters:
 - ``nu``: (*Real*) Poisson's ratio
 - ``Plane_stress``: (*bool*) Plane stress simplification (only 2D problems)
 
+Energies:
+
+- ``potential``: elastic potential energy
+
 
 Linear elastic anisotropic
 --------------------------
@@ -32,8 +36,8 @@ Parameters:
 - ``alpha``: (*Real*) Viscous propertion (default is 0)
 
 
-Linear elastic anisotropic
-------------------------
+Linear elastic orthotropic
+--------------------------
 
 Keyword: :ref:`elastic_orthotropic <sect-smm-linear-elastic-orthotropic>`
 
@@ -81,6 +85,10 @@ Parameters:
 - ``Eta``: (*Real*) Viscosity
 - ``Ev``: (*Real*) Stiffness of viscous element
 
+Energies:
+
+- ``dissipated``: energy dissipated with viscosity
+
 
 Elasto-plastic linear isotropic hardening
 -----------------------------------------
@@ -94,6 +102,11 @@ Parameters:
 - ``nu``: (*Real*) Poisson's ratio
 - ``h``: (*Real*) Hardening modulus
 - ``sigma_y``: (*Real*) Yield stress
+
+Energies:
+
+- ``potential``: elastic part of the potential energy
+- ``plastic``: dissipated plastic energy (integrated over time)
 
 
 Marigo
@@ -109,6 +122,10 @@ Parameters:
 - ``Plane_stress``: (*bool*) Plane stress simplification (only 2D problems)
 - ``Yd``: (*Random*) Hardening modulus
 - ``Sd``: (*Real*) Damage energy
+
+Energies:
+
+- ``dissipated``: energy dissipated in damage
 
 
 Mazars
@@ -127,3 +144,7 @@ Parameters:
 - ``Bc``: (*Real*) Compression decay shape
 - ``K0``: (*Real*) Damage threshold
 - ``beta``: (*Real*) Shear parameter
+
+Energies:
+
+- ``dissipated``: energy dissipated in damage

@@ -432,18 +432,28 @@ public:
   /// compute the stable time step
   Real getStableTimeStep();
 
-  /// get the energies
+  /**
+   * @brief Returns the total energy for a given energy type
+   *
+   * Energy types of SolidMechanicsModel expected as argument are:
+   *   - `kinetic`
+   *   - `external work`
+   *
+   * Other energy types are passed on to the materials. All materials should
+   * define a `potential` energy type. For additional energy types, see material
+   * documentation.
+   */
   Real getEnergy(const std::string & energy_id);
 
-  /// compute the energy for an element
+  /// Compute energy for an element type and material index
   Real getEnergy(const std::string & energy_id, ElementType type, UInt index);
 
-  /// compute the energy for an element
+  /// Compute energy for an individual element
   Real getEnergy(const std::string & energy_id, const Element & element) {
     return getEnergy(energy_id, element.type, element.element);
   }
 
-  /// compute the energy for an element group
+  /// Compute energy for an element group
   Real getEnergy(const ID & energy_id, const ID & group_id);
 
   AKANTU_GET_MACRO(MaterialByElement, material_index,
