@@ -227,18 +227,16 @@ void PhaseField::assembleStiffnessMatrix(GhostType ghost_type) {
         nb_nodes_per_element * nb_nodes_per_element, "B^t*D*B");
 
     // damage_energy_density_on_qpoints = gc/l0 + phi = scalar
-    auto & damage_energy_density_vect =
-      damage_energy_density(type, ghost_type);
+    auto & damage_energy_density_vect = damage_energy_density(type, ghost_type);
 
     // damage_energy_on_qpoints = gc*l0 = scalar
-    auto & damage_energy_vect =
-      damage_energy(type, ghost_type);
+    auto & damage_energy_vect = damage_energy(type, ghost_type);
 
     fem.computeBtDB(damage_energy_vect, *bt_d_b, 2, type, ghost_type,
-		    elem_filter);
-    
-    fem.computeNtbN(damage_energy_density_vect, *nt_b_n, 2, type, ghost_type,
-		    elem_filter);
+                    elem_filter);
+
+    fem.computeNtbN(damage_energy_density_vect, *nt_b_n, type, ghost_type,
+                    elem_filter);
 
     /// compute @f$ K_{\grad d} = \int_e \mathbf{N}^t * \mathbf{w} *
     /// \mathbf{N}@f$

@@ -516,53 +516,23 @@ void ShapeLagrange<kind>::computeNtbN(
     FEEngine::filterElementalData(this->mesh, shapes(itp_type, ghost_type),
                                   shapes_filtered, type, ghost_type,
                                   filter_elements);
-    auto && view =
-        make_view(shapes_filtered, 1, size_of_shapes);
+    auto && view = make_view(shapes_filtered, 1, size_of_shapes);
     N_it = view.begin();
     N_end = view.end();
   }
 
-  if (order_d == 4) {
-    /*UInt tangent_size = VoigtHelper<dim>::size;
-    Matrix<Real> N(tangent_size, nb_nodes_per_element);
-    Matrix<Real> Nt_b(nb_nodes_per_element, tangent_size);
-
-    for (auto && values :
-         zip(range(N_it, N_end), make_view(bs, tangent_size, tangent_size),
-             make_view(NtbNs, dim * nb_nodes_per_element,
-                       dim * nb_nodes_per_element))) {
-      const auto & Nfull = std::get<0>(values);
-      const auto & b = std::get<1>(values);
-      auto & Nt_b_N = std::get<2>(values);
-
-      VoigtHelper<dim>::transferBMatrixToSymVoigtBMatrix(Nfull, N,
-                                                         nb_nodes_per_element);
-      Nt_b.template mul<true, false>(N, b);
-      Nt_b_N.template mul<false, false>(Nt_b, N);
-      }*/
-  } else if (order_d == 2) {
-    Matrix<Real> Nt_b(nb_nodes_per_element, nb_degree_of_freedom);
-    for (auto && values :
-         zip(range(N_it, N_end), make_view(bs, nb_degree_of_freedom, 1),
-             make_view(NtbNs, nb_nodes_per_element, nb_nodes_per_element))) {
-      const auto & N = std::get<0>(values);
-      const auto & b = std::get<1>(values);
-      auto & Nt_b_N = std::get<2>(values);
-      Nt_b.template mul<true, false>(N, b);
-      Nt_b_N.template mul<false, false>(Nt_b, N);
-    }
+  Matrix<Real> Nt_b(nb_nodes_per_element, nb_degree_of_freedom);
+  for (auto && values :
+       zip(range(N_it, N_end), make_view(bs, nb_degree_of_freedom, 1),
+           make_view(NtbNs, nb_nodes_per_element, nb_nodes_per_element))) {
+    const auto & N = std::get<0>(values);
+    const auto & b = std::get<1>(values);
+    auto & Nt_b_N = std::get<2>(values);
+    Nt_b.template mul<true, false>(N, b);
+    Nt_b_N.template mul<false, false>(Nt_b, N);
   }
 }
 
-template <>
-template <>
-inline void ShapeLagrange<_ek_regular>::computeNtbN<_point_1>(
-    const Array<Real> & /*bs*/, Array<Real> & /*NtbNs*/, UInt /*order_d*/,
-    GhostType /*ghost_type*/, const Array<UInt> & /*filter_elements*/) const {
-  AKANTU_TO_IMPLEMENT();
-}
-
-  
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind>
 template <ElementType type>

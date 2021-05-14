@@ -154,11 +154,10 @@ public:
 
   template <ElementType type>
   void computeNtbN(const Array<Real> & /*bs*/, Array<Real> & /*NtbNs*/,
-                   UInt /*order_d*/, GhostType /*ghost_type*/,
+                   GhostType /*ghost_type*/,
                    const Array<UInt> & /*filter_elements*/) const {
     AKANTU_TO_IMPLEMENT();
   }
-
 
   /* ------------------------------------------------------------------------ */
   /// compute the gradient of u on the integration points

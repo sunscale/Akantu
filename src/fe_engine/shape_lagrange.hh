@@ -130,7 +130,7 @@ public:
                   const Array<UInt> & filter_elements = empty_filter) const;
 
   template <ElementType type>
-  void computeNtbN(const Array<Real> & bs, Array<Real> & NtbNs, UInt order_d,
+  void computeNtbN(const Array<Real> & bs, Array<Real> & NtbNs,
                    GhostType ghost_type,
                    const Array<UInt> & filter_elements) const;
 

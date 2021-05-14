@@ -174,14 +174,15 @@ public:
       const Array<UInt> & filter_elements = empty_filter) const override;
 
   /// left multiples a vector by the shape functions
-  void computeNtb(const Array<Real> & bs, Array<Real> & Ntbs,
-                  ElementType type, GhostType ghost_type,
-                  const Array<UInt> & filter_elements = empty_filter) const override;
+  void
+  computeNtb(const Array<Real> & bs, Array<Real> & Ntbs, ElementType type,
+             GhostType ghost_type,
+             const Array<UInt> & filter_elements = empty_filter) const override;
 
   /// left and right  multiplies a tensor by the shapes
   void computeNtbN(
-      const Array<Real> & bs, Array<Real> & NtbNs, UInt order_d,
-      const ElementType & type, const GhostType & ghost_type,
+      const Array<Real> & bs, Array<Real> & NtbNs, ElementType type,
+      GhostType ghost_type,
       const Array<UInt> & filter_elements = empty_filter) const override;
 
   /// compute the position of integration points given by an element_type_map
