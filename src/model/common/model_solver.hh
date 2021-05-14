@@ -68,11 +68,6 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-
-protected:
-  /// initialize the dof manager based on the used chosen solver type
-  void initDOFManager(const ParserSection & section, const ID & solver_type);
-
 public:
   /// Callback for the model to instantiate the matricees when needed
   virtual void initSolver(TimeStepSolverType /*time_step_solver_type*/,
@@ -109,6 +104,10 @@ public:
                             IntegrationScheme & integration_scheme,
                             IntegrationScheme::SolutionType solution_type =
                                 IntegrationScheme::_not_defined);
+
+protected:
+  /// initialize the dof manager based on the used chosen solver type
+  void initDOFManager(const ParserSection & section, const ID & solver_type);
 
   /* ------------------------------------------------------------------------ */
   /* SolverCallback interface                                                 */
