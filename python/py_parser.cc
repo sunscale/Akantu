@@ -65,5 +65,6 @@ void register_parser(py::module & mod) {
             getStaticParser().parse(input_file);
           },
           "Parse an Akantu input file");
+
 }
 } // namespace akantu

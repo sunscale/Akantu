@@ -50,6 +50,7 @@ public:
     _not_defined = -1,
     _displacement = 0,
     _temperature = 0,
+    _damage = 0,
     _velocity = 1,
     _temperature_rate = 1,
     _acceleration = 2,

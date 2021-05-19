@@ -35,7 +35,6 @@
 #include <type_traits>
 /* -------------------------------------------------------------------------- */
 
-
 /* -------------------------------------------------------------------------- */
 #ifndef AKANTU_FE_ENGINE_TEMPLATE_HH_
 #define AKANTU_FE_ENGINE_TEMPLATE_HH_
@@ -117,9 +116,8 @@ public:
                    const Element & element) const override;
 
   /// get the number of integration points
-  UInt getNbIntegrationPoints(
-      ElementType type,
-      GhostType ghost_type = _not_ghost) const override;
+  UInt getNbIntegrationPoints(ElementType type,
+                              GhostType ghost_type = _not_ghost) const override;
 
   /// get shapes precomputed
   const Array<Real> & getShapes(ElementType type,
@@ -127,15 +125,14 @@ public:
                                 UInt id = 0) const override;
 
   /// get the derivatives of shapes
-  const Array<Real> &
-  getShapesDerivatives(ElementType type,
-                       GhostType ghost_type = _not_ghost,
-                       UInt id = 0) const override;
+  const Array<Real> & getShapesDerivatives(ElementType type,
+                                           GhostType ghost_type = _not_ghost,
+                                           UInt id = 0) const override;
 
   /// get integration points
-  const inline Matrix<Real> & getIntegrationPoints(
-      ElementType type,
-      GhostType ghost_type = _not_ghost) const override;
+  const inline Matrix<Real> &
+  getIntegrationPoints(ElementType type,
+                       GhostType ghost_type = _not_ghost) const override;
 
   /* ------------------------------------------------------------------------ */
   /* Shape method bridges                                                     */
@@ -143,9 +140,8 @@ public:
 
   /// compute the gradient of a nodal field on the integration points
   void gradientOnIntegrationPoints(
-      const Array<Real> & u, Array<Real> & nablauq,
-      UInt nb_degree_of_freedom, ElementType type,
-      GhostType ghost_type = _not_ghost,
+      const Array<Real> & u, Array<Real> & nablauq, UInt nb_degree_of_freedom,
+      ElementType type, GhostType ghost_type = _not_ghost,
       const Array<UInt> & filter_elements = empty_filter) const override;
 
   /// interpolate a nodal field on the integration points
@@ -163,8 +159,8 @@ public:
 
   /// pre multiplies a tensor by the shapes derivaties
   void
-  computeBtD(const Array<Real> & Ds, Array<Real> & BtDs,
-             ElementType type, GhostType ghost_type,
+  computeBtD(const Array<Real> & Ds, Array<Real> & BtDs, ElementType type,
+             GhostType ghost_type,
              const Array<UInt> & filter_elements = empty_filter) const override;
 
   /// left and right  multiplies a tensor by the shapes derivaties
@@ -174,9 +170,16 @@ public:
       const Array<UInt> & filter_elements = empty_filter) const override;
 
   /// left multiples a vector by the shape functions
-  void computeNtb(const Array<Real> & bs, Array<Real> & Ntbs,
-                  ElementType type, GhostType ghost_type,
-                  const Array<UInt> & filter_elements) const override;
+  void
+  computeNtb(const Array<Real> & bs, Array<Real> & Ntbs, ElementType type,
+             GhostType ghost_type,
+             const Array<UInt> & filter_elements = empty_filter) const override;
+
+  /// left and right  multiplies a tensor by the shapes
+  void computeNtbN(
+      const Array<Real> & bs, Array<Real> & NtbNs, ElementType type,
+      GhostType ghost_type,
+      const Array<UInt> & filter_elements = empty_filter) const override;
 
   /// compute the position of integration points given by an element_type_map
   /// from nodes position
@@ -232,26 +235,25 @@ public:
                        GhostType ghost_type = _not_ghost) const;
 
   /// compute the shape on a provided point
-  inline void
-  computeShapes(const Vector<Real> & real_coords, UInt element,
-                ElementType type, Vector<Real> & shapes,
-                GhostType ghost_type = _not_ghost) const override;
+  inline void computeShapes(const Vector<Real> & real_coords, UInt element,
+                            ElementType type, Vector<Real> & shapes,
+                            GhostType ghost_type = _not_ghost) const override;
 
   /// compute the shape derivatives on a provided point
-  inline void computeShapeDerivatives(
-      const Vector<Real> & real_coords, UInt element, ElementType type,
-      Matrix<Real> & shape_derivatives,
-      GhostType ghost_type = _not_ghost) const override;
+  inline void
+  computeShapeDerivatives(const Vector<Real> & real_coords, UInt element,
+                          ElementType type, Matrix<Real> & shape_derivatives,
+                          GhostType ghost_type = _not_ghost) const override;
 
   /* ------------------------------------------------------------------------ */
   /* Other methods                                                            */
   /* ------------------------------------------------------------------------ */
   /// pre-compute normals on integration points
-  void computeNormalsOnIntegrationPoints(
-      GhostType ghost_type = _not_ghost) override;
-  void computeNormalsOnIntegrationPoints(
-      const Array<Real> & field,
-      GhostType ghost_type = _not_ghost) override;
+  void
+  computeNormalsOnIntegrationPoints(GhostType ghost_type = _not_ghost) override;
+  void
+  computeNormalsOnIntegrationPoints(const Array<Real> & field,
+                                    GhostType ghost_type = _not_ghost) override;
   void computeNormalsOnIntegrationPoints(
       const Array<Real> & field, Array<Real> & normal, ElementType type,
       GhostType ghost_type = _not_ghost) const override;
@@ -262,10 +264,9 @@ public:
 
 private:
   // To avoid a weird full specialization of a method in a non specalized class
-  void
-  computeNormalsOnIntegrationPointsPoint1(const Array<Real> & /*unused*/,
-                                          Array<Real> & normal,
-                                          GhostType ghost_type) const;
+  void computeNormalsOnIntegrationPointsPoint1(const Array<Real> & /*unused*/,
+                                               Array<Real> & normal,
+                                               GhostType ghost_type) const;
 
 public:
   /// function to print the contain of the class
@@ -358,8 +359,7 @@ private:
                            UInt nb_degree_of_freedom, SparseMatrix & M,
                            Array<Real> * n,
                            ElementTypeMapArray<Real> & rotation_mat,
-                           __attribute__((unused))
-                           GhostType ghost_type) const;
+                           __attribute__((unused)) GhostType ghost_type) const;
 
 #endif
 

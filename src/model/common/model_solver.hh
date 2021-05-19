@@ -65,10 +65,10 @@ public:
   /// initialize the dof manager based on the used chosen solver type
   void initDOFManager(const ID & solver_type);
 
-protected:
-  /// initialize the dof manager based on the used chosen solver type
-  void initDOFManager(const ParserSection & section, const ID & solver_type);
-
+  /* ------------------------------------------------------------------------ */
+  /* Methods                                                                  */
+  /* ------------------------------------------------------------------------ */
+public:
   /// Callback for the model to instantiate the matricees when needed
   virtual void initSolver(TimeStepSolverType /*time_step_solver_type*/,
                           NonLinearSolverType /*non_linear_solver_type*/) {}
@@ -77,10 +77,7 @@ protected:
   /// model
   std::tuple<ParserSection, bool> getParserSection();
 
-  /* ------------------------------------------------------------------------ */
-  /* Methods                                                                  */
-  /* ------------------------------------------------------------------------ */
-public:
+  
   /// solve a step using a given pre instantiated time step solver and
   /// nondynamic linear solver
   virtual void solveStep(const ID & solver_id = "");
@@ -107,6 +104,10 @@ public:
                             IntegrationScheme & integration_scheme,
                             IntegrationScheme::SolutionType solution_type =
                                 IntegrationScheme::_not_defined);
+
+protected:
+  /// initialize the dof manager based on the used chosen solver type
+  void initDOFManager(const ParserSection & section, const ID & solver_type);
 
   /* ------------------------------------------------------------------------ */
   /* SolverCallback interface                                                 */

@@ -1,0 +1,35 @@
+material phasefield [
+	 name = plate
+	 rho = 1.
+	 E = 210.0
+	 nu = 0.3
+	 Plane_Stress = false
+]
+
+material phasefield [
+	 name = rigid
+	 rho = 1.
+	 E = 21.0
+	 nu = 0.3
+	 Plane_Stress = false
+]
+
+
+
+phasefield exponential [
+  name = plate
+  E = 210.0
+  nu = 0.3
+  gc = 5e-3
+  l0 = 0.1
+]
+
+
+
+phasefield exponential [
+  name = rigid
+  E = 21.0
+  nu = 0.3
+  gc = 5e-3
+  l0 = 0.1
+]

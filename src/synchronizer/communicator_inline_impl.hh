@@ -58,7 +58,10 @@ inline void Communicator::receiveAnyNumber(
   CommunicationRequest barrier_request;
   bool got_all{false};
   bool are_send_finished{false};
-
+  if (getNbProc() == 1) {
+    return;
+  }
+  
   AKANTU_DEBUG_INFO("Sending " << send_requests.size()
                                << " messages and checking for receives TAG["
                                << tag << "]");

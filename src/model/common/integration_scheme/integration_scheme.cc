@@ -56,6 +56,8 @@ std::istream & operator>>(std::istream & stream,
     type = IntegrationScheme::_temperature_rate;
   } else if (str == "acceleration") {
     type = IntegrationScheme::_acceleration;
+  } else if (str == "damage") {
+    type = IntegrationScheme::_damage;
   } else {
     stream.setstate(std::ios::failbit);
   }

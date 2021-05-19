@@ -1,0 +1,20 @@
+model solid_mechanics_model [
+material phasefield [
+	 name = plate
+	 rho = 1.
+	 E = 210.0
+	 nu = 0.3
+	 eta = 0
+	 Plane_Stress = false
+]
+]
+
+model phase_field_model [
+phasefield exponential [
+      name = plate
+      l0 = 0.0075
+      gc = 2.7e-3
+      E  = 210.0
+      nu = 0.3
+]
+]

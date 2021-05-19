@@ -83,7 +83,7 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
                          _ek_regular);
 #endif
 
-  material_selector = std::make_shared<DefaultMaterialSelector>(material_index),
+  material_selector = std::make_shared<DefaultMaterialSelector>(material_index);
 
   this->initDOFManager();
 

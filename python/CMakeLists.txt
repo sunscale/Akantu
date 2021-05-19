@@ -84,6 +84,14 @@ if (_is_activated)
     )
 endif()
 
+package_is_activated(phase_field _is_activated)
+if (_is_activated)
+  list(APPEND PYAKANTU_SRCS
+    py_phase_field_model.cc
+    )
+endif()
+
+    
 package_is_activated(structural_mechanics _is_activated)
 if (_is_activated)
   list(APPEND PYAKANTU_SRCS

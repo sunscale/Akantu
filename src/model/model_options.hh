@@ -105,6 +105,21 @@ struct HeatTransferModelOptions : public ModelOptions {
 };
 #endif
 
+#ifdef AKANTU_PHASE_FIELD
+/* -------------------------------------------------------------------------- */
+struct PhaseFieldModelOptions : public ModelOptions {
+  explicit PhaseFieldModelOptions(
+      AnalysisMethod analysis_method = _explicit_lumped_mass)
+      : ModelOptions(analysis_method) {}
+
+  template <typename... pack>
+  PhaseFieldModelOptions(use_named_args_t, pack &&... _pack)
+      : PhaseFieldModelOptions(
+            OPTIONAL_NAMED_ARG(analysis_method, _explicit_lumped_mass)) {}
+};
+#endif
+
+/* -------------------------------------------------------------------------- */
 #ifdef AKANTU_EMBEDDED
 
 namespace {
