@@ -71,6 +71,9 @@ inline void NodeGroup::remove(UInt node) {
 }
 
 /* -------------------------------------------------------------------------- */
+inline bool NodeGroup::empty() const { return node_group.empty(); }
+
+/* -------------------------------------------------------------------------- */
 inline UInt NodeGroup::size() const { return node_group.size(); }
 
 /* -------------------------------------------------------------------------- */
