@@ -29,9 +29,14 @@
 #include "py_solid_mechanics_model_cohesive.hh"
 #endif
 
+#if defined(AKANTU_PHASE_FIELD)
+#include "py_phase_field_model.hh"
+#endif
+
 #if defined(AKANTU_STRUCTURAL_MECHANICS)
 #include "py_structural_mechanics_model.hh"
 #endif
+
 /* -------------------------------------------------------------------------- */
 #include <aka_error.hh>
 /* -------------------------------------------------------------------------- */
@@ -77,6 +82,11 @@ void register_all(pybind11::module & mod) {
 
 #if defined(AKANTU_STRUCTURAL_MECHANICS)
   register_structural_mechanics_model(mod);
+#endif
+
+#if defined(AKANTU_PHASE_FIELD)
+  register_phase_field_model(mod);
+  register_phase_field_coupler(mod);
 #endif
 }
 } // namespace akantu

@@ -169,5 +169,4 @@ Real MaterialDamage<spatial_dimension, Parent>::getEnergy(
 }
 
 /* -------------------------------------------------------------------------- */
-
 } // namespace akantu

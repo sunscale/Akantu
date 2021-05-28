@@ -258,8 +258,8 @@ void ShapeLagrange<kind>::computeShapeDerivativesOnIntegrationPoints(
 template <ElementKind kind>
 void ShapeLagrange<kind>::computeShapeDerivativesOnIntegrationPoints(
     const Array<Real> & nodes, const Matrix<Real> & integration_points,
-    Array<Real> & shape_derivatives, ElementType type,
-    GhostType ghost_type, const Array<UInt> & filter_elements) const {
+    Array<Real> & shape_derivatives, ElementType type, GhostType ghost_type,
+    const Array<UInt> & filter_elements) const {
 #define AKANTU_COMPUTE_SHAPES(type)                                            \
   computeShapeDerivativesOnIntegrationPoints<type>(                            \
       nodes, integration_points, shape_derivatives, ghost_type,                \
@@ -497,6 +497,45 @@ inline void ShapeLagrange<_ek_regular>::computeBtDB<_point_1>(
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind>
 template <ElementType type>
+void ShapeLagrange<kind>::computeNtbN(
+    const Array<Real> & bs, Array<Real> & NtbNs, GhostType ghost_type,
+    const Array<UInt> & filter_elements) const {
+
+  auto itp_type = ElementClassProperty<type>::interpolation_type;
+  auto size_of_shapes = ElementClass<type>::getShapeSize();
+  auto nb_degree_of_freedom = bs.getNbComponent();
+
+  auto nb_nodes_per_element = mesh.getNbNodesPerElement(type);
+  Array<Real> shapes_filtered(0, size_of_shapes);
+
+  auto && view = make_view(shapes(itp_type, ghost_type), 1, size_of_shapes);
+  auto N_it = view.begin();
+  auto N_end = view.end();
+
+  if (filter_elements != empty_filter) {
+    FEEngine::filterElementalData(this->mesh, shapes(itp_type, ghost_type),
+                                  shapes_filtered, type, ghost_type,
+                                  filter_elements);
+    auto && view = make_view(shapes_filtered, 1, size_of_shapes);
+    N_it = view.begin();
+    N_end = view.end();
+  }
+
+  Matrix<Real> Nt_b(nb_nodes_per_element, nb_degree_of_freedom);
+  for (auto && values :
+       zip(range(N_it, N_end), make_view(bs, nb_degree_of_freedom, 1),
+           make_view(NtbNs, nb_nodes_per_element, nb_nodes_per_element))) {
+    const auto & N = std::get<0>(values);
+    const auto & b = std::get<1>(values);
+    auto & Nt_b_N = std::get<2>(values);
+    Nt_b.template mul<true, false>(N, b);
+    Nt_b_N.template mul<false, false>(Nt_b, N);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+template <ElementKind kind>
+template <ElementType type>
 void ShapeLagrange<kind>::computeNtb(
     const Array<Real> & bs, Array<Real> & Ntbs, GhostType ghost_type,
     const Array<UInt> & filter_elements) const {
@@ -504,9 +543,9 @@ void ShapeLagrange<kind>::computeNtb(
 
   Ntbs.resize(bs.size());
 
-  UInt size_of_shapes = ElementClass<type>::getShapeSize();
-  InterpolationType itp_type = ElementClassProperty<type>::interpolation_type;
-  UInt nb_degree_of_freedom = bs.getNbComponent();
+  auto size_of_shapes = ElementClass<type>::getShapeSize();
+  auto itp_type = ElementClassProperty<type>::interpolation_type;
+  auto nb_degree_of_freedom = bs.getNbComponent();
 
   Array<Real> shapes_filtered(0, size_of_shapes);
   auto && view = make_view(shapes(itp_type, ghost_type), 1, size_of_shapes);

@@ -78,11 +78,24 @@ Heat Transfer Model
 
 .. doxygenclass:: akantu::HeatTransferModel
 
+Phase Field Model
+...................
+
+.. doxygenclass:: akantu::PhaseFieldModel
+.. doxygenclass:: akantu::PhaseField
+
 Structural Mechanics Model
 ..........................
 
 .. doxygenclass:: akantu::StructuralMaterial
 .. doxygenclass:: akantu::StructuralMechanicsModel
+
+
+Coupler Solid PhaseField
+...................
+
+.. doxygenclass:: akantu::CouplerSolidPhaseField
+
 
 Synchronizers
 `````````````

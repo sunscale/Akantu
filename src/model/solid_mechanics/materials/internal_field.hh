@@ -44,26 +44,28 @@ class FEEngine;
  * class for the internal fields of materials
  * to store values for each quadrature
  */
-template <typename T> class InternalField : public ElementTypeMapArray<T> {
+  template <class Material, typename T> class InternalFieldTmpl : public ElementTypeMapArray<T> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  InternalField(const ID & id, Material & material);
-  ~InternalField() override;
+  InternalFieldTmpl(const ID & id, Material & material);
+  ~InternalFieldTmpl() override;
 
   /// This constructor is only here to let cohesive elements compile
-  InternalField(const ID & id, Material & material, FEEngine & fem,
-                const ElementTypeMapArray<UInt> & element_filter);
+  InternalFieldTmpl(const ID & id, Material & material, FEEngine & fem,
+		    const ElementTypeMapArray<UInt> & element_filter);
 
   /// More general constructor
-  InternalField(const ID & id, Material & material, UInt dim, FEEngine & fem,
-                const ElementTypeMapArray<UInt> & element_filter);
+  InternalFieldTmpl(const ID & id, Material & material, UInt dim, FEEngine & fem,
+		    const ElementTypeMapArray<UInt> & element_filter);
 
-  InternalField(const ID & id, const InternalField<T> & other);
+    InternalFieldTmpl(const ID & id, const InternalFieldTmpl<Material, T> & other);
 
 
-  InternalField operator=(const InternalField &) = delete;
+private:
+  InternalFieldTmpl operator=(const InternalFieldTmpl &) = delete;
+
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -205,14 +207,14 @@ public:
     return this->previous_values->operator()(type, ghost_type);
   }
 
-  virtual InternalField<T> & previous() {
+  virtual InternalFieldTmpl<Material, T> & previous() {
     AKANTU_DEBUG_ASSERT(previous_values != nullptr,
                         "The history of the internal "
                             << this->getID() << " has not been activated");
     return *(this->previous_values);
   }
 
-  virtual const InternalField<T> & previous() const {
+    virtual const InternalFieldTmpl<Material, T> & previous() const {
     AKANTU_DEBUG_ASSERT(previous_values != nullptr,
                         "The history of the internal "
                             << this->getID() << " has not been activated");
@@ -261,16 +263,20 @@ protected:
   bool is_init{false};
 
   /// previous values
-  std::unique_ptr<InternalField<T>> previous_values;
+  std::unique_ptr<InternalFieldTmpl<Material, T>> previous_values;
 };
 
+  
 /// standard output stream operator
-template <typename T>
+template <class Material, typename T>
 inline std::ostream & operator<<(std::ostream & stream,
-                                 const InternalField<T> & _this) {
+                                 const InternalFieldTmpl<Material, T> & _this) {
   _this.printself(stream);
   return stream;
 }
+
+template<typename T>  
+using InternalField = InternalFieldTmpl<Material, T>;  
 
 } // namespace akantu
 

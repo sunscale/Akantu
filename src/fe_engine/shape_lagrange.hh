@@ -129,6 +129,11 @@ public:
                   GhostType ghost_type,
                   const Array<UInt> & filter_elements = empty_filter) const;
 
+  template <ElementType type>
+  void computeNtbN(const Array<Real> & bs, Array<Real> & NtbNs,
+                   GhostType ghost_type,
+                   const Array<UInt> & filter_elements) const;
+
   /// find natural coords from real coords provided an element
   template <ElementType type>
   void inverseMap(const Vector<Real> & real_coords, UInt element,

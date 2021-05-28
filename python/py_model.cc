@@ -68,6 +68,7 @@ void register_model(py::module & mod) {
 
   py::class_<Model, ModelSolver>(mod, "Model", py::multiple_inheritance())
       .def("setBaseName", &Model::setBaseName)
+      .def("setDirectory", &Model::setDirectory)
       .def("getFEEngine", &Model::getFEEngine, py::arg("name") = "",
            py::return_value_policy::reference)
       .def("getFEEngineBoundary", &Model::getFEEngine, py::arg("name") = "",
@@ -85,6 +86,14 @@ void register_model(py::module & mod) {
       .def("dump",
            py::overload_cast<const std::string &, Real, UInt>(&Model::dump))
       .def("initNewSolver", &Model::initNewSolver)
+      .def("getNewSolver", [](Model & self, const std::string id, const TimeStepSolverType & time,
+			      const NonLinearSolverType & type) {
+	     self.getNewSolver(id, time, type);
+	   }, py::return_value_policy::reference)
+      .def("setIntegrationScheme", [](Model & self, const std::string id, const std::string primal,
+				      const IntegrationSchemeType & scheme) {
+	     self.setIntegrationScheme(id, primal, scheme);
+	   })
       .def("getDOFManager", &Model::getDOFManager,
            py::return_value_policy::reference)
       .def("assembleMatrix", &Model::assembleMatrix);

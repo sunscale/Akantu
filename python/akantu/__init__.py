@@ -1,13 +1,13 @@
 import scipy.sparse as _aka_sparse
 import numpy as _aka_np
-import py11_akantu
+from . import py11_akantu as _py11_akantu
 
-private_keys = set(dir(py11_akantu)) - set(dir())
+private_keys = set(dir(_py11_akantu)) - set(dir())
 
 for k in private_keys:
-    globals()[k] = getattr(py11_akantu, k)
+    globals()[k] = getattr(_py11_akantu, k)
 
-if py11_akantu.has_mpi():
+if _py11_akantu.has_mpi():
     try:
         from mpi4py import MPI  # noqa: F401
     except Exception:
@@ -38,7 +38,7 @@ class AkantuSparseMatrix (_aka_sparse.coo_matrix):
         col = col.copy()
         data = data.copy()
 
-        if matrix_type == py11_akantu._symmetric:
+        if matrix_type == _py11_akantu._symmetric:
             non_diags = (row != col)
             row_sup = col[non_diags]
             col_sup = row[non_diags]
@@ -51,6 +51,10 @@ class AkantuSparseMatrix (_aka_sparse.coo_matrix):
             self, (data, (row, col)), shape=(sz, sz))
 
 
-FromStress = py11_akantu.FromHigherDim
-FromTraction = py11_akantu.FromSameDim
-py11_akantu.__initialize()
+FromStress = _py11_akantu.FromHigherDim
+FromTraction = _py11_akantu.FromSameDim
+_py11_akantu.__initialize()
+
+from ._version import get_versions  # NOQA(402@)
+__version__ = get_versions()['version']
+del get_versions

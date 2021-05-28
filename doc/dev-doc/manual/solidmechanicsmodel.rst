@@ -20,7 +20,7 @@ different than that of the mesh.
 
 This model contains at least the following six ``Arrays``:
 
-:cpp:func:`blocked_dofs <akantu::SolidMechanicsModel::getBlockedDOFs>`:
+:cpp:func:`blocked_dofs <akantu::SolidMechanicsModel::getBlockedDOFs>`
     contains a Boolean value for each degree of freedom specifying whether that
     degree is blocked or not. A Dirichlet boundary condition can be prescribed
     by setting the **blocked_dofs** value of a degree of freedom to
@@ -31,32 +31,35 @@ This model contains at least the following six ``Arrays``:
     value is set to ``false``. For the remaining degrees of freedom, the imposed
     values (zero by default after initialization) are kept.
 
-:cpp:func:`displacement <akantu::SolidMechanicsModel::getDisplacement>`:
+:cpp:func:`displacement <akantu::SolidMechanicsModel::getDisplacement>`
     contains the displacements of all degrees of freedom. It can be either a
     computed displacement for free degrees of freedom or an imposed displacement
     in case of blocked ones (:math:`\vec{u}` in the following).
 
-:cpp:func:`velocity <akantu::SolidMechanicsModel::getVelocity>`:
+:cpp:func:`velocity <akantu::SolidMechanicsModel::getVelocity>`
     contains the velocities of all degrees of freedom. As **displacement**,
     it contains computed or imposed velocities depending on the nature of the
     degrees of freedom (:math:`\dot{\vec{u}}` in the following).
 
-:cpp:func:`acceleration <akantu::SolidMechanicsModel::getAcceleration>`:
+:cpp:func:`acceleration <akantu::SolidMechanicsModel::getAcceleration>`
     contains the accelerations of all degrees of freedom. As **displacement**,
     it contains computed or imposed accelerations depending on the nature of the
     degrees of freedom (:math:`\ddot{\vec{u}}` in the following).
 
-:cpp:func:`external_force <akantu::SolidMechanicsModel::getExternalForce>`:
+:cpp:func:`external_force <akantu::SolidMechanicsModel::getExternalForce>`
     contains the external forces applied on the nodes
     (:math:`\vec{f}_{\st{ext}}` in the following).
 
-:cpp:func:`internal_force <akantu::SolidMechanicsModel::getInternalForce>`:
+:cpp:func:`internal_force <akantu::SolidMechanicsModel::getInternalForce>`
     contains the internal forces on the nodes (:math:`\vec{f}_{\mathrm{int}}` in
     the following).
 
 
 Some examples to help to understand how to use this model will be
-presented in the next sections.
+presented in the next sections. In addition to vector quantities, the solid
+mechanics model can be queried for energies with the :cpp:func:`getEnergy
+<akantu::SolidMechanicsModel::getEnergy>` which accepts an energy type as an
+arguement (e.g. ``kinetic`` or ``potential``).
 
 
 Model Setup
