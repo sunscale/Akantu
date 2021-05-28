@@ -617,17 +617,9 @@ void SolidMechanicsModelCohesive::onNodesAdded(const Array<UInt> & new_nodes,
     copy(*previous_displacement);
   }
 
-  // if (external_force)
-  //   copy(*external_force);
-  // if (internal_force)
-  //   copy(*internal_force);
-
   if (displacement_increment) {
     copy(*displacement_increment);
   }
-
-  copy(getDOFManager().getSolution("displacement"));
-  // this->assembleMassLumped();
 
   AKANTU_DEBUG_OUT();
 }

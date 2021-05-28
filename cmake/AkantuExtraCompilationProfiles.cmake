@@ -35,15 +35,18 @@ mark_as_advanced(
   CMAKE_CXX_FLAGS_COVERAGE
   CMAKE_C_FLAGS_COVERAGE
   CMAKE_Fortran_FLAGS_COVERAGE
-  CMAKE_SHARED_LINKER_FLAGS_SANITIZEMEMORY
-  CMAKE_EXE_LINKER_FLAGS_SANITIZEMEMORY
+  CMAKE_SHARED_LINKER_FLAGS_COVERAGE
+  CMAKE_EXE_LINKER_FLAGS_COVERAGE
   )
 
 # Sanitize the code
 if ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "5.2") OR
     CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
-  set(_sanitize "-g -ggdb3 -O2 -fsanitize=address -fsanitize=leak -fsanitize=undefined -fno-omit-frame-pointer -fsanitize-blacklist=${PROJECT_SOURCE_DIR}/cmake/sanitize-blacklist.txt")
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    set(_blacklist " -fsanitize-blacklist=${PROJECT_SOURCE_DIR}/cmake/sanitize-blacklist.txt")
+  endif()
+  set(_sanitize "-g -ggdb3 -O2 -fsanitize=address -fsanitize=leak -fsanitize=undefined -fno-omit-frame-pointer${_blacklist}")
 
   set(CMAKE_CXX_FLAGS_SANITIZE ${_sanitize}
     CACHE STRING "Flags used by the compiler during sanitizing builds")
