@@ -45,7 +45,37 @@ sect:parser). Obviously it is necessary to include all files needed in main. In
 this manual all provided code implies the usage of ``akantu`` as
 namespace.
 
-.. _loading mesh:
+Compiling your simulation
+-------------------------
+
+The easiest way to compile your simulation is to create a ``cmake`` project by
+putting all your code in some directory of your choosing. Then, make sure that
+you have ``cmake`` installed and create a ``CMakeLists.txt`` file. An example of
+a minimal ``CMakeLists.txt`` file would look like this:
+
+.. code-block:: cmake
+
+   project(my_simu)
+   cmake_minimum_required(VERSION 3.0.0)
+
+   find_package(Akantu REQUIRED)
+
+   add_akantu_simulation(my_simu my_simu.cc)
+
+Then create a directory called ``build`` and inside it execute ``cmake
+-DAkantu_DIR=<path_to_akantu> -DCMAKE_BUILD_TYPE=RelWithDebInfo ..``. If you
+installed ``Akantu`` in a standard directory such as ``/usr/local`` (using
+``make install``), you can omit the ``-DAkantu_DIR=<path_to_akantu>`` option.
+
+Other why ``path_to_akantu`` is either the folder where you built ``Akantu`` if
+you did not do a ``make install``, or if you installed ``Akantu`` in
+``CMAKE_INSTALL_PREFIX`` it is ``<CMAKE_INSTALL_PREFIX>/share/cmake/Akantu``.
+
+Once ``cmake`` managed to configure and generate a ``makefile`` you can just do
+``make``
+
+
+.. _loading_mesh:
 
 Creating and Loading a Mesh
 ---------------------------
@@ -126,7 +156,7 @@ that can be performed on :cpp:class:`Array <akantu::Array>`:
     allocated memory of the :cpp:class:`Array <akantu::Array>`.
 
 Array iterators
--------------------
+---------------
 
 It is very common in ``Akantu`` to loop over arrays to perform a specific treatment.
 This ranges from geometric calculation on nodal quantities to tensor algebra (in
@@ -204,73 +234,93 @@ more into detail in this here.
 
 - Accessors:
 
-  - ``v(i)`` gives the ``i`` -th component of the vector ``v``
-  - ``v[i]`` gives the ``i`` -th component of the vector ``v``
-  - ``v.size()`` gives the number of component
+  - :cpp:func:`v(i) <akantu::Vector::operator()>` gives the ``i`` -th
+    component of the vector ``v``
+  - :cpp:func:`v[i] <akantu::Vector::operator[]>` gives the ``i`` -th
+    component of the vector ``v``
+  - :cpp:func:`v.size() <akantu::Vector::size>` gives the number of component
 
 - Level 1: (results are scalars)
 
-  - ``v.norm()`` returns the geometrical norm (:math:`L_2`)
-  - ``v.norm<N>()`` returns the :math:`L_N` norm defined as :math:`\left(\sum_i
-    |v(i)|^N\right)^{1/N}`. N can take any positive integer value.
-    There are also some particular values for the most commonly used
-    norms, ``L_1`` for the Manhattan norm, ``L_2`` for the geometrical
-    norm and ``L_inf`` for the norm infinity.
-  - ``v.dot(x)`` return the dot product of ``v`` and ``x``
-  - ``v.distance(x)`` return the geometrical norm of :math:`v - x`
+  - :cpp:func:`v.norm() <akantu::Vector::norm>` returns the geometrical norm
+    (:math:`L_2`)
+  - :cpp:func:`v.norm\<N\>() <akantu::Vector::norm<>>` returns the :math:`L_N`
+    norm defined as :math:`\left(\sum_i |v(i)|^N\right)^{1/N}`. N can take any
+    positive integer value. There are also some particular values for the most
+    commonly used norms, ``L_1`` for the Manhattan norm, ``L_2`` for the
+    geometrical norm and ``L_inf`` for the norm infinity.
+  - :cpp:func:`v.dot(x) <akantu::Vector::dot>` return the dot product of
+    ``v`` and ``x``
+  - :cpp:func:`v.distance(x) <akantu::Vector::distance>` return the
+    geometrical norm of :math:`v - x`
 
 - Level 2: (results are vectors)
 
-  - ``v += s``, ``v -= s``, ``v *= s``, ``v /= s`` those are
-    element-wise operators that sum, substract, multiply or divide all the
-    component of ``v`` by the scalar ``s``
-  - ``v += x``, ``v -= x`` sums or substracts the vector ``x`` to/from ``v``
-  - ``v.mul(A, x, alpha)`` stores the result of :math:`\alpha \boldsymbol{A} \vec{x}` in ``v``, :math:`\alpha` is equal to 1 by default
-  - ``v.solve(A, b)`` stores the result of the resolution of the system
-    :math:`\boldsymbol{A} \vec{x} = \vec{b}` in ``v``
-  - ``v.crossProduct(v1, v2)`` computes the cross product of ``v1`` and ``v2``
-    and stores the result in ``v``
+  - :cpp:func:`v += s <akantu::Vector::operator+=>`,
+    :cpp:func:`v -= s <akantu::Vector::operator-=>`,
+    :cpp:func:`v *= s <akantu::Vector::operator*=>`,
+    :cpp:func:`v /= s <akantu::Vector::operator/=>` those are element-wise
+    operators that sum, substract, multiply or divide all the component of ``v``
+    by the scalar ``s``
+  - :cpp:func:`v += x <akantu::Vector::operator+=>`, :cpp:func:`v -= x
+    <akantu::Vector::operator-=>` sums or substracts the vector ``x`` to/from
+    ``v``
+  - :cpp:func:`v.mul(A, x, alpha) <akantu::Vector::mul>` stores the result of
+    :math:`\alpha \boldsymbol{A} \vec{x}` in ``v``, :math:`\alpha` is equal to 1
+    by default
+  - :cpp:func:`v.solve(A, b) <akantu::Vector::solve>` stores the result of
+    the resolution of the system :math:`\boldsymbol{A} \vec{x} = \vec{b}` in ``v``
+  - :cpp:func:`v.crossProduct(v1, v2) <akantu::Vector::crossProduct>`
+    computes the cross product of ``v1`` and ``v2`` and stores the result in
+    ``v``
 
 ``Matrix<T>``
 '''''''''''''
 
 - Accessors:
 
-  - ``A(i, j)`` gives the component :math:`A_{ij}` of the matrix ``A``
-  - ``A(i)`` gives the :math:`i^{th}` column of the matrix as a ``Vector``
-  - ``A[k]`` gives the :math:`k^{th}` component of the matrix, matrices are
-    stored in a column major way, which means that to access :math:`A_{ij}`,
-    :math:`k = i + j M`
-  - ``A.rows()`` gives the number of rows of ``A`` (:math:`M`)
-  - ``A.cols()`` gives the number of columns of ``A`` (:math:`N`)
-  - ``A.size()`` gives the number of component in the matrix (:math:`M \times
-    N`)
+  - :cpp:func:`A(i, j) <akantu::Matrix::operator()>` gives the component
+    :math:`A_{ij}` of the matrix ``A``
+  - :cpp:func:`A(i) <akantu::Matrix::operator()>` gives the :math:`i^{th}`
+    column of the matrix as a ``Vector``
+  - :cpp:func:`A[k] <akantu::Matrix::operator[]>` gives the :math:`k^{th}`
+    component of the matrix, matrices are stored in a column major way, which
+    means that to access :math:`A_{ij}`, :math:`k = i + j M`
+  - :cpp:func:`A.rows() <akantu::Matrix::rows>` gives the number of rows of
+    ``A`` (:math:`M`)
+  - :cpp:func:`A.cols() <akantu::Matrix::cols>` gives the number of columns
+    of ``A`` (:math:`N`)
+  - :cpp:func:`A.size() <akantu::Matrix::size>` gives the number of component
+    in the matrix (:math:`M \times N`)
 
 - Level 1: (results are scalars)
 
-  - ``A.norm()`` is equivalent to ``A.norm<L_2>()``
-  - ``A.norm<N>()`` returns the :math:`L_N` norm defined as
-    :math:`\left(\sum_i\sum_j |A(i,j)|^N\right)^{1/N}`. N can take
-    any positive integer value. There are also some particular values
-    for the most commonly used norms, ``L_1`` for the Manhattan
-    norm, ``L_2`` for the geometrical norm and ``L_inf`` for
-    the norm infinity.
-  - ``A.trace()`` return the trace of ``A``
-  - ``A.det()`` return the determinant of ``A``
-  - ``A.doubleDot(B)`` return the double dot product of ``A`` and
-    ``B``, :math:`\mat{A}:\mat{B}`
+  - :cpp:func:`A.norm() <akantu::Matrix::norm>` is equivalent to
+    ``A.norm<L_2>()``
+  - :cpp:func:`A.norm\<N\>() <akantu::Matrix::norm<>>` returns the :math:`L_N`
+    norm defined as :math:`\left(\sum_i\sum_j |A(i,j)|^N\right)^{1/N}`. N can take
+    any positive integer value. There are also some particular values for the most
+    commonly used norms, ``L_1`` for the Manhattan norm, ``L_2`` for the
+    geometrical norm and ``L_inf`` for the norm infinity.
+  - :cpp:func:`A.trace() <akantu::Matrix::trace>` return the trace of ``A``
+  - :cpp:func:`A.det() <akantu::Matrix::det>` return the determinant of ``A``
+  - :cpp:func:`A.doubleDot(B) <akantu::Matrix::doubleDot>` return the double
+    dot product of ``A`` and ``B``, :math:`\mat{A}:\mat{B}`
 
 - Level 3: (results are matrices)
 
-  - ``A.eye(s)``, ``Matrix<T>::eye(s)`` fills/creates a matrix with
-    the :math:`s\mat{I}` with :math:`\mat{I}` the identity matrix
-  - ``A.inverse(B)`` stores :math:`\mat{B}^{-1}` in ``A``
-  - ``A.transpose()`` returns  :math:`\mat{A}^{t}`
-  - ``A.outerProduct(v1, v2)`` stores :math:`\vec{v_1} \vec{v_2}^{t}` in
-    ``A``
-  - ``C.mul<t_A, t_B>(A, B, alpha)``: stores the result of the product of
-    ``A`` and code{B} time the scalar ``alpha`` in ``C``. ``t_A``
-    and ``t_B`` are boolean defining if ``A`` and ``B`` should be
+  - :cpp:func:`A.eye(s) <akantu::Matrix::eye>`, ``Matrix<T>::eye(s)``
+    fills/creates a matrix with the :math:`s\mat{I}` with :math:`\mat{I}` the
+    identity matrix
+  - :cpp:func:`A.inverse(B) <akantu::Matrix::inverse>` stores
+    :math:`\mat{B}^{-1}` in ``A``
+  - :cpp:func:`A.transpose() <akantu::Matrix::transpose>` returns
+    :math:`\mat{A}^{t}`
+  - :cpp:func:`A.outerProduct(v1, v2) <akantu::Matrix::outerProduct>` stores
+    :math:`\vec{v_1} \vec{v_2}^{t}` in ``A``
+  - :cpp:func:`C.mul\<t_A, t_B\>(A, B, alpha) <akantu::Matrix::mul>`: stores
+    the result of the product of ``A`` and code{B} time the scalar ``alpha`` in
+    ``C``. ``t_A`` and ``t_B`` are boolean defining if ``A`` and ``B`` should be
     transposed or not.
 
     +----------+----------+--------------+
@@ -301,8 +351,87 @@ more into detail in this here.
     |          |          |\mat{B}^t`    |
     +----------+----------+--------------+
 
-  - ``A.eigs(d, V)`` this method computes the eigenvalues and eigenvectors of
-    ``A`` and store the results in ``d`` and ``V`` such that :math:`d(i) =
-    \lambda_i` and :math:`V(i) = \vec{v_i}` with :math:`\mat{A}\vec{v_i} =
-    \lambda_i\vec{v_i}` and :math:`\lambda_1 > ... > \lambda_i > ... >
-    \lambda_N`
+  - :cpp:func:`A.eigs(d, V) <akantu::Matrix::eigs>` this method computes the
+    eigenvalues and eigenvectors of ``A`` and store the results in ``d`` and
+    ``V`` such that :math:`d(i) = \lambda_i` and :math:`V(i) = \vec{v_i}` with
+    :math:`\mat{A}\vec{v_i} = \lambda_i\vec{v_i}` and :math:`\lambda_1 > ... >
+    \lambda_i > ... > \lambda_N`
+
+
+.. _sect-common-groups:
+
+Mesh
+----
+
+
+
+Manipulating group of nodes and/or elements
+```````````````````````````````````````````
+
+``Akantu`` provides the possibility to manipulate subgroups of elements and
+nodes. Any :cpp:class:`ElementGroup <akantu::ElementGroup>` and/or
+:cpp:class:`NodeGroup <akantu::NodeGroup>` must be managed by a
+:cpp:class:`GroupManager <akantu::GroupManager>`. Such a manager has the role to
+associate group objects to names. This is a useful feature, in particular for
+the application of the boundary conditions, as will be demonstrated in section
+:ref:`sect-smm-boundary`. To most general group manager is the :cpp:class:`Mesh
+<akantu::Mesh>` class which inherits from :cpp:class:`GroupManager
+<akantu::GroupManager>`.
+
+For instance, the following code shows how to request an element group
+to a mesh:
+
+.. code-block:: c++
+
+  // request creation of a group of nodes
+  NodeGroup & my_node_group = mesh.createNodeGroup("my_node_group");
+  // request creation of a group of elements
+  ElementGroup & my_element_group = mesh.createElementGroup("my_element_group");
+
+  /* fill and use the groups */
+
+
+The ``NodeGroup`` object
+''''''''''''''''''''''''
+
+A group of nodes is stored in :cpp:class:`NodeGroup <akantu::NodeGroup>`
+objects. They are quite simple objects which store the indexes of the selected
+nodes in a :cpp:class:`Array\<UInt\> <akantu::Array>`. Nodes are selected by
+adding them when calling :cpp:func:`add <akantu::NodeGroup::add>`. For instance
+you can select nodes having a positive :math:`X` coordinate with the following
+code:
+
+.. code-block:: c++
+
+  const auto & nodes = mesh.getNodes();
+  auto & group = mesh.createNodeGroup("XpositiveNode");
+
+  for (auto && data : enumerate(make_view(nodes, spatial_dimension))){
+    auto node = std::get<0>(data);
+    const auto & position = std::get<1>(data);
+    if (position(0) > 0) group.add(node);
+  }
+
+
+The ``ElementGroup`` object
+'''''''''''''''''''''''''''
+
+A group of elements is stored in :cpp:class:`ElementGroup
+<akantu::ElementGroup>` objects. Since a group can contain elements of various
+types the :cpp:class:`ElementGroup <akantu::ElementGroup>` object stores indexes
+in a :cpp:class:`ElementTypeMapArray\<UInt\> <akantu::ElementTypeMapArray>`
+object. Then elements can be added to the group by calling :cpp:func:`add
+<akantu::ElementGroup::add>`.
+
+For instance, selecting the elements for which the barycenter of the
+nodes has a positive :math:`X` coordinate can be made with:
+
+.. code-block:: c++
+
+   auto & group = mesh.createElementGroup("XpositiveElement");
+   Vector<Real> barycenter(spatial_dimension);
+
+   for_each_element(mesh, [&](auto && element) {
+     mesh.getBarycenter(element, barycenter);
+     if (barycenter(_x) > 0.) { group.add(element); }
+   });

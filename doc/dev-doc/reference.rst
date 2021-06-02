@@ -31,6 +31,10 @@ Mesh
 ````
 .. doxygenclass:: akantu::Mesh
 .. doxygenclass:: akantu::FEEngine
+.. doxygenclass:: akantu::Element
+.. doxygenclass:: akantu::GroupManager
+.. doxygenclass:: akantu::ElementGroup
+.. doxygenclass:: akantu::NodeGroup
 
 Models
 ``````

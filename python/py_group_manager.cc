@@ -20,7 +20,24 @@ void register_group_manager(py::module & mod) {
           "getNodes",
           [](NodeGroup & self) -> decltype(auto) { return self.getNodes(); },
           py::return_value_policy::reference)
-      .def("getName", &NodeGroup::getName);
+      .def("__len__", &NodeGroup::size)
+      .def(
+          "__iter__",
+          [](const NodeGroup & self) {
+            return py::make_iterator(self.begin(), self.end());
+          },
+          py::keep_alive<0, 1>())
+      .def("__contains__",
+           [](const NodeGroup & self, UInt node) {
+             return self.find(node) != UInt(-1);
+           })
+      .def("getName", &NodeGroup::getName)
+      .def("clear", &NodeGroup::clear)
+      .def("empty", &NodeGroup::empty)
+      .def("append", &NodeGroup::append)
+      .def("add", &NodeGroup::add, py::arg("node"),
+           py::arg("check_for_duplicate") = true)
+      .def("remove", &NodeGroup::add);
 
   /* ------------------------------------------------------------------------ */
   py::class_<ElementGroup>(mod, "ElementGroup")
@@ -42,7 +59,21 @@ void register_group_manager(py::module & mod) {
           [](ElementGroup & self) -> decltype(auto) {
             return self.getNodeGroup();
           },
-          py::return_value_policy::reference);
+          py::return_value_policy::reference)
+      .def("__len__", [](const ElementGroup & self) { return self.size(); })
+      .def("clear", [](ElementGroup & self) { self.clear(); })
+      .def("empty", &ElementGroup::empty)
+      .def("append", &ElementGroup::append)
+      .def(
+          "add",
+          [](ElementGroup & self, const Element & element, bool add_nodes,
+             bool check_for_duplicate) {
+            self.add(element, add_nodes, check_for_duplicate);
+          },
+          py::arg("element"), py::arg("add_nodes") = false,
+          py::arg("check_for_duplicate") = true)
+      .def("fillFromNodeGroup", &ElementGroup::fillFromNodeGroup)
+      .def("addDimension", &ElementGroup::addDimension);
 
   /* ------------------------------------------------------------------------ */
   py::class_<GroupManager>(mod, "GroupManager")
