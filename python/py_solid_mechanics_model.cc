@@ -87,6 +87,7 @@ void register_solid_mechanics_model(py::module & mod) {
       .def_function_nocopy(getExternalForce)
       .def_function_nocopy(getDisplacement)
       .def_function_nocopy(getPreviousDisplacement)
+      .def_function_nocopy(getCurrentPosition)
       .def_function_nocopy(getIncrement)
       .def_function_nocopy(getInternalForce)
       .def_function_nocopy(getMass)
