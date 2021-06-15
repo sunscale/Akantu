@@ -976,13 +976,12 @@ Material description with input file:
      sigma_c = 0.1                     # critical stress sigma_c  (default: 0)
      G_c = 1e-2                        # Mode I fracture energy
      beta = 0.                         # weighting parameter for sliding and normal opening (default: 0)
-     penalty = 0.                      # stiffness in compression to prevent penetration
+     penalty = 0.                      # stiffness in compression to prevent penetration (α in the text)
      kappa = 1.                        # ration between mode-I and mode-II fracture energy (Gc_II/Gc_I)
-     ms = 1.                           # Weibull exponent for sigma_c scaling
-     volume_s = 1.                     # Reference volume for sigma_c scaling
      contact_after_breaking = true     # Activation of contact when the elements are fully damaged
      max_quad_stress_insertion = false # Insertion of cohesive element when stress is high
 		                       # enough just on one quadrature point
+				       # if false the average stress on facet's quadrature points is used
    ]
 
 -----
@@ -1120,7 +1119,7 @@ Material description with input file:
      name = interface
      beta = 1                       # weighting parameter for sliding and normal opening (default: 0)
      G_c = 30e-3                    # Mode I fracture energy
-     penalty = 1.0e6                # stiffness in compression to prevent penetration
+     penalty = 1.0e6                # stiffness in compression to prevent penetration (α in the text)
      sigma_c = 2.0                  # critical stress sigma_c  (default: 0)
      contact_after_breaking = true  # Activation of contact when the elements are fully damaged
      mu = 0.5                       # Maximum value of the friction coefficient
@@ -1160,6 +1159,26 @@ with the respective default values, are:
 
 Linear Cohesive Law with Fatigue
 ''''''''''''''''''''''''''''''''
+
+Keyword: **cohesive_linear_fatigue**
+
+Material description with input file:
+
+.. code-block:: python
+
+   #input.dat
+
+   material cohesive_linear_fatigue [
+         name = cohesive
+         sigma_c = 1            # critical stress sigma_c  (default: 0)
+         beta = 1               # weighting parameter for sliding and normal opening (default: 0)
+         delta_c = 1            # Critical displacement
+         delta_f = 1            # delta_f (normalization of opening rate to alter reloading stiffness after fatigue)
+         count_switches = true  # Count the opening/closing switches per element
+   ]
+
+-----
+
 
 This law represents a variation of the linear irreversible cohesive
 law of the previous section, that removes the hypothesis of elastic
