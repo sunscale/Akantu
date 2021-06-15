@@ -69,8 +69,7 @@ public:
                      GhostType ghost_type = _not_ghost) override;
 
   /// compute the tangent stiffness matrix for an element type
-  void computeTangentModuli(ElementType el_type,
-                            Array<Real> & tangent_matrix,
+  void computeTangentModuli(ElementType el_type, Array<Real> & tangent_matrix,
                             GhostType ghost_type = _not_ghost) override;
 
   /// compute the elastic potential energy
@@ -82,9 +81,7 @@ public:
     return (not was_stiffness_assembled);
   }
 
-  MatrixType getTangentType() override {
-    return _symmetric;
-  }
+  MatrixType getTangentType() override { return _symmetric; }
 
 protected:
   // compute C from Cprime
@@ -128,9 +125,6 @@ protected:
   Vector<Real> eigC;
 
   bool symmetric;
-
-  /// viscous proportion
-  Real alpha;
 
   /// defines if the stiffness was computed
   bool was_stiffness_assembled;

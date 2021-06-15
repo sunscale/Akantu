@@ -46,7 +46,7 @@ MaterialElasticLinearAnisotropic<dim>::MaterialElasticLinearAnisotropic(
     SolidMechanicsModel & model, const ID & id, bool symmetric)
     : Material(model, id), rot_mat(dim, dim), Cprime(dim * dim, dim * dim),
       C(voigt_h::size, voigt_h::size), eigC(voigt_h::size),
-      symmetric(symmetric), alpha(0), was_stiffness_assembled(false) {
+      symmetric(symmetric), was_stiffness_assembled(false) {
   AKANTU_DEBUG_IN();
 
   this->dir_vecs.push_back(std::make_unique<Vector<Real>>(dim));
@@ -80,9 +80,6 @@ MaterialElasticLinearAnisotropic<dim>::MaterialElasticLinearAnisotropic(
                           _pat_parsmod, "Coefficient " + param.str());
     }
   }
-
-  this->registerParam("alpha", this->alpha, _pat_parsmod,
-                      "Proportion of viscous stress");
 
   AKANTU_DEBUG_OUT();
 }
@@ -212,8 +209,7 @@ void MaterialElasticLinearAnisotropic<dim>::computeStress(
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
 void MaterialElasticLinearAnisotropic<dim>::computeTangentModuli(
-    ElementType el_type, Array<Real> & tangent_matrix,
-    GhostType ghost_type) {
+    ElementType el_type, Array<Real> & tangent_matrix, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   MATERIAL_TANGENT_QUADRATURE_POINT_LOOP_BEGIN(tangent_matrix);
