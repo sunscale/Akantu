@@ -94,8 +94,7 @@ where *constitutive_law* is the adopted constitutive law, followed by
 the material properties listed one by line in the bracket (*e.g.*,
 ``name`` and density :math:``rho``. Some constitutive laws can also
 have an *optional flavor*. More information can be found in sections
-relative to material :ref:`sect-smm-cl`
-or in Appendix :ref:`app-material-parameters`.
+relative to material :ref:`sect-smm-cl`.
 
 Output data
 -----------

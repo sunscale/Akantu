@@ -1,5 +1,7 @@
 .. _sect-smm-cl:
 
+
+
 Constitutive Laws
 -----------------
 
@@ -24,6 +26,37 @@ formulation is used, the tangent matrix has to be computed.
   it provides several functions for initialization, auto-resizing and auto
   removal of quadrature points.
 
+The constitutive law is precised within an input file. The dedicated material section
+is then read by :cpp:func:`initFull <akantu::SolidMechanicsModel::initFull>`
+method of :cpp:class:`SolidMechanicsModel <akantu::SolidMechanicsModel>` which
+initializes the different materials specified with the following convention
+
+.. code-block:: python
+  
+  material constitutive_law [
+    name = value
+    rho = value
+    ...
+  ]
+
+where *constitutive_law* is the adopted constitutive law, followed by
+the material properties listed one by line in the bracket (*e.g.*,
+``name`` and density :math:``rho``. Some constitutive laws can also
+have an *optional flavor*. 
+
+For certain materials, it is possible to activate the large deformation
+strain and stress evaluations. Internally the strain measure becomes
+the right Cauchy–Green deformation tensor and the evaluated stress
+measure becomes the Piola-Kirchhoff stress tensor. This is activated by using:
+
+.. code-block:: python
+  
+  material constitutive_law [
+    finite_deformation = true # Activates the large deformation routines (bool)
+    ...
+  ]
+
+  
 Sometimes it is also desired to generate random distributions of
 internal parameters. An example might be the critical stress at which
 the material fails. To generate such a field, in the text input file, a
@@ -68,9 +101,11 @@ command:
 The same command, with empty brackets, can be used to check the value of
 the *seed* used in the simulation.
 
+
 The following sections describe the constitutive models implemented in
-``Akantu``. In Appendix `7 <#app:material-parameters>`__ a summary of
-the parameters for all materials of ``Akantu`` is provided.
+``Akantu``.
+
+-----
 
 Elastic
 ```````
@@ -89,10 +124,38 @@ tensor, :math:`\boldsymbol{\varepsilon}` represents the
 infinitesimal strain tensor and :math:`\boldsymbol{C}` is
 the elastic modulus tensor.
 
+
+
 .. _sect-smm-linear-elastic-isotropic:
 
 Linear isotropic
 ''''''''''''''''
+
+
+Keyword: **elastic**
+
+Material description with input file:
+
+.. code-block:: python
+
+   #input.dat
+
+   material elastic [
+     name = steel
+     rho = 7800                  # density (Real)
+     E   = 2.1e11                # young's modulus (Real)
+     nu  = 0.3                   # poisson's ratio (Real)
+     Plane_stress = false        # Plane stress simplification (only 2D problems) (bool)
+     finite_deformation = false  # activates the evaluation of strains with green's tensor (bool)
+   ]
+
+
+Available energies Energies:
+
+- ``potential``: elastic potential energy
+
+
+-----
 
 The linear isotropic elastic behavior is described by Hooke’s law, which
 states that the stress is linearly proportional to the applied strain
@@ -162,16 +225,64 @@ In Voigt notation this correspond to
          2\varepsilon_{12}\\
        \end{array}\right]\end{aligned}
 
+This formulation is not sufficient to represent all elastic material
+behavior. Some materials have characteristic orientation that have to be
+taken into account. To represent this anisotropy a more general
+stress-strain law has to be used, as shown below.
+
+-----
+
 .. _sect-smm-linear-elastic-anisotropic:
 
 Linear anisotropic
 ''''''''''''''''''
 
-This formulation is not sufficient to represent all elastic material
-behavior. Some materials have characteristic orientation that have to be
-taken into account. To represent this anisotropy a more general
-stress-strain law has to be used. For this we define the elastic modulus
-tensor as follow:
+
+Keyword: **elastic_anisotropic**
+
+Material description with input file:
+
+
+.. code-block:: python
+
+   #input.dat
+
+   material elastic_anisotropic [
+     name = aluminum
+     rho = 1.6465129043044597 # density (Real)
+
+     C11 = 105.092023         # Coefficient ij of material tensor C (Real)	
+     C12 = 59.4637759	      # all the 36 values 				
+     C13 = 59.4637759	      # in Voigt notation can be entered		
+     C14 = 0                  # zero coefficients can be omited
+     C15 = 0
+     C16 = 0
+     C22 = 105.092023
+     C23 = 59.4637759
+     C24 = 0
+     C25 = 0
+     C26 = 0
+     C33 = 105.092023
+     C34 = 0
+     C35 = 0
+     C36 = 0
+     C44 = 30.6596356
+     C45 = 0
+     C46 = 0
+     C55 = 30.6596356
+     C56 = 0
+     C66 = 30.6596356
+
+     n1 = [-1, 1,  0]         # Direction of first material axis  (Vector<Real>)
+     n2 = [ 1, 1,  1]         # Direction of second material axis (Vector<Real>)
+     n3 = [ 1, 1, -2]         # Direction of thrid material axis  (Vector<Real>)
+   ]
+
+
+
+----
+
+We define the elastic modulus tensor as follows:
 
 .. math::
 
@@ -236,10 +347,44 @@ as follow:
        R_{11} R_{12} & R_{21} R_{22} & R_{31} R_{32} & R_{21} R_{32} & R_{11} R_{32} & R_{11} R_{22}\\
      \end{array}\right]\\\end{aligned}
 
+-----
+     
 .. _sect-smm-linear-elastic-orthotropic:
 
 Linear orthotropic
 ''''''''''''''''''
+
+Keyword: **elastic_orthotropic**
+
+Inherits from **elastic_anisotropic**
+
+Material description with input file:
+
+.. code-block:: python
+
+   #input.dat
+
+   material elastic_orthotropic [
+     name = test_mat_1
+     rho  = 1           # density 
+
+     n1 = [-1, 1,  0]   # Direction of first material axis  (Vector<Real>)
+     n2 = [ 1, 1,  1]   # Direction of second material axis (Vector<Real>)
+     n3 = [ 1, 1, -2]   # Direction of thrid material axis  (Vector<Real>)
+
+     E1 = 1             # Young's modulus in direction n1 (Real) 
+     E2 = 2             # Young's modulus in direction n2 (Real) 
+     E3 = 3             # Young's modulus in direction n3 (Real) 
+     nu12 = 0.1          # Poisson's ratio 12 (Real) 
+     nu13 = 0.2          # Poisson's ratio 13 (Real) 
+     nu23 = 0.3          # Poisson's ratio 23 (Real) 
+
+     G12 = 0.5          # Shear modulus 12 (Real) 
+     G13 = 1            # Shear modulus 13 (Real) 
+     G23 = 2            # Shear modulus 23 (Real)
+   ]
+
+-----
 
 A particular case of anisotropy is when the material basis is orthogonal
 in which case the elastic modulus tensor can be simplified and rewritten
@@ -262,7 +407,7 @@ in terms of 9 independents material parameters.
                & c_{22} & c_{23} &   0   &   0   &   0  \\
                &       & c_{33} &   0   &   0   &   0  \\
                &       &       & c_{44} &   0   &   0  \\
-               &  \multicolumn{2}{l}{\text{sym.}}       &       & c_{55} &   0  \\
+               &  \text{sym.}       &   &    & c_{55} &   0  \\
                &       &       &       &       & c_{66}\\
        \end{array}\right]
      \left[\begin{array}{c}
@@ -287,10 +432,31 @@ in terms of 9 independents material parameters.
 The Poisson ratios follow the rule
 :math:`\nu_{ij} = \nu_{ji} E_i / E_j`.
 
+-----
+      
 .. _sect-smm-cl-neohookean:
 
 Neo-Hookean
 '''''''''''
+
+Keyword: **neohookean**
+
+Inherits from **elastic**
+
+Material description with input file:
+
+.. code-block:: python
+
+   #input.dat
+
+   material neohookean [
+     name = material_name
+     rho = 7800                  # density (Real)
+     E   = 2.1e11                # young's modulus (Real)
+     nu  = 0.3                   # poisson's ratio (Real)
+   ]
+
+-----
 
 The hyperelastic Neo-Hookean constitutive law results from an extension
 of the linear elastic relationship (Hooke’s Law) for large deformation.
@@ -344,10 +510,35 @@ Finally the second Piola-Kirchhoff stress tensor is given by:
 The parameters to indicate in the material file are the same as those
 for the elastic case: ``E`` (Young’s modulus), ``nu`` (Poisson’s ratio).
 
+-----
+
+
 .. _sect-smm-cl-sls:
 
 Visco-Elasticity
 ''''''''''''''''
+
+Keyword: **sls_deviatoric**
+
+Inherits from **elastic**
+
+Material description with input file:
+
+.. code-block:: python
+
+   #input.dat
+
+   material neohookean [
+     name = material_name
+     rho = 1000                # density (Real)
+     E   = 2.1e9               # young's modulus (Real)
+     nu = 0.4                  # poisson's ratio (Real)
+     Eta = 1.                  # Viscosity (Real)
+     Ev = 0.5                  # Stiffness of viscous element (Real)
+     Plane_stress = false      # Plane stress simplification (bool, only 2D problems)
+   ]
+
+-----
 
 Visco-elasticity is characterized by strain rate dependent behavior.
 Moreover, when such a material undergoes a deformation it dissipates
@@ -395,6 +586,8 @@ Note that the current standard linear solid model is applied only on the
 deviatoric part of the strain tensor. The spheric part of the strain
 tensor affects the stress tensor like an linear elastic material.
 
+-----
+
 .. _sect-smm-cl-plastic:
 
 Plastic
@@ -402,6 +595,32 @@ Plastic
 
 Small-Deformation Plasticity
 ''''''''''''''''''''''''''''
+
+Keyword: **plastic_linear_isotropic_hardening**
+
+Inherits from **elastic**
+
+Material description with input file:
+
+.. code-block:: python
+
+   #input.dat
+
+   material plastic_linear_isotropic_hardening [
+     name = material_name
+     rho = 1000       # density (Real)
+     E   = 2.1e9      # young's modulus (Real)
+     nu = 0.4         # poisson's ratio (Real)
+     h = 0.1          # Hardening modulus (Real)
+     sigma_y = 1e6    # Yield stress (Real)
+   ]
+
+Energies:
+
+- ``potential``: elastic part of the potential energy
+- ``plastic``: dissipated plastic energy (integrated over time)
+
+-----
 
 The small-deformation plasticity is a simple plasticity material
 formulation which accounts for the additive decomposition of strain into
@@ -520,6 +739,8 @@ size. The plastic parameters to indicate in the material file are:
 elastic parameters need to be defined as previously mentioned: ``E`` (Young’s
 modulus), ``nu`` (Poisson’s ratio).
 
+-----
+
 Damage
 ``````
 
@@ -537,10 +758,39 @@ stiffness tensor. This formulation relies on the definition of an
 evolution law for the damage variable. In ``Akantu``, many possibilities
 exist and they are listed below.
 
+----
+
 .. _sect-smm-cl-damage-marigo:
 
 Marigo
 ''''''
+
+Keyword: **marigo**
+
+Inherits from **elastic**
+
+Material description with input file:
+
+.. code-block:: python
+
+   #input.dat
+
+   material marigo [
+     name = material_name
+     rho = 1000           # density (Real)
+     E   = 2.1e9          # young's modulus (Real)
+     nu = 0.4             # poisson's ratio (Real)
+     Plane_stress = false # Plane stress simplification (bool, only 2D problems)
+     Yd = 0.1             # Hardening modulus (Random)
+     Sd = 1.              # Damage energy (Real)
+   ]
+
+Energies:
+
+- ``dissipated``: energy dissipated in damage
+
+-----
+   
 
 This damage evolution law is energy based as defined by Marigo
 :cite:`marigo81a`, :cite:`lemaitre96a`. It is an isotropic damage law.
@@ -566,6 +816,36 @@ averaging the energy :math:`Y`.
 
 Mazars
 ''''''
+
+Keyword: **mazars**
+
+Inherits from **elastic**
+
+Material description with input file:
+
+.. code-block:: python
+
+   #input.dat
+
+   material mazars [
+      name = concrete
+      rho = 3000        # density (Real)
+      E   = 32e9        # young's modulus (Real)
+      nu  = 0.2         # poisson's ratio (Real)
+      K0  = 9.375e-5    # Damage threshold (Real)
+      At  = 1.15        # Parameter damage traction 1 (Real)
+      Bt  = 10000       # Parameter damage traction 2 (Real)
+      Ac  = 0.8         # Parameter damage compression 1 (Real)
+      Bc  = 1391.3      # Parameter damage compression 2 (Real)
+      beta = 1.00       # Parameter for shear (Real)
+   ]
+
+Energies:
+
+- ``dissipated``: energy dissipated in damage
+
+-----
+
 
 This law introduced by Mazars :cite:`mazars84a` is a
 behavioral model to represent damage evolution in concrete. This model
@@ -655,7 +935,7 @@ with :math:`\vec{D}` the elastic moduli tensor, :math:`\sigma` the stress tensor
 
 The non-local damage variable :math:`\bar{d}` is defined as follows:
 
-.. _eq:non-local-const:
+.. _eq:non-local-damage:
  .. math:: \bar{d}(\vec{x}) = \int_{V}W(\vec{x}, \vec{y}) d(\vec{y}) dV(\vec{y})
 
 with :math:`W(\vec{x},\vec{y})` the weight function which averages local damage variables to describe the non-local interactions. A list of available weight functions and its functionalities in \akantu are explained in the next section.
@@ -671,7 +951,7 @@ The available weight functions in ``Akantu`` are follows:
  - ``remove_damaged_with_damage_rate_weight_function``: A bell-shape function is applied to average local damage variables for elements having small damage rates.
  - ``stress_based_weight_function``: Non local integral takes stress states, and use the states to construct weight function: an ellipsoid shape. Detailed explanations of this weight function are given in Giry et al. :cite:`giry13a`.
 
-
+-----
 
 .. _sec-cohesive-laws:
 
@@ -683,6 +963,29 @@ Cohesive Constitutive laws
 Linear Irreversible Law
 '''''''''''''''''''''''
 
+Keyword: **cohesive_linear**
+
+Material description with input file:
+
+.. code-block:: python
+
+   #input.dat
+
+   material cohesive_linear [
+     name = cohesive
+     sigma_c = 0.1                     # critical stress sigma_c  (default: 0)
+     G_c = 1e-2                        # Mode I fracture energy
+     beta = 0.                         # weighting parameter for sliding and normal opening (default: 0)
+     penalty = 0.                      # stiffness in compression to prevent penetration (α in the text)
+     kappa = 1.                        # ration between mode-I and mode-II fracture energy (Gc_II/Gc_I)
+     contact_after_breaking = true     # Activation of contact when the elements are fully damaged
+     max_quad_stress_insertion = false # Insertion of cohesive element when stress is high
+		                       # enough just on one quadrature point
+				       # if false the average stress on facet's quadrature points is used
+   ]
+
+-----
+  
 .. figure:: figures/cl/linear_cohesive_law.svg
    :alt: Irreversible cohesive laws for explicit simulations.
    :name: fig:smm:coh:linear_cohesive_law
@@ -796,10 +1099,35 @@ elements and also an example to assign different properties to
 inter-granular and trans-granular cohesive elements can be found in
 the folder ``examples/cohesive_element/``.
 
+----
+
 .. _ssect:smm:cl:coh-friction:
 
 Linear Cohesive Law with Friction
 '''''''''''''''''''''''''''''''''
+
+Keyword: **cohesive_linear_friction**
+
+Material description with input file:
+
+.. code-block:: python
+
+   #input.dat
+
+   
+   material cohesive_linear_friction [
+     name = interface
+     beta = 1                       # weighting parameter for sliding and normal opening (default: 0)
+     G_c = 30e-3                    # Mode I fracture energy
+     penalty = 1.0e6                # stiffness in compression to prevent penetration (α in the text)
+     sigma_c = 2.0                  # critical stress sigma_c  (default: 0)
+     contact_after_breaking = true  # Activation of contact when the elements are fully damaged
+     mu = 0.5                       # Maximum value of the friction coefficient
+     penalty_for_friction = 5.0e3   # Penalty parameter for the friction behavior
+   ]
+
+-----
+
 
 This law represents a variation of the linear irreversible cohesive of
 the previous section, which adds friction.  The friction behavior is
@@ -831,6 +1159,26 @@ with the respective default values, are:
 
 Linear Cohesive Law with Fatigue
 ''''''''''''''''''''''''''''''''
+
+Keyword: **cohesive_linear_fatigue**
+
+Material description with input file:
+
+.. code-block:: python
+
+   #input.dat
+
+   material cohesive_linear_fatigue [
+         name = cohesive
+         sigma_c = 1            # critical stress sigma_c  (default: 0)
+         beta = 1               # weighting parameter for sliding and normal opening (default: 0)
+         delta_c = 1            # Critical displacement
+         delta_f = 1            # delta_f (normalization of opening rate to alter reloading stiffness after fatigue)
+         count_switches = true  # Count the opening/closing switches per element
+   ]
+
+-----
+
 
 This law represents a variation of the linear irreversible cohesive
 law of the previous section, that removes the hypothesis of elastic
@@ -882,6 +1230,27 @@ law for crack opening.
 
 Exponential Cohesive Law
 '''''''''''''''''''''''''
+
+Keyword: **cohesive_exponential**
+
+Material description with input file:
+
+.. code-block:: python
+
+   #input.dat
+
+   material cohesive_exponential [
+     name = coh1
+     sigma_c = 1.5e6             # critical stress sigma_c  (default: 0)
+     beta = 1                    # weighting parameter for sliding and normal opening (default: 0)
+     delta_c = 1e-4              # Critical displacement
+     exponential_penalty = true  # Is contact penalty following the exponential law?
+     contact_tangent = 1.0       # Ratio of contact tangent over the initial exponential tangent
+   ]
+   
+-----
+
+
 
 Ortiz and Pandolfi proposed this cohesive law in 1999 :cite:`ortiz1999`.  The
 traction-opening equation for this law is as follows:
