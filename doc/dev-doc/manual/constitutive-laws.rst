@@ -263,7 +263,7 @@ Material description with input file:
      C25 = 0
      C26 = 0
      C33 = 105.092023
-     C34 = 1.410383e-10
+     C34 = 0
      C35 = 0
      C36 = 0
      C44 = 30.6596356
@@ -372,12 +372,12 @@ Material description with input file:
      n2 = [ 1, 1,  1]   # Direction of second material axis (Vector<Real>)
      n3 = [ 1, 1, -2]   # Direction of thrid material axis  (Vector<Real>)
 
-     E1 = 1             # Young's modulus n1 (Real) 
-     E2 = 2             # Young's modulus n2 (Real) 
-     E3 = 3             # Young's modulus n3 (Real) 
-     nu1 = 0.1          # Poisson's ratio n1 (Real) 
-     nu2 = 0.2          # Poisson's ratio n2 (Real) 
-     nu3 = 0.3          # Poisson's ratio n3 (Real) 
+     E1 = 1             # Young's modulus in direction n1 (Real) 
+     E2 = 2             # Young's modulus in direction n2 (Real) 
+     E3 = 3             # Young's modulus in direction n3 (Real) 
+     nu12 = 0.1          # Poisson's ratio 12 (Real) 
+     nu13 = 0.2          # Poisson's ratio 13 (Real) 
+     nu23 = 0.3          # Poisson's ratio 23 (Real) 
 
      G12 = 0.5          # Shear modulus 12 (Real) 
      G13 = 1            # Shear modulus 13 (Real) 
