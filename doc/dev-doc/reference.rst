@@ -31,6 +31,10 @@ Mesh
 ````
 .. doxygenclass:: akantu::Mesh
 .. doxygenclass:: akantu::FEEngine
+.. doxygenclass:: akantu::Element
+.. doxygenclass:: akantu::GroupManager
+.. doxygenclass:: akantu::ElementGroup
+.. doxygenclass:: akantu::NodeGroup
 
 Models
 ``````
@@ -41,8 +45,8 @@ Common
 .. doxygenclass:: akantu::BC::Dirichlet::FixedValue
 .. doxygenclass:: akantu::BC::Dirichlet::FlagOnly
 .. doxygenclass:: akantu::BC::Dirichlet::IncrementValue
-.. doxygenclass:: akantu::BC::Neumann::FromStress
-.. doxygenclass:: akantu::BC::Neumann::FromTraction
+.. doxygenclass:: akantu::BC::Neumann::FromHigherDim
+.. doxygenclass:: akantu::BC::Neumann::FromSameDim
 .. doxygenclass:: akantu::BoundaryCondition
 .. doxygenclass:: akantu::BoundaryConditionFunctor
 .. doxygenclass:: akantu::EventHandlerManager
@@ -92,7 +96,7 @@ Structural Mechanics Model
 
 
 Coupler Solid PhaseField
-...................
+........................
 
 .. doxygenclass:: akantu::CouplerSolidPhaseField
 
