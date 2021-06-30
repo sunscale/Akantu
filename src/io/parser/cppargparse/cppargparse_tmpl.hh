@@ -32,8 +32,8 @@
 #include <sstream>
 #include <stdexcept>
 
-#ifndef __CPPARGPARSE_TMPL_HH__
-#define __CPPARGPARSE_TMPL_HH__
+#ifndef CPPARGPARSE_TMPL_HH_
+#define CPPARGPARSE_TMPL_HH_
 
 namespace cppargparse {
 /* -------------------------------------------------------------------------- */
@@ -41,9 +41,9 @@ namespace cppargparse {
 /* -------------------------------------------------------------------------- */
 
 /// internal description of arguments
-struct ArgumentParser::_Argument : public Argument {
-  _Argument() : Argument(), help(std::string()) {}
-  ~_Argument() override = default;
+struct ArgumentParser::Argument_ : public Argument {
+  Argument_() = default;
+  ~Argument_() override = default;
 
   void setValues(std::vector<std::string> & values) {
     for (auto it = values.begin(); it != values.end(); ++it) {
@@ -87,7 +87,7 @@ struct ArgumentParser::_Argument : public Argument {
 /* -------------------------------------------------------------------------- */
 /// typed storage of the arguments
 template <class T>
-class ArgumentParser::ArgumentStorage : public ArgumentParser::_Argument {
+class ArgumentParser::ArgumentStorage : public ArgumentParser::Argument_ {
 public:
   ArgumentStorage() : _default(T()), _const(T()), values(std::vector<T>()) {}
 
@@ -154,11 +154,10 @@ struct cast_helper {
         dynamic_cast<const ArgumentParser::ArgumentStorage<T> &>(arg);
     if (_arg.values.size() == 1) {
       return _arg.values[0];
-    } else {
-      throw std::length_error("Not enougth or too many argument where passed "
-                              "for the command line argument: " +
-                              arg.name);
     }
+    throw std::length_error("Not enougth or too many argument where passed "
+                            "for the command line argument: " +
+                            arg.name);
   }
 };
 
@@ -176,7 +175,8 @@ template <class T> ArgumentParser::Argument::operator T() const {
 }
 
 #if !defined(DOXYGEN)
-template <> inline ArgumentParser::Argument::operator const std::string() const {
+template <>
+inline ArgumentParser::Argument::operator std::string() const {
   return cast_helper<std::string>::cast(*this);
 }
 
@@ -189,7 +189,7 @@ template <class T>
 void ArgumentParser::addArgument(const std::string & name_or_flag,
                                  const std::string & help, int nargs,
                                  ArgumentType type, T def) {
-  _Argument & arg = _addArgument(name_or_flag, help, nargs, type);
+  Argument_ & arg = _addArgument(name_or_flag, help, nargs, type);
   dynamic_cast<ArgumentStorage<T> &>(arg)._default = def;
   arg.has_default = true;
 }
@@ -198,7 +198,7 @@ template <class T>
 void ArgumentParser::addArgument(const std::string & name_or_flag,
                                  const std::string & help, int nargs,
                                  ArgumentType type, T def, T cons) {
-  _Argument & arg = _addArgument(name_or_flag, help, nargs, type);
+  Argument_ & arg = _addArgument(name_or_flag, help, nargs, type);
   dynamic_cast<ArgumentStorage<T> &>(arg)._default = def;
   arg.has_default = true;
   dynamic_cast<ArgumentStorage<T> &>(arg)._const = cons;
@@ -238,4 +238,4 @@ inline void ArgumentParser::addArgument<unsigned int>(
 }
 } // namespace cppargparse
 
-#endif /* __AKANTU_CPPARGPARSE_TMPL_HH__ */
+#endif /* AKANTU_CPPARGPARSE_TMPL_HH_ */

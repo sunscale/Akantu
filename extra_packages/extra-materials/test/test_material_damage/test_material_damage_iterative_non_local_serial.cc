@@ -136,7 +136,7 @@ int main(int argc, char * argv[]) {
   Array<Real>::const_matrix_iterator grad_u_end =
       grad_u.end(spatial_dimension, spatial_dimension);
   diff = 0.;
-  diff_matrix.clear();
+  diff_matrix.zero();
 
   UInt counter = 0;
   for (; grad_u_it != grad_u_end; ++grad_u_it) {
@@ -158,7 +158,7 @@ int main(int argc, char * argv[]) {
 
   /// check that the non-local grad_u
   diff = 0.;
-  diff_matrix.clear();
+  diff_matrix.zero();
   Real nl_radius = 1.0; /// same values as in material file
   grad_u_nl_it = grad_u_nl.begin(spatial_dimension, spatial_dimension);
   ElementTypeMapReal quad_coords("quad_coords");

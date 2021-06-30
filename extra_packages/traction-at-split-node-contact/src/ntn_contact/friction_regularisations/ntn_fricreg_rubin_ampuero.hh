@@ -28,8 +28,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AST_NTN_FRICREG_RUBIN_AMPUERO_HH__
-#define __AST_NTN_FRICREG_RUBIN_AMPUERO_HH__
+#ifndef AST_NTN_FRICREG_RUBIN_AMPUERO_HH_
+#define AST_NTN_FRICREG_RUBIN_AMPUERO_HH_
 
 /* -------------------------------------------------------------------------- */
 // simtools
@@ -44,8 +44,7 @@ class NTNFricRegRubinAmpuero : public NTNFricRegNoRegularisation {
   /* ------------------------------------------------------------------------ */
 public:
   NTNFricRegRubinAmpuero(NTNBaseContact & contact,
-                         const ID & id = "rubin_ampuero",
-                         const MemoryID & memory_id = 0);
+                         const ID & id = "rubin_ampuero");
   virtual ~NTNFricRegRubinAmpuero(){};
 
   /* ------------------------------------------------------------------------ */
@@ -98,4 +97,4 @@ inline std::ostream & operator<<(std::ostream & stream,
 
 } // namespace akantu
 
-#endif /* __AST_NTN_FRICREG_RUBIN_AMPUERO_HH__ */
+#endif /* AST_NTN_FRICREG_RUBIN_AMPUERO_HH_ */

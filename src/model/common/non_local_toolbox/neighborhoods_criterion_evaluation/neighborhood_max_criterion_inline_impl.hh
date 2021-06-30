@@ -33,8 +33,8 @@
 #include "neighborhood_max_criterion.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_NEIGHBORHOOD_MAX_CRITERION_INLINE_IMPL_HH__
-#define __AKANTU_NEIGHBORHOOD_MAX_CRITERION_INLINE_IMPL_HH__
+#ifndef AKANTU_NEIGHBORHOOD_MAX_CRITERION_INLINE_IMPL_HH_
+#define AKANTU_NEIGHBORHOOD_MAX_CRITERION_INLINE_IMPL_HH_
 
 namespace akantu {
 
@@ -58,8 +58,8 @@ NeighborhoodMaxCriterion::packElementData(CommunicationBuffer & buffer,
                                           const Array<Element> & elements,
                                           SynchronizationTag tag) const {
   if (tag == SynchronizationTag::_nh_criterion) {
-    this->packElementalDataHelper(criterion, buffer, elements, true,
-                                  this->model.getFEEngine());
+    NeighborhoodMaxCriterion::packElementalDataHelper(
+        criterion, buffer, elements, true, this->model.getFEEngine());
   }
 }
 
@@ -69,8 +69,8 @@ NeighborhoodMaxCriterion::unpackElementData(CommunicationBuffer & buffer,
                                             const Array<Element> & elements,
                                             SynchronizationTag tag) {
   if (tag == SynchronizationTag::_nh_criterion) {
-    this->unpackElementalDataHelper(criterion, buffer, elements, true,
-                                    this->model.getFEEngine());
+    NeighborhoodMaxCriterion::unpackElementalDataHelper(
+        criterion, buffer, elements, true, this->model.getFEEngine());
   }
 }
 
@@ -78,4 +78,4 @@ NeighborhoodMaxCriterion::unpackElementData(CommunicationBuffer & buffer,
 
 } // namespace akantu
 
-#endif /* __AKANTU_NEIGHBORHOOD_MAX_CRITERION_INLINE_IMPL_HH__ */
+#endif /* AKANTU_NEIGHBORHOOD_MAX_CRITERION_INLINE_IMPL_HH_ */

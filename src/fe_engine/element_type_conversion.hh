@@ -31,18 +31,19 @@
 #include "element_class.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_ELEMENT_TYPE_CONVERSION_HH__
-#define __AKANTU_ELEMENT_TYPE_CONVERSION_HH__
+#ifndef AKANTU_ELEMENT_TYPE_CONVERSION_HH_
+#define AKANTU_ELEMENT_TYPE_CONVERSION_HH_
 
 namespace akantu {
 
-template <class InType, class OutType> OutType convertType(const InType &) {
+template <class InType, class OutType>
+OutType convertType(InType /*unused*/) {
   return OutType();
 }
 
 template <>
 inline InterpolationType
-convertType<ElementType, InterpolationType>(const ElementType & type) {
+convertType<ElementType, InterpolationType>(ElementType type) {
   InterpolationType itp_type = _itp_not_defined;
 #define GET_ITP(type) itp_type = ElementClassProperty<type>::interpolation_type;
 
@@ -53,4 +54,4 @@ convertType<ElementType, InterpolationType>(const ElementType & type) {
 
 } // namespace akantu
 
-#endif /* __AKANTU_ELEMENT_TYPE_CONVERSION_HH__ */
+#endif /* AKANTU_ELEMENT_TYPE_CONVERSION_HH_ */

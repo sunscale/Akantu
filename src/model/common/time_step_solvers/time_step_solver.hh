@@ -26,17 +26,15 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
 #include "aka_array.hh"
-#include "aka_memory.hh"
 #include "integration_scheme.hh"
 #include "parameter_registry.hh"
 #include "solver_callback.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_TIME_STEP_SOLVER_HH__
-#define __AKANTU_TIME_STEP_SOLVER_HH__
+#ifndef AKANTU_TIME_STEP_SOLVER_HH_
+#define AKANTU_TIME_STEP_SOLVER_HH_
 
 namespace akantu {
 class DOFManager;
@@ -45,17 +43,14 @@ class NonLinearSolver;
 
 namespace akantu {
 
-class TimeStepSolver : public Memory,
-                       public ParameterRegistry,
-                       public SolverCallback {
+class TimeStepSolver : public ParameterRegistry, public SolverCallback {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   TimeStepSolver(DOFManager & dof_manager, const TimeStepSolverType & type,
                  NonLinearSolver & non_linear_solver,
-                 SolverCallback & solver_callback, const ID & id,
-                 UInt memory_id);
+                 SolverCallback & solver_callback, const ID & id);
   ~TimeStepSolver() override;
 
   /* ------------------------------------------------------------------------ */
@@ -87,7 +82,9 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// implementation of the SolverCallback::getMatrixType()
-  MatrixType getMatrixType(const ID &) final { return _mt_not_defined; }
+  MatrixType getMatrixType(const ID & /*unused*/) final {
+    return _mt_not_defined;
+  }
   /// implementation of the SolverCallback::predictor()
   void predictor() override;
   /// implementation of the SolverCallback::corrector()
@@ -125,6 +122,8 @@ protected:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
+  ID id;
+
   /// Underlying dof manager containing the dof to treat
   DOFManager & _dof_manager;
 
@@ -150,4 +149,4 @@ protected:
 
 } // namespace akantu
 
-#endif /* __AKANTU_TIME_STEP_SOLVER_HH__ */
+#endif /* AKANTU_TIME_STEP_SOLVER_HH_ */

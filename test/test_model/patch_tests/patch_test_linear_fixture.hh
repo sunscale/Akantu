@@ -37,8 +37,8 @@
 #include <vector>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_PATCH_TEST_LINEAR_FIXTURE_HH__
-#define __AKANTU_PATCH_TEST_LINEAR_FIXTURE_HH__
+#ifndef AKANTU_PATCH_TEST_LINEAR_FIXTURE_HH_
+#define AKANTU_PATCH_TEST_LINEAR_FIXTURE_HH_
 
 //#define DEBUG_TEST
 
@@ -179,4 +179,4 @@ constexpr ElementType TestPatchTestLinear<type_, M>::type;
 template <typename tuple_, typename M>
 constexpr size_t TestPatchTestLinear<tuple_, M>::dim;
 
-#endif /* __AKANTU_PATCH_TEST_LINEAR_FIXTURE_HH__ */
+#endif /* AKANTU_PATCH_TEST_LINEAR_FIXTURE_HH_ */

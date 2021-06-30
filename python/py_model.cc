@@ -15,34 +15,7 @@ namespace py = pybind11;
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-
 void register_model(py::module & mod) {
-  py::class_<SparseMatrix>(mod, "SparseMatrix")
-      .def("getMatrixType", &SparseMatrix::getMatrixType)
-      .def("size", &SparseMatrix::size)
-      .def("clear", &SparseMatrix::clear)
-      .def("saveProfile", &SparseMatrix::saveProfile)
-      .def("saveMatrix", &SparseMatrix::saveMatrix)
-      .def(
-          "add", [](SparseMatrix & self, UInt i, UInt j) { self.add(i, j); },
-          "Add entry in the profile")
-      .def(
-          "add",
-          [](SparseMatrix & self, UInt i, UInt j, Real value) {
-            self.add(i, j, value);
-          },
-          "Add the value to the matrix")
-      .def("__call__", [](const SparseMatrix & self, UInt i, UInt j) {
-        return self(i, j);
-      });
-
-  py::class_<SparseMatrixAIJ, SparseMatrix>(mod, "SparseMatrixAIJ")
-      .def("getIRN", &SparseMatrixAIJ::getIRN)
-      .def("getJCN", &SparseMatrixAIJ::getJCN)
-      .def("getA", &SparseMatrixAIJ::getA);
-
-  py::class_<SolverVector>(mod, "SolverVector");
-
   py::class_<DOFManager>(mod, "DOFManager")
       .def("getMatrix", &DOFManager::getMatrix,
            py::return_value_policy::reference)
@@ -60,16 +33,23 @@ void register_model(py::module & mod) {
           },
           py::return_value_policy::reference)
       .def("getArrayPerDOFs", &DOFManager::getArrayPerDOFs)
+      .def(
+          "hasMatrix",
+          [](DOFManager & self, const ID & name) -> bool {
+            return self.hasMatrix(name);
+          },
+          py::arg("name"))
       .def("assembleToResidual", &DOFManager::assembleToResidual);
 
   py::class_<NonLinearSolver>(mod, "NonLinearSolver")
       .def(
           "set",
           [](NonLinearSolver & self, const std::string & id, const Real & val) {
-            if (id == "max_iterations")
+            if (id == "max_iterations") {
               self.set(id, int(val));
-            else
+            } else {
               self.set(id, val);
+            }
           })
       .def("set",
            [](NonLinearSolver & self, const std::string & id,
@@ -88,6 +68,7 @@ void register_model(py::module & mod) {
 
   py::class_<Model, ModelSolver>(mod, "Model", py::multiple_inheritance())
       .def("setBaseName", &Model::setBaseName)
+      .def("setDirectory", &Model::setDirectory)
       .def("getFEEngine", &Model::getFEEngine, py::arg("name") = "",
            py::return_value_policy::reference)
       .def("getFEEngineBoundary", &Model::getFEEngine, py::arg("name") = "",
@@ -97,10 +78,25 @@ void register_model(py::module & mod) {
       .def("setBaseNameToDumper", &Model::setBaseNameToDumper)
       .def("addDumpFieldVectorToDumper", &Model::addDumpFieldVectorToDumper)
       .def("addDumpFieldToDumper", &Model::addDumpFieldToDumper)
-      .def("dump", &Model::dump)
+      .def("dump", py::overload_cast<>(&Model::dump))
+      .def("dump", py::overload_cast<UInt>(&Model::dump))
+      .def("dump", py::overload_cast<Real, UInt>(&Model::dump))
+      .def("dump", py::overload_cast<const std::string &>(&Model::dump))
+      .def("dump", py::overload_cast<const std::string &, UInt>(&Model::dump))
+      .def("dump",
+           py::overload_cast<const std::string &, Real, UInt>(&Model::dump))
       .def("initNewSolver", &Model::initNewSolver)
+      .def("getNewSolver", [](Model & self, const std::string id, const TimeStepSolverType & time,
+			      const NonLinearSolverType & type) {
+	     self.getNewSolver(id, time, type);
+	   }, py::return_value_policy::reference)
+      .def("setIntegrationScheme", [](Model & self, const std::string id, const std::string primal,
+				      const IntegrationSchemeType & scheme) {
+	     self.setIntegrationScheme(id, primal, scheme);
+	   })
       .def("getDOFManager", &Model::getDOFManager,
-           py::return_value_policy::reference);
+           py::return_value_policy::reference)
+      .def("assembleMatrix", &Model::assembleMatrix);
 }
 
 } // namespace akantu

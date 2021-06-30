@@ -99,7 +99,7 @@ void MaterialIGFEMIterativeStiffnessReduction<spatial_dimension>::
   /// loop over all the quadrature points and compute the equivalent stress
   for (; grad_u_it != grad_u_end; ++grad_u_it) {
     /// compute the stress
-    sigma.clear();
+    sigma.zero();
     MaterialIGFEMElastic<spatial_dimension>::computeStressOnQuad(
         *grad_u_it, sigma, *lambda_ptr, *mu_ptr);
     MaterialIGFEMSawToothDamage<

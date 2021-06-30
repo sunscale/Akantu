@@ -88,9 +88,10 @@ Communicator & Communicator::getStaticCommunicator() {
 
 /* -------------------------------------------------------------------------- */
 Communicator & Communicator::getStaticCommunicator(int & argc, char **& argv) {
-  if (!static_communicator)
+  if (!static_communicator) {
     static_communicator =
         std::make_unique<Communicator>(argc, argv, private_member{});
+  }
   return getStaticCommunicator();
 }
 
@@ -112,33 +113,36 @@ namespace akantu {
   template bool Communicator::asyncProbe<T>(                                   \
       Int sender, Int tag, CommunicationStatus & status) const;                \
   template void Communicator::sendImpl<T>(                                     \
-      const T * buffer, Int size, Int receiver, Int tag,                       \
+      const T * buffer /*NOLINT*/, Int size, Int receiver, Int tag,            \
       const CommunicationMode & mode) const;                                   \
-  template void Communicator::receiveImpl<T>(T * buffer, Int size, Int sender, \
-                                             Int tag) const;                   \
+  template void Communicator::receiveImpl<T>(T * buffer /*NOLINT*/, Int size,  \
+                                             Int sender, Int tag) const;       \
   template CommunicationRequest Communicator::asyncSendImpl<T>(                \
-      const T * buffer, Int size, Int receiver, Int tag,                       \
+      const T * buffer /*NOLINT*/, Int size, Int receiver, Int tag,            \
       const CommunicationMode & mode) const;                                   \
   template CommunicationRequest Communicator::asyncReceiveImpl<T>(             \
-      T * buffer, Int size, Int sender, Int tag) const;                        \
-  template void Communicator::allGatherImpl<T>(T * values, int nb_values)      \
-      const;                                                                   \
-  template void Communicator::allGatherVImpl<T>(T * values, int * nb_values)   \
-      const;                                                                   \
-  template void Communicator::gatherImpl<T>(T * values, int nb_values,         \
-                                            int root) const;                   \
+      T * buffer /* NOLINT */, Int size, Int sender, Int tag) const;           \
+  template void Communicator::allGatherImpl<T>(T * values /*NOLINT*/,          \
+                                               int nb_values) const;           \
+  template void Communicator::allGatherVImpl<T>(T * values /*NOLINT*/,         \
+                                                int * nb_values) const;        \
+  template void Communicator::gatherImpl<T>(T * values /*NOLINT*/,             \
+                                            int nb_values, int root) const;    \
   template void Communicator::gatherImpl<T>(                                   \
-      T * values, int nb_values, T * gathered, int nb_gathered) const;         \
-  template void Communicator::gatherVImpl<T>(T * values, int * nb_values,      \
-                                             int root) const;                  \
-  template void Communicator::broadcastImpl<T>(T * values, int nb_values,      \
-                                               int root) const;                \
+      T * values /*NOLINT*/, int nb_values, T * gathered /*NOLINT*/,           \
+      int nb_gathered) const;                                                  \
+  template void Communicator::gatherVImpl<T>(T * values /*NOLINT*/,            \
+                                             int * nb_values, int root) const; \
+  template void Communicator::broadcastImpl<T>(T * values /*NOLINT*/,          \
+                                               int nb_values, int root) const; \
   template void Communicator::allReduceImpl<T>(                                \
-      T * values, int nb_values, SynchronizerOperation op) const;              \
-  template void Communicator::scanImpl<T>(T * values, T *, int nb_values,      \
+      T * values /*NOLINT*/, int nb_values, SynchronizerOperation op) const;   \
+  template void Communicator::scanImpl<T>(T * values /*NOLINT*/,               \
+                                          T * /*NOLINT*/, int nb_values,       \
                                           SynchronizerOperation op) const;     \
   template void Communicator::exclusiveScanImpl<T>(                            \
-      T * values, T *, int nb_values, SynchronizerOperation op) const
+      T * values /*NOLINT*/, T * /*NOLINT*/, int nb_values,                    \
+      SynchronizerOperation op) const
 
 #define MIN_MAX_REAL SCMinMaxLoc<Real, int>
 

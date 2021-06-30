@@ -1,0 +1,16 @@
+compilers:
+- compiler:
+    paths:
+      cc: /opt/rh/devtoolset-8/root/usr/bin/gcc
+      cxx: /opt/rh/devtoolset-8/root/usr/bin/g++
+      f77: /opt/rh/devtoolset-8/root/usr/bin/gfortran
+      fc: /opt/rh/devtoolset-8/root/usr/bin/gfortran
+    operating_system: centos6
+    target: x86_64
+    modules: []
+    environment:
+      set:
+        LD_LIBRARY_PATH: /usr/local/lib
+    extra_rpaths: []
+    flags: {}
+    spec: gcc@8.3.1

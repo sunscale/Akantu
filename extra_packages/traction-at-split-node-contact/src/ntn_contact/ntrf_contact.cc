@@ -34,9 +34,8 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-NTRFContact::NTRFContact(SolidMechanicsModel & model, const ID & id,
-                         const MemoryID & memory_id)
-    : NTNBaseContact(model, id, memory_id),
+NTRFContact::NTRFContact(SolidMechanicsModel & model, const ID & id)
+    : NTNBaseContact(model, id),
       reference_point(model.getSpatialDimension()),
       normal(model.getSpatialDimension()) {
   AKANTU_DEBUG_IN();

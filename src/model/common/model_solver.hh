@@ -37,8 +37,8 @@
 #include <set>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MODEL_SOLVER_HH__
-#define __AKANTU_MODEL_SOLVER_HH__
+#ifndef AKANTU_MODEL_SOLVER_HH_
+#define AKANTU_MODEL_SOLVER_HH_
 
 namespace akantu {
 class Mesh;
@@ -57,8 +57,7 @@ class ModelSolver : public Parsable,
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  ModelSolver(Mesh & mesh, const ModelType & type, const ID & id,
-              UInt memory_id);
+  ModelSolver(Mesh & mesh, const ModelType & type, const ID & id);
   ~ModelSolver() override;
 
   /// initialize the dof manager based on solver type passed in the input file
@@ -66,10 +65,10 @@ public:
   /// initialize the dof manager based on the used chosen solver type
   void initDOFManager(const ID & solver_type);
 
-protected:
-  /// initialize the dof manager based on the used chosen solver type
-  void initDOFManager(const ParserSection & section, const ID & solver_type);
-
+  /* ------------------------------------------------------------------------ */
+  /* Methods                                                                  */
+  /* ------------------------------------------------------------------------ */
+public:
   /// Callback for the model to instantiate the matricees when needed
   virtual void initSolver(TimeStepSolverType /*time_step_solver_type*/,
                           NonLinearSolverType /*non_linear_solver_type*/) {}
@@ -78,10 +77,7 @@ protected:
   /// model
   std::tuple<ParserSection, bool> getParserSection();
 
-  /* ------------------------------------------------------------------------ */
-  /* Methods                                                                  */
-  /* ------------------------------------------------------------------------ */
-public:
+  
   /// solve a step using a given pre instantiated time step solver and
   /// nondynamic linear solver
   virtual void solveStep(const ID & solver_id = "");
@@ -108,6 +104,10 @@ public:
                             IntegrationScheme & integration_scheme,
                             IntegrationScheme::SolutionType solution_type =
                                 IntegrationScheme::_not_defined);
+
+protected:
+  /// initialize the dof manager based on the used chosen solver type
+  void initDOFManager(const ParserSection & section, const ID & solver_type);
 
   /* ------------------------------------------------------------------------ */
   /* SolverCallback interface                                                 */
@@ -175,7 +175,6 @@ protected:
 
 private:
   ID parent_id;
-  UInt parent_memory_id;
 
   /// Underlying mesh
   Mesh & mesh;
@@ -195,4 +194,4 @@ struct ModelSolverOptions {
 
 } // namespace akantu
 
-#endif /* __AKANTU_MODEL_SOLVER_HH__ */
+#endif /* AKANTU_MODEL_SOLVER_HH_ */

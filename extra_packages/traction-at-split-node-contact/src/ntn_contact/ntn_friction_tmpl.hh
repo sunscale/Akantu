@@ -36,8 +36,8 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 template <template <class> class FrictionLaw, class Regularisation>
 NTNFriction<FrictionLaw, Regularisation>::NTNFriction(
-    NTNBaseContact & contact, const ID & id, const MemoryID & memory_id)
-    : FrictionLaw<Regularisation>(contact, id, memory_id) {
+    NTNBaseContact & contact, const ID & id)
+    : FrictionLaw<Regularisation>(contact, id) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();

@@ -28,8 +28,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __IOHELPER_FILE_MANAGER_H__
-#define __IOHELPER_FILE_MANAGER_H__
+#ifndef IOHELPER_FILE_MANAGER_H_
+#define IOHELPER_FILE_MANAGER_H_
 /* -------------------------------------------------------------------------- */
 #include <zlib.h>
 #include <stdio.h>
@@ -41,7 +41,7 @@
 #include "iohelper_common.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_IOHELPER__
+namespace iohelper {
 
 template <class charT, class Traits=std::char_traits<charT> >
 class GZfstream : public std::basic_fstream<charT,Traits> {
@@ -107,9 +107,10 @@ template <class charT, class Traits>
 // /* -------------------------------------------------------------------------- */
 
 template <class charT, class Traits>
-inline GZfstream<charT,Traits>::GZfstream(const std::string & fname,
-					  std::fstream::openmode mode,bool) :
-    std::basic_fstream<charT,Traits>(fname.c_str(),mode){
+inline GZfstream<charT, Traits>::GZfstream(const std::string & fname,
+                                           std::fstream::openmode mode,
+                                           bool /*unused*/)
+    : std::basic_fstream<charT, Traits>(fname.c_str(), mode) {
   //  compressed = compr;
 // #ifdef USING_ZLIB
 //   gzfile = NULL;
@@ -192,11 +193,10 @@ inline GZfstream<charT,Traits>::GZfstream(const std::string & fname,
 
 // /* -------------------------------------------------------------------------- */
 
-
 template <class charT, class Traits>
-inline void GZfstream<charT,Traits>::open(const std::string & fname,
-					  std::fstream::openmode mode,
-					  bool){
+inline void GZfstream<charT, Traits>::open(const std::string & fname,
+                                           std::fstream::openmode mode,
+                                           bool /*unused*/) {
   std::basic_fstream<charT,Traits>::open(fname.c_str(),mode);
 
 //   if (this->is_open()) this->close();
@@ -342,9 +342,9 @@ inline void GZfstream<charT,Traits>::open(const std::string & fname,
 
 using File = GZfstream<char>;
 
-__END_IOHELPER__
+}
 
 
 
 
-#endif /* __IOHELPER_FILE_MANAGER_H__ */
+#endif /* IOHELPER_FILE_MANAGER_H_ */

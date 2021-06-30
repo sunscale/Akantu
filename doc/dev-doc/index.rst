@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Akantu: a meh FEM software ¯\\_(ツ)_/¯
-======================================
+Akantu: a FEM library
+=====================
 
 .. toctree::
    :maxdepth: 2
@@ -12,6 +12,17 @@ Akantu: a meh FEM software ¯\\_(ツ)_/¯
 
    ./manual/getting_started.rst
    ./manual/fe_engine.rst
+   ./manual/solidmechanicsmodel.rst
+   ./manual/heattransfermodel.rst
+   ./manual/phasefieldmodel.rst
+   ./manual/structuralmechanicsmodel.rst
+   ./manual/io.rst
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Changelog
+
+   ./changelog.rst
 
 .. toctree::
    :maxdepth: 2
@@ -19,6 +30,17 @@ Akantu: a meh FEM software ¯\\_(ツ)_/¯
 
    ./reference.rst
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Appendix
+
+   ./manual/appendix.rst
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Bibliography
+
+   ./manual/bibliography.rst
 
 Indices and tables
 ==================

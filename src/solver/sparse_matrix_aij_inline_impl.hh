@@ -31,8 +31,8 @@
 #include "sparse_matrix_aij.hh"
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_SPARSE_MATRIX_AIJ_INLINE_IMPL_HH__
-#define __AKANTU_SPARSE_MATRIX_AIJ_INLINE_IMPL_HH__
+#ifndef AKANTU_SPARSE_MATRIX_AIJ_INLINE_IMPL_HH_
+#define AKANTU_SPARSE_MATRIX_AIJ_INLINE_IMPL_HH_
 
 namespace akantu {
 
@@ -41,13 +41,16 @@ inline UInt SparseMatrixAIJ::add(UInt i, UInt j) {
 
   auto it = this->irn_jcn_k.find(jcn_irn);
 
-  if (!(it == this->irn_jcn_k.end()))
+  if (!(it == this->irn_jcn_k.end())) {
     return it->second;
+  }
 
-  if (i + 1 > this->size_)
+  if (i + 1 > this->size_) {
     this->size_ = i + 1;
-  if (j + 1 > this->size_)
+  }
+  if (j + 1 > this->size_) {
     this->size_ = j + 1;
+  }
 
   this->irn.push_back(i + 1);
   this->jcn.push_back(j + 1);
@@ -69,9 +72,9 @@ inline void SparseMatrixAIJ::clearProfile() {
 
   this->irn_jcn_k.clear();
 
-  this->irn.resize(0);
-  this->jcn.resize(0);
-  this->a.resize(0);
+  this->irn.clear();
+  this->jcn.clear();
+  this->a.clear();
 
   this->size_ = 0;
   this->nb_non_zero = 0;
@@ -94,8 +97,9 @@ inline Real SparseMatrixAIJ::operator()(UInt i, UInt j) const {
   KeyCOO jcn_irn = this->key(i, j);
   auto irn_jcn_k_it = this->irn_jcn_k.find(jcn_irn);
 
-  if (irn_jcn_k_it == this->irn_jcn_k.end())
+  if (irn_jcn_k_it == this->irn_jcn_k.end()) {
     return 0.;
+  }
   return this->a(irn_jcn_k_it->second);
 }
 
@@ -174,15 +178,17 @@ inline void SparseMatrixAIJ::addValues(const Vector<Int> & is,
                                        const Vector<Int> & js,
                                        const Matrix<Real> & values,
                                        MatrixType values_type) {
-  if (getMatrixType() == _symmetric)
-    if (values_type == _symmetric)
+  if (getMatrixType() == _symmetric) {
+    if (values_type == _symmetric) {
       this->addSymmetricValuesToSymmetric(is, js, values);
-    else
+    } else {
       this->addUnsymmetricValuesToSymmetric(is, js, values);
-  else
+    }
+  } else {
     this->addValuesToUnsymmetric(is, js, values);
+  }
 }
 
 } // namespace akantu
 
-#endif /* __AKANTU_SPARSE_MATRIX_AIJ_INLINE_IMPL_HH__ */
+#endif /* AKANTU_SPARSE_MATRIX_AIJ_INLINE_IMPL_HH_ */

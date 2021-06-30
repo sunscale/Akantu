@@ -106,7 +106,7 @@ void MaterialIterativeStiffnessReduction<spatial_dimension>::
   /// loop over all the quadrature points and compute the equivalent stress
   for (; grad_u_it != grad_u_end; ++grad_u_it) {
     /// compute the stress
-    sigma.clear();
+    sigma.zero();
     MaterialElastic<spatial_dimension>::computeStressOnQuad(*grad_u_it, sigma,
                                                             0.);
     MaterialDamageIterative<spatial_dimension>::computeDamageAndStressOnQuad(

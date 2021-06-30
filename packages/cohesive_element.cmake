@@ -45,6 +45,8 @@ package_declare_sources(cohesive_element
   mesh_utils/cohesive_element_inserter.hh
   mesh_utils/cohesive_element_inserter_inline_impl.hh
   mesh_utils/cohesive_element_inserter_parallel.cc
+  mesh_utils/cohesive_element_inserter_helper.cc
+  mesh_utils/cohesive_element_inserter_helper.hh
 
   model/solid_mechanics/solid_mechanics_model_cohesive/fragment_manager.cc
   model/solid_mechanics/solid_mechanics_model_cohesive/fragment_manager.hh

@@ -33,8 +33,8 @@
 #include "material_elastic.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_PLASTIC_HH__
-#define __AKANTU_MATERIAL_PLASTIC_HH__
+#ifndef AKANTU_MATERIAL_PLASTIC_HH_
+#define AKANTU_MATERIAL_PLASTIC_HH_
 
 namespace akantu {
 
@@ -60,13 +60,17 @@ protected:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// get the energy specifying the type for the time step
+  /**
+   * @brief Return potential or plastic energy
+   *
+   * Plastic dissipated energy is integrated over time.
+   */
   Real getEnergy(const std::string & type) override;
 
-  /// Compute the plastic energy
+  /// Update the plastic energy for the current timestep
   void updateEnergies(ElementType el_type) override;
 
-  /// Compute the true potential energy
+  /// Compute the true potential energy (w/ elastic strain)
   void computePotentialEnergy(ElementType el_type) override;
 
 protected:
@@ -74,16 +78,17 @@ protected:
   inline void computeStressAndInelasticStrainOnQuad(
       const Matrix<Real> & grad_u, const Matrix<Real> & previous_grad_u,
       Matrix<Real> & sigma, const Matrix<Real> & previous_sigma,
-      Matrix<Real> & inelas_strain, const Matrix<Real> & previous_inelas_strain,
+      Matrix<Real> & inelastic_strain,
+      const Matrix<Real> & previous_inelastic_strain,
       const Matrix<Real> & delta_inelastic_strain) const;
 
   inline void computeStressAndInelasticStrainOnQuad(
       const Matrix<Real> & delta_grad_u, Matrix<Real> & sigma,
-      const Matrix<Real> & previous_sigma, Matrix<Real> & inelas_strain,
-      const Matrix<Real> & previous_inelas_strain,
+      const Matrix<Real> & previous_sigma, Matrix<Real> & inelastic_strain,
+      const Matrix<Real> & previous_inelastic_strain,
       const Matrix<Real> & delta_inelastic_strain) const;
 
-  /// get the plastic energy for the time step
+  /// Get the integrated plastic energy for the time step
   Real getPlasticEnergy();
 
   /* ------------------------------------------------------------------------ */
@@ -124,4 +129,4 @@ protected:
 } // namespace akantu
 
 #include "material_plastic_inline_impl.hh"
-#endif /* __AKANTU_MATERIAL_PLASTIC_HH__ */
+#endif /* AKANTU_MATERIAL_PLASTIC_HH_ */

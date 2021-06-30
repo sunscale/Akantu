@@ -30,13 +30,12 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_memory.hh"
 #include "communicator_event_handler.hh"
 #include "parsable.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_SOLVER_HH__
-#define __AKANTU_SOLVER_HH__
+#ifndef AKANTU_SOLVER_HH_
+#define AKANTU_SOLVER_HH_
 
 namespace akantu {
 enum SolverParallelMethod {
@@ -50,15 +49,13 @@ class DOFManager;
 
 namespace akantu {
 
-class SparseSolver : protected Memory,
-                     public Parsable,
-                     public CommunicatorEventHandler {
+class SparseSolver : public Parsable, public CommunicatorEventHandler {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   SparseSolver(DOFManager & dof_manager, const ID & matrix_id,
-               const ID & id = "solver", const MemoryID & memory_id = 0);
+               const ID & id = "solver");
 
   ~SparseSolver() override;
   /* ------------------------------------------------------------------------ */
@@ -126,4 +123,4 @@ namespace debug {
 
 } // namespace akantu
 
-#endif /* __AKANTU_SOLVER_HH__ */
+#endif /* AKANTU_SOLVER_HH_ */

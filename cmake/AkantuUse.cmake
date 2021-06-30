@@ -28,6 +28,10 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
+if (DEFINED CMAKE_PACKAGES_SYSTEM_LOADED)
+  return()
+endif()
+set(CMAKE_PACKAGES_SYSTEM_LOADED TRUE)
 
 function(package_is_activated pkg activated)
   string(TOUPPER ${pkg} _u_pkg)

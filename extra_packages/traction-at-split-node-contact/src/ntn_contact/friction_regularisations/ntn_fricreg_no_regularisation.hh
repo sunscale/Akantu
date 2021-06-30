@@ -29,8 +29,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AST_NTN_FRICREG_NO_REGULARISATION_HH__
-#define __AST_NTN_FRICREG_NO_REGULARISATION_HH__
+#ifndef AST_NTN_FRICREG_NO_REGULARISATION_HH_
+#define AST_NTN_FRICREG_NO_REGULARISATION_HH_
 
 /* -------------------------------------------------------------------------- */
 // simtools
@@ -45,8 +45,7 @@ class NTNFricRegNoRegularisation : public NTNBaseFriction {
   /* ------------------------------------------------------------------------ */
 public:
   NTNFricRegNoRegularisation(NTNBaseContact & contact,
-                             const ID & id = "no_regularisation",
-                             const MemoryID & memory_id = 0);
+                             const ID & id = "no_regularisation");
   virtual ~NTNFricRegNoRegularisation(){};
 
   /* ------------------------------------------------------------------------ */
@@ -130,4 +129,4 @@ inline std::ostream & operator<<(std::ostream & stream,
 
 } // namespace akantu
 
-#endif /* __AST_NTN_FRICREG_NO_REGULARISATION_HH__ */
+#endif /* AST_NTN_FRICREG_NO_REGULARISATION_HH_ */

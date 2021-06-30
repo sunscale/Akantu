@@ -33,16 +33,17 @@
 #include "model.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MODEL_INLINE_IMPL_HH__
-#define __AKANTU_MODEL_INLINE_IMPL_HH__
+#ifndef AKANTU_MODEL_INLINE_IMPL_HH_
+#define AKANTU_MODEL_INLINE_IMPL_HH_
 
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <typename FEEngineClass>
 inline FEEngineClass & Model::getFEEngineClassBoundary(std::string name) {
-  if (name == "")
+  if (name.empty()) {
     name = default_fem;
+  }
 
   auto it_boun = fems_boundary.find(name);
 
@@ -57,7 +58,7 @@ inline FEEngineClass & Model::getFEEngineClassBoundary(std::string name) {
     auto spatial_dimension = it->second->getElementDimension();
     fems_boundary[name] = std::make_unique<FEEngineClass>(
         it->second->getMesh(), spatial_dimension - 1,
-        id + ":fem_boundary:" + name, memory_id);
+        id + ":fem_boundary:" + name);
   }
 
   return aka::as_type<FEEngineClass>(*fems_boundary[name]);
@@ -66,8 +67,9 @@ inline FEEngineClass & Model::getFEEngineClassBoundary(std::string name) {
 /* -------------------------------------------------------------------------- */
 template <typename FEEngineClass>
 inline FEEngineClass & Model::getFEEngineClass(std::string name) const {
-  if (name == "")
+  if (name.empty()) {
     name = default_fem;
+  }
 
   auto it = fems.find(name);
   if (it == fems.end()) {
@@ -85,16 +87,18 @@ inline void Model::unRegisterFEEngineObject(const std::string & name) {
   }
 
   fems.erase(it);
-  if (not fems.empty() and default_fem == name)
+  if (not fems.empty() and default_fem == name) {
     default_fem = (*fems.begin()).first;
+  }
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename FEEngineClass>
 inline void Model::registerFEEngineObject(const std::string & name, Mesh & mesh,
                                           UInt spatial_dimension) {
-  if (fems.size() == 0)
+  if (fems.empty()) {
     default_fem = name;
+  }
 
   auto it = fems.find(name);
   if (it != fems.end()) {
@@ -103,13 +107,12 @@ inline void Model::registerFEEngineObject(const std::string & name, Mesh & mesh,
   }
 
   fems[name] = std::make_unique<FEEngineClass>(
-      mesh, spatial_dimension, id + ":fem:" + name + std::to_string(memory_id),
-      memory_id);
+      mesh, spatial_dimension, id + ":fem:" + name);
 }
 
 /* -------------------------------------------------------------------------- */
 inline FEEngine & Model::getFEEngine(const ID & name) const {
-  ID tmp_name = (name == "") ? default_fem : name;
+  ID tmp_name = (name.empty()) ? default_fem : name;
 
   auto it = fems.find(tmp_name);
 
@@ -121,7 +124,7 @@ inline FEEngine & Model::getFEEngine(const ID & name) const {
 
 /* -------------------------------------------------------------------------- */
 inline FEEngine & Model::getFEEngineBoundary(const ID & name) {
-  ID tmp_name = (name == "") ? default_fem : name;
+  ID tmp_name = (name.empty()) ? default_fem : name;
 
   auto it = fems_boundary.find(tmp_name);
   if (it == fems_boundary.end()) {
@@ -136,21 +139,11 @@ inline FEEngine & Model::getFEEngineBoundary(const ID & name) {
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-void Model::allocNodalField(Array<T> *& array, UInt nb_component,
-                            const ID & name) {
-  if (array)
-    return;
-
-  UInt nb_nodes = mesh.getNbNodes();
-  array = &(alloc<T>(id + ":" + name, nb_nodes, nb_component, T()));
-}
-
-/* -------------------------------------------------------------------------- */
-template <typename T>
 void Model::allocNodalField(std::unique_ptr<Array<T>> & array,
                             UInt nb_component, const ID & name) const {
-  if (array)
+  if (array) {
     return;
+  }
 
   UInt nb_nodes = mesh.getNbNodes();
   array =
@@ -172,4 +165,4 @@ inline UInt Model::getNbIntegrationPoints(const Array<Element> & elements,
 
 } // namespace akantu
 
-#endif /* __AKANTU_MODEL_INLINE_IMPL_HH__ */
+#endif /* AKANTU_MODEL_INLINE_IMPL_HH_ */

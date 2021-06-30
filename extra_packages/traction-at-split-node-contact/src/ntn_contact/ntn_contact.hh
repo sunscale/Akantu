@@ -29,8 +29,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AST_NTN_CONTACT_HH__
-#define __AST_NTN_CONTACT_HH__
+#ifndef AST_NTN_CONTACT_HH_
+#define AST_NTN_CONTACT_HH_
 
 /* -------------------------------------------------------------------------- */
 // simtools
@@ -44,9 +44,8 @@ class NTNContact : public NTNBaseContact {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NTNContact(SolidMechanicsModel & model, const ID & id = "contact",
-             const MemoryID & memory_id = 0);
-  virtual ~NTNContact(){};
+  NTNContact(SolidMechanicsModel & model, const ID & id = "contact");
+  ~NTNContact() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -163,4 +162,4 @@ inline std::ostream & operator<<(std::ostream & stream,
 
 } // namespace akantu
 
-#endif /* __AST_NTN_CONTACT_HH__ */
+#endif /* AST_NTN_CONTACT_HH_ */

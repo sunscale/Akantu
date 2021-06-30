@@ -16,8 +16,8 @@
 #include "fe_engine.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_FACET_SYNCHRONIZER_HH__
-#define __AKANTU_FACET_SYNCHRONIZER_HH__
+#ifndef AKANTU_FACET_SYNCHRONIZER_HH_
+#define AKANTU_FACET_SYNCHRONIZER_HH_
 
 namespace akantu {
 
@@ -28,8 +28,7 @@ class FacetSynchronizer : public ElementSynchronizer {
 public:
   FacetSynchronizer(Mesh & mesh,
                     const ElementSynchronizer & element_synchronizer,
-                    const ID & id = "facet_synchronizer",
-                    MemoryID memory_id = 0);
+                    const ID & id = "facet_synchronizer");
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -93,4 +92,4 @@ private:
 
 #include "facet_synchronizer_inline_impl.hh"
 
-#endif /* __AKANTU_FACET_SYNCHRONIZER_HH__ */
+#endif /* AKANTU_FACET_SYNCHRONIZER_HH_ */

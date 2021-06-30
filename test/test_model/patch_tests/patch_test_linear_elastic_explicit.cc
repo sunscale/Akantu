@@ -70,9 +70,9 @@ TYPED_TEST(TestPatchTestSMMLinear, Explicit) {
 /* -------------------------------------------------------------------------- */
 TYPED_TEST(TestPatchTestSMMLinear, ExplicitFiniteDeformation) {
   std::string filename = "material_check_stress_plane_stress_finite_deformation.dat";
-  if (this->plane_strain)
+  if (this->plane_strain) {
     filename = "material_check_stress_plane_strain_finite_deformation.dat";
-  else {
+  } else {
     SUCCEED();
     return;
   }

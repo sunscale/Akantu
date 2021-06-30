@@ -31,8 +31,8 @@
 #include "aka_common.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MESH_UTILS_DISTRIBUTION_HH__
-#define __AKANTU_MESH_UTILS_DISTRIBUTION_HH__
+#ifndef AKANTU_MESH_UTILS_DISTRIBUTION_HH_
+#define AKANTU_MESH_UTILS_DISTRIBUTION_HH_
 
 namespace akantu {
 class Mesh;
@@ -43,7 +43,7 @@ namespace akantu {
 namespace MeshUtilsDistribution {
   /// Master call to distribute a mesh in a centralized manner (the UInt is just
   /// to avoid some shitty access from the slave...)
-  void distributeMeshCentralized(Mesh & mesh, UInt,
+  void distributeMeshCentralized(Mesh & mesh, UInt /*unused*/,
                                  const MeshPartition & partition);
   /// Slave call to distribute a mesh in a centralized manner
   void distributeMeshCentralized(Mesh & mesh, UInt root);
@@ -51,4 +51,4 @@ namespace MeshUtilsDistribution {
 
 } // namespace akantu
 
-#endif /* __AKANTU_MESH_UTILS_DISTRIBUTION_HH__ */
+#endif /* AKANTU_MESH_UTILS_DISTRIBUTION_HH_ */

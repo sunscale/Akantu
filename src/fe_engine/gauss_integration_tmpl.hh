@@ -29,8 +29,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_GAUSS_INTEGRATION_TMPL_HH__
-#define __AKANTU_GAUSS_INTEGRATION_TMPL_HH__
+#ifndef AKANTU_GAUSS_INTEGRATION_TMPL_HH_
+#define AKANTU_GAUSS_INTEGRATION_TMPL_HH_
 
 namespace akantu {
 
@@ -53,7 +53,7 @@ namespace _aka_gauss_helpers {
   };
 
   template <UInt n> struct GaussIntegrationNbPoints<_git_segment, n> {
-    static const UInt nb_points = (n + 1) / 2 + ((n + 1) % 2 ? 1 : 0);
+    static const UInt nb_points = (n + 1) / 2 + (bool((n + 1) % 2) ? 1 : 0);
   };
 
 #define DECLARE_GAUSS_NB_POINTS(type, order, points)                           \
@@ -113,12 +113,12 @@ namespace _aka_gauss_helpers {
 
     static UInt getNbQuadraturePoints() { return git_np::nb_points; }
 
-    static const Matrix<Real> getQuadraturePoints() {
+    static Matrix<Real> getQuadraturePoints() {
       return Matrix<Real>(git_data::quad_positions, dimension,
                           git_np::nb_points);
     }
 
-    static const Vector<Real> getWeights() {
+    static Vector<Real> getWeights() {
       return Vector<Real>(git_data::quad_weights, git_np::nb_points);
     }
   };
@@ -136,7 +136,7 @@ namespace _aka_gauss_helpers {
       return Math::pow<dimension>(git_np::nb_points);
     }
 
-    static const Matrix<Real> getQuadraturePoints() {
+    static Matrix<Real> getQuadraturePoints() {
       UInt tot_nquad = getNbQuadraturePoints();
       UInt nquad = git_np::nb_points;
 
@@ -154,7 +154,7 @@ namespace _aka_gauss_helpers {
       return quads;
     }
 
-    static const Vector<Real> getWeights() {
+    static Vector<Real> getWeights() {
       UInt tot_nquad = getNbQuadraturePoints();
       UInt nquad = git_np::nb_points;
 
@@ -192,7 +192,7 @@ namespace _aka_gauss_helpers {
       return git_np_seg::nb_points * git_np_tri::nb_points;
     }
 
-    static const Matrix<Real> getQuadraturePoints() {
+    static Matrix<Real> getQuadraturePoints() {
       UInt tot_nquad = getNbQuadraturePoints();
       UInt nquad_seg = git_np_seg::nb_points;
       UInt nquad_tri = git_np_tri::nb_points;
@@ -214,7 +214,7 @@ namespace _aka_gauss_helpers {
       return quads;
     }
 
-    static const Vector<Real> getWeights() {
+    static Vector<Real> getWeights() {
       UInt tot_nquad = getNbQuadraturePoints();
       UInt nquad_seg = git_np_seg::nb_points;
       UInt nquad_tri = git_np_tri::nb_points;
@@ -236,7 +236,7 @@ namespace _aka_gauss_helpers {
 } // namespace _aka_gauss_helpers
 
 template <ElementType element_type, UInt n>
-const Matrix<Real>
+Matrix<Real>
 GaussIntegrationElement<element_type, n>::getQuadraturePoints() {
   const InterpolationType itp_type =
       ElementClassProperty<element_type>::interpolation_type;
@@ -250,7 +250,7 @@ GaussIntegrationElement<element_type, n>::getQuadraturePoints() {
 
 /* -------------------------------------------------------------------------- */
 template <ElementType element_type, UInt n>
-const Vector<Real> GaussIntegrationElement<element_type, n>::getWeights() {
+Vector<Real> GaussIntegrationElement<element_type, n>::getWeights() {
   const InterpolationType itp_type =
       ElementClassProperty<element_type>::interpolation_type;
   using interpolation_property = InterpolationProperty<itp_type>;
@@ -275,4 +275,4 @@ UInt GaussIntegrationElement<element_type, n>::getNbQuadraturePoints() {
 
 } // namespace akantu
 
-#endif /* __AKANTU_GAUSS_INTEGRATION_TMPL_HH__ */
+#endif /* AKANTU_GAUSS_INTEGRATION_TMPL_HH_ */

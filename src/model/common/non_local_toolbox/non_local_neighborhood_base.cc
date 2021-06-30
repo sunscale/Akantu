@@ -39,11 +39,9 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 NonLocalNeighborhoodBase::NonLocalNeighborhoodBase(
-    Model & model, const ElementTypeMapReal & quad_coordinates, const ID & id,
-    const MemoryID & memory_id)
-    : NeighborhoodBase(model, quad_coordinates, id, memory_id),
+    Model & model, const ElementTypeMapReal & quad_coordinates, const ID & id)
+    : NeighborhoodBase(model, quad_coordinates, id),
       Parsable(ParserType::_non_local, id) {
-
   AKANTU_DEBUG_IN();
 
   this->registerParam("radius", neighborhood_radius, 100.,
@@ -63,7 +61,7 @@ void NonLocalNeighborhoodBase::createGridSynchronizer() {
       this->model.getMesh(), *spatial_grid, *this,
       std::set<SynchronizationTag>{SynchronizationTag::_mnl_weight,
                                    SynchronizationTag::_mnl_for_average},
-      std::string(getID() + ":grid_synchronizer"), this->memory_id, false);
+      std::string(id + ":grid_synchronizer"), false);
 
   this->is_creating_grid = false;
 }
@@ -71,33 +69,43 @@ void NonLocalNeighborhoodBase::createGridSynchronizer() {
 /* -------------------------------------------------------------------------- */
 void NonLocalNeighborhoodBase::synchronize(
     DataAccessor<Element> & data_accessor, const SynchronizationTag & tag) {
-  if (not grid_synchronizer)
+  if (not grid_synchronizer) {
     return;
+  }
 
   grid_synchronizer->synchronizeOnce(data_accessor, tag);
+}
+
+/* -------------------------------------------------------------------------- */
+void NonLocalNeighborhoodBase::getRelevantGhostElements(
+    std::set<Element> & relevant_ghost_elements) {
+
+  for (auto && ghost_type : ghost_type_t{}) {
+    auto & pair_list = this->pair_list.at(ghost_type);
+    for (auto && pair : pair_list) {
+      if (pair.first.ghost_type == _ghost) {
+        relevant_ghost_elements.insert(pair.first);
+      }
+      if (pair.second.ghost_type == _ghost) {
+        relevant_ghost_elements.insert(pair.second);
+      }
+    }
+  }
 }
 
 /* -------------------------------------------------------------------------- */
 void NonLocalNeighborhoodBase::cleanupExtraGhostElements(
     std::set<Element> & relevant_ghost_elements) {
 
-  for (auto && pair : pair_list[_ghost]) {
-    const auto & q2 = pair.second;
-    relevant_ghost_elements.insert(q2);
-  }
-
-  Array<Element> ghosts_to_erase(0);
+  Array<Element> ghosts_to_erase;
   auto & mesh = this->model.getMesh();
 
-  Element element;
-  element.ghost_type = _ghost;
-
   auto end = relevant_ghost_elements.end();
-  for (auto & type : mesh.elementTypes(spatial_dimension, _ghost)) {
-    element.type = type;
-    UInt nb_ghost_elem = mesh.getNbElement(type, _ghost);
+  for (const auto & type : mesh.elementTypes(
+           _spatial_dimension = spatial_dimension, _ghost_type = _ghost)) {
+    auto nb_ghost_elem = mesh.getNbElement(type, _ghost);
     for (UInt g = 0; g < nb_ghost_elem; ++g) {
-      element.element = g;
+      Element element{type, g, _ghost};
       if (relevant_ghost_elements.find(element) == end) {
         ghosts_to_erase.push_back(element);
       }
@@ -105,7 +113,6 @@ void NonLocalNeighborhoodBase::cleanupExtraGhostElements(
   }
 
   /// remove the unneccessary ghosts from the synchronizer
-  // this->grid_synchronizer->removeElements(ghosts_to_erase);
   mesh.eraseElements(ghosts_to_erase);
 }
 

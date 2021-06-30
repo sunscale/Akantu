@@ -33,8 +33,8 @@
 #include "material_cohesive_linear.hh"
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_MATERIAL_COHESIVE_LINEAR_FATIGUE_HH__
-#define __AKANTU_MATERIAL_COHESIVE_LINEAR_FATIGUE_HH__
+#ifndef AKANTU_MATERIAL_COHESIVE_LINEAR_FATIGUE_HH_
+#define AKANTU_MATERIAL_COHESIVE_LINEAR_FATIGUE_HH_
 
 /* -------------------------------------------------------------------------- */
 
@@ -128,4 +128,4 @@ private:
 
 } // namespace akantu
 
-#endif /* __AKANTU_MATERIAL_COHESIVE_LINEAR_FATIGUE_HH__ */
+#endif /* AKANTU_MATERIAL_COHESIVE_LINEAR_FATIGUE_HH_ */

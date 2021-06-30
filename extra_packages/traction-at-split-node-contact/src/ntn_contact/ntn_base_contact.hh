@@ -28,8 +28,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AST_NTN_BASE_CONTACT_HH__
-#define __AST_NTN_BASE_CONTACT_HH__
+#ifndef AST_NTN_BASE_CONTACT_HH_
+#define AST_NTN_BASE_CONTACT_HH_
 
 /* -------------------------------------------------------------------------- */
 // akantu
@@ -58,16 +58,13 @@ class NTNBaseContact;
 // };
 
 /* -------------------------------------------------------------------------- */
-class NTNBaseContact : protected Memory,
-                       public DataAccessor<Element>,
-                       public Dumpable {
+class NTNBaseContact : public DataAccessor<Element>, public Dumpable {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NTNBaseContact(SolidMechanicsModel & model, const ID & id = "contact",
-                 const MemoryID & memory_id = 0);
-  virtual ~NTNBaseContact();
+  NTNBaseContact(SolidMechanicsModel & model, const ID & id = "contact");
+  ~NTNBaseContact() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -95,7 +92,7 @@ public:
   virtual void computeContactPressure();
 
   /// impose the normal contact force
-  virtual void applyContactPressure() ;
+  virtual void applyContactPressure();
 
   /// register synchronizedarrays for sync
   virtual void registerSynchronizedArray(SynchronizedArrayBase & array);
@@ -162,7 +159,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   void addDumpFieldToDumper(const std::string & dumper_name,
-                                    const std::string & field_id) override;
+                            const std::string & field_id) override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -203,7 +200,9 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-  typedef std::set<const ElementGroup *> SurfacePtrSet;
+  using SurfacePtrSet = std::set<const ElementGroup *>;
+
+  ID id;
 
   SolidMechanicsModel & model;
 
@@ -248,4 +247,4 @@ inline std::ostream & operator<<(std::ostream & stream,
 /* -------------------------------------------------------------------------- */
 #include "ntn_base_contact_inline_impl.hh"
 
-#endif /* __AST_NTN_BASE_CONTACT_HH__ */
+#endif /* AST_NTN_BASE_CONTACT_HH_ */

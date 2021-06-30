@@ -29,8 +29,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_CORE_INCLUDES_HH__
-#define __AKANTU_MATERIAL_CORE_INCLUDES_HH__
+#ifndef AKANTU_MATERIAL_CORE_INCLUDES_HH_
+#define AKANTU_MATERIAL_CORE_INCLUDES_HH_
 
 /* -------------------------------------------------------------------------- */
 /* Material list                                                              */
@@ -50,6 +50,9 @@
 #include "material_marigo.hh"
 #include "material_mazars.hh"
 
+//phasefield laws
+#include "material_phasefield.hh"
+
 // small-deformation plasticity
 #include "material_linear_isotropic_hardening.hh"
 
@@ -62,6 +65,7 @@
       (2, (sls_deviatoric, MaterialStandardLinearSolidDeviatoric)))(           \
       (2, (marigo, MaterialMarigo)))((2, (mazars, MaterialMazars)))(           \
       (2, (plastic_linear_isotropic_hardening,                                 \
-           MaterialLinearIsotropicHardening)))
+           MaterialLinearIsotropicHardening)))(                                \
+      (2, (phasefield, MaterialPhaseField)))					       
 
-#endif /* __AKANTU_MATERIAL_CORE_INCLUDES_HH__ */
+#endif /* AKANTU_MATERIAL_CORE_INCLUDES_HH_ */

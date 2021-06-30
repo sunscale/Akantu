@@ -33,8 +33,8 @@
 #include <dmumps_c.h>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_SOLVER_MUMPS_HH__
-#define __AKANTU_SOLVER_MUMPS_HH__
+#ifndef AKANTU_SOLVER_MUMPS_HH_
+#define AKANTU_SOLVER_MUMPS_HH_
 
 namespace akantu {
 class DOFManagerDefault;
@@ -49,8 +49,7 @@ class SparseSolverMumps : public SparseSolver {
   /* ------------------------------------------------------------------------ */
 public:
   SparseSolverMumps(DOFManagerDefault & dof_manager, const ID & matrix_id,
-                    const ID & id = "sparse_solver_mumps",
-                    const MemoryID & memory_id = 0);
+                    const ID & id = "sparse_solver_mumps");
 
   ~SparseSolverMumps() override;
 
@@ -153,4 +152,4 @@ private:
 
 } // namespace akantu
 
-#endif /* __AKANTU_SOLVER_MUMPS_HH__ */
+#endif /* AKANTU_SOLVER_MUMPS_HH_ */

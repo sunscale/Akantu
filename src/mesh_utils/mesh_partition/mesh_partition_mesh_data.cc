@@ -41,11 +41,10 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-MeshPartitionMeshData::MeshPartitionMeshData(const Mesh & mesh,
+MeshPartitionMeshData::MeshPartitionMeshData(Mesh & mesh,
                                              UInt spatial_dimension,
-                                             const ID & id,
-                                             const MemoryID & memory_id)
-    : MeshPartition(mesh, spatial_dimension, id, memory_id) {
+                                             const ID & id)
+    : MeshPartition(mesh, spatial_dimension, id) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();
@@ -53,9 +52,9 @@ MeshPartitionMeshData::MeshPartitionMeshData(const Mesh & mesh,
 
 /* -------------------------------------------------------------------------- */
 MeshPartitionMeshData::MeshPartitionMeshData(
-    const Mesh & mesh, const ElementTypeMapArray<UInt> & mapping,
-    UInt spatial_dimension, const ID & id, const MemoryID & memory_id)
-    : MeshPartition(mesh, spatial_dimension, id, memory_id),
+    Mesh & mesh, const ElementTypeMapArray<UInt> & mapping,
+    UInt spatial_dimension, const ID & id)
+    : MeshPartition(mesh, spatial_dimension, id),
       partition_mapping(&mapping) {
   AKANTU_DEBUG_IN();
 
@@ -64,8 +63,9 @@ MeshPartitionMeshData::MeshPartitionMeshData(
 
 /* -------------------------------------------------------------------------- */
 void MeshPartitionMeshData::partitionate(
-    UInt nb_part, std::function<Int(const Element &, const Element &)>,
-    std::function<Int(const Element &)>) {
+    UInt nb_part,
+    const std::function<Int(const Element &, const Element &)> &/*edge_load_func*/,
+    const std::function<Int(const Element &)> &/*vertex_load_func*/) {
   AKANTU_DEBUG_IN();
 
   if (mesh.isPeriodic()) {
@@ -79,7 +79,7 @@ void MeshPartitionMeshData::partitionate(
 
   UInt linearized_el = 0;
   auto nb_elements = mesh.getNbElement(mesh.getSpatialDimension(), ghost_type);
-  auto partition_list = new Int[nb_elements];
+  auto *partition_list = new Int[nb_elements];
 
 #if !defined(AKANTU_NDEBUG)
   std::set<UInt> partitions;

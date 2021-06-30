@@ -36,8 +36,8 @@
 #include "material_elastic_linear_anisotropic.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_ELASTIC_ORTHOTROPIC_HH__
-#define __AKANTU_MATERIAL_ELASTIC_ORTHOTROPIC_HH__
+#ifndef AKANTU_MATERIAL_ELASTIC_ORTHOTROPIC_HH_
+#define AKANTU_MATERIAL_ELASTIC_ORTHOTROPIC_HH_
 
 namespace akantu {
 
@@ -132,4 +132,4 @@ protected:
 
 } // namespace akantu
 
-#endif /* __AKANTU_MATERIAL_ELASTIC_ORTHOTROPIC_HH__ */
+#endif /* AKANTU_MATERIAL_ELASTIC_ORTHOTROPIC_HH_ */

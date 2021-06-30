@@ -42,7 +42,7 @@ void register_dumpable(py::module & mod) {
           "addDumpFieldExternal",
           [](Dumpable & _this, const std::string & field_id,
              Array<Real> & field) {
-            auto & tmp = dynamic_cast<detail::ArrayProxy<Real>&>(field);
+            auto & tmp = dynamic_cast<detail::ArrayProxy<Real> &>(field);
             tmp_array.push_back(tmp);
             return _this.addDumpFieldExternal(field_id, tmp_array.back());
           },
@@ -69,21 +69,21 @@ void register_dumpable(py::module & mod) {
            py::arg("dumper_name"), py::arg("time"), py::arg("step"))
       .def("dump", py::overload_cast<const std::string &>(&Dumpable::dump),
            py::arg("dumper_name"));
+}
+
+/* -------------------------------------------------------------------------- */
+PYBIND11_MODULE(dumper_module, mod) {
+  mod.attr("__name__") = "py11_akantu.dumper";
 
   /* ------------------------------------------------------------------------ */
-  py::module dumper_module("dumper");
-  mod.attr("dumper") = dumper_module;
-
-  /* ------------------------------------------------------------------------ */
-  py::class_<dumpers::Field, std::shared_ptr<dumpers::Field>>(dumper_module,
-                                                            "Field");
+  py::class_<dumpers::Field, std::shared_ptr<dumpers::Field>>(mod, "Field");
 
   /* ------------------------------------------------------------------------ */
   py::class_<dumpers::ElementalField<UInt>, dumpers::Field,
              std::shared_ptr<dumpers::ElementalField<UInt>>>(
-      dumper_module, "ElementalFieldUInt", py::multiple_inheritance())
-      .def(py::init<dumpers::ElementalField<UInt>::field_type &, UInt, GhostType,
-                    ElementKind>(),
+      mod, "ElementalFieldUInt", py::multiple_inheritance())
+      .def(py::init<dumpers::ElementalField<UInt>::field_type &, UInt,
+                    GhostType, ElementKind>(),
            py::arg("field"), py::arg("spatial_dimension") = _all_dimensions,
            py::arg("ghost_type") = _not_ghost,
            py::arg("element_kind") = _ek_not_defined);

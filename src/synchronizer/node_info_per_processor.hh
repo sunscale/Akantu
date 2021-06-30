@@ -33,8 +33,8 @@
 #include "mesh_accessor.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_NODE_INFO_PER_PROCESSOR_HH__
-#define __AKANTU_NODE_INFO_PER_PROCESSOR_HH__
+#ifndef AKANTU_NODE_INFO_PER_PROCESSOR_HH_
+#define AKANTU_NODE_INFO_PER_PROCESSOR_HH_
 
 namespace akantu {
 class NodeSynchronizer;
@@ -63,11 +63,13 @@ protected:
   void fillNodeGroupsFromBuffer(CommunicationBuffer & buffer);
   void fillNodesType();
 
-  void fillCommunicationScheme(const Array<UInt> &);
-  void fillNodalData(DynamicCommunicationBuffer & buffer, std::string tag_name);
+  void fillCommunicationScheme(const Array<UInt> & /*master_info*/);
+  void fillNodalData(DynamicCommunicationBuffer & buffer,
+                     const std::string & tag_name);
 
-  void fillPeriodicPairs(const Array<UInt> &, std::vector<UInt> &);
-  void receiveMissingPeriodic(DynamicCommunicationBuffer &);
+  void fillPeriodicPairs(const Array<UInt> & /*global_pairs*/,
+                         std::vector<UInt> & /*missing_nodes*/);
+  void receiveMissingPeriodic(DynamicCommunicationBuffer & /*buffer*/);
 
 protected:
   NodeSynchronizer & synchronizer;
@@ -123,4 +125,4 @@ private:
 
 } // namespace akantu
 
-#endif /* __AKANTU_NODE_INFO_PER_PROCESSOR_HH__ */
+#endif /* AKANTU_NODE_INFO_PER_PROCESSOR_HH_ */

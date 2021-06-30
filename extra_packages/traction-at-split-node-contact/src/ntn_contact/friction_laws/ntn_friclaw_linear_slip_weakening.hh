@@ -28,8 +28,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AST_NTN_FRICLAW_LINEAR_SLIP_WEAKENING_HH__
-#define __AST_NTN_FRICLAW_LINEAR_SLIP_WEAKENING_HH__
+#ifndef AST_NTN_FRICLAW_LINEAR_SLIP_WEAKENING_HH_
+#define AST_NTN_FRICLAW_LINEAR_SLIP_WEAKENING_HH_
 
 /* -------------------------------------------------------------------------- */
 // simtools
@@ -45,8 +45,7 @@ class NTNFricLawLinearSlipWeakening : public NTNFricLawCoulomb<Regularisation> {
   /* ------------------------------------------------------------------------ */
 public:
   NTNFricLawLinearSlipWeakening(NTNBaseContact & contact,
-                                const ID & id = "linear_slip_weakening",
-                                const MemoryID & memory_id = 0);
+                                const ID & id = "linear_slip_weakening");
   virtual ~NTNFricLawLinearSlipWeakening(){};
 
   /* ------------------------------------------------------------------------ */
@@ -113,4 +112,4 @@ operator<<(std::ostream & stream,
 
 #include "ntn_friclaw_linear_slip_weakening_tmpl.hh"
 
-#endif /* __AST_NTN_FRICLAW_LINEAR_SLIP_WEAKENING_HH__ */
+#endif /* AST_NTN_FRICLAW_LINEAR_SLIP_WEAKENING_HH_ */

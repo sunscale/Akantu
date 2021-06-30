@@ -47,8 +47,9 @@ inline Real RemoveDamagedWithDamageRateWeightFunction::operator()(
   /// compute the weight
   UInt quad = q2.global_num;
 
-  if (q1.global_num == quad)
+  if (q1.global_num == quad) {
     return 1.;
+  }
 
   Array<Real> & dam_array =
       (*this->damage_with_damage_rate)(q2.type, q2.ghost_type);

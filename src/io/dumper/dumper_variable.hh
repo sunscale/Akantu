@@ -32,8 +32,8 @@
 #include <type_traits>
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_DUMPER_IOHELPER_TMPL_VARIABLE_HH__
-#define __AKANTU_DUMPER_IOHELPER_TMPL_VARIABLE_HH__
+#ifndef AKANTU_DUMPER_IOHELPER_TMPL_VARIABLE_HH_
+#define AKANTU_DUMPER_IOHELPER_TMPL_VARIABLE_HH_
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -116,4 +116,4 @@ namespace dumpers {
 } // namespace dumper
 } // namespace akantu
 
-#endif /* __AKANTU_DUMPER_IOHELPER_TMPL_VARIABLE_HH__ */
+#endif /* AKANTU_DUMPER_IOHELPER_TMPL_VARIABLE_HH_ */

@@ -28,8 +28,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AST_NTN_FRICLAW_LINEAR_SLIP_WEAKENING_NO_HEALING_HH__
-#define __AST_NTN_FRICLAW_LINEAR_SLIP_WEAKENING_NO_HEALING_HH__
+#ifndef AST_NTN_FRICLAW_LINEAR_SLIP_WEAKENING_NO_HEALING_HH_
+#define AST_NTN_FRICLAW_LINEAR_SLIP_WEAKENING_NO_HEALING_HH_
 
 /* -------------------------------------------------------------------------- */
 #include "ntn_friclaw_linear_slip_weakening.hh"
@@ -46,8 +46,7 @@ class NTNFricLawLinearSlipWeakeningNoHealing
 public:
   NTNFricLawLinearSlipWeakeningNoHealing(
       NTNBaseContact & contact,
-      const ID & id = "linear_slip_weakening_no_healing",
-      const MemoryID & memory_id = 0);
+      const ID & id = "linear_slip_weakening_no_healing");
   virtual ~NTNFricLawLinearSlipWeakeningNoHealing(){};
 
   /* ------------------------------------------------------------------------ */
@@ -92,4 +91,4 @@ inline std::ostream & operator<<(
 
 #include "ntn_friclaw_linear_slip_weakening_no_healing_tmpl.hh"
 
-#endif /* __AST_NTN_FRICLAW_LINEAR_SLIP_WEAKENING_NO_HEALING_HH__ */
+#endif /* AST_NTN_FRICLAW_LINEAR_SLIP_WEAKENING_NO_HEALING_HH_ */

@@ -35,8 +35,8 @@
 #include <algorithm>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_INLINE_IMPL_HH__
-#define __AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_INLINE_IMPL_HH__
+#ifndef AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_INLINE_IMPL_HH_
+#define AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_INLINE_IMPL_HH_
 
 namespace akantu {
 
@@ -302,4 +302,4 @@ namespace akantu {
 
 } // namespace akantu
 
-#endif /* __AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_INLINE_IMPL_HH__ */
+#endif /* AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_INLINE_IMPL_HH_ */

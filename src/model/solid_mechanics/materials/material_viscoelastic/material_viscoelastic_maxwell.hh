@@ -38,8 +38,8 @@
 #include "material_elastic.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_VISCOELASTIC_MAXWELL_HH__
-#define __AKANTU_MATERIAL_VISCOELASTIC_MAXWELL_HH__
+#ifndef AKANTU_MATERIAL_VISCOELASTIC_MAXWELL_HH_
+#define AKANTU_MATERIAL_VISCOELASTIC_MAXWELL_HH_
 
 namespace akantu {
 
@@ -114,7 +114,7 @@ public:
                      GhostType ghost_type = _not_ghost) override;
 
   /// compute the tangent stiffness matrix for an element type
-  void computeTangentModuli(const ElementType & el_type,
+  void computeTangentModuli(ElementType el_type,
                             Array<Real> & tangent_matrix,
                             GhostType ghost_type = _not_ghost) override;
 
@@ -226,4 +226,4 @@ protected:
 
 } // namespace akantu
 
-#endif /* __AKANTU_MATERIAL_VISCOELASTIC_MAXWELL_HH__ */
+#endif /* AKANTU_MATERIAL_VISCOELASTIC_MAXWELL_HH_ */

@@ -13,7 +13,6 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_memory.hh"
 //#include "mesh.hh"
 #include "shape_igfem.hh"
 /* -------------------------------------------------------------------------- */
@@ -23,13 +22,12 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-ShapeLagrange<_ek_igfem>::ShapeLagrange(const Mesh & mesh, const ID & id,
-                                        const MemoryID & memory_id)
-    : ShapeFunctions(mesh, id, memory_id),
-      shapes("shapes_generic", id, memory_id),
-      shapes_derivatives("shapes_derivatives_generic", id, memory_id),
-      igfem_integration_points("igfem_integration_points", id, memory_id),
-      shapes_at_enrichments("shapes_at_enrichments", id, memory_id) {
+ShapeLagrange<_ek_igfem>::ShapeLagrange(const Mesh & mesh, const ID & id)
+    : ShapeFunctions(mesh, id),
+      shapes("shapes_generic", id),
+      shapes_derivatives("shapes_derivatives_generic", id),
+      igfem_integration_points("igfem_integration_points", id),
+      shapes_at_enrichments("shapes_at_enrichments", id) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();
@@ -38,12 +36,12 @@ ShapeLagrange<_ek_igfem>::ShapeLagrange(const Mesh & mesh, const ID & id,
 /*-------------------------------------------------------------------------- */
 void ShapeLagrange<_ek_igfem>::extractValuesAtStandardNodes(
     const Array<Real> & nodal_values, Array<Real> & extracted_values,
-    const GhostType & ghost_type) const {
+    GhostType ghost_type) const {
 
   AKANTU_DEBUG_ASSERT(nodal_values.getNbComponent() ==
                           extracted_values.getNbComponent(),
                       "The arrays are not of the same size!!!!!");
-  extracted_values.clear();
+  extracted_values.zero();
   UInt spatial_dimension = mesh.getSpatialDimension();
   Mesh::type_iterator it =
       mesh.firstType(spatial_dimension, ghost_type, _ek_igfem);

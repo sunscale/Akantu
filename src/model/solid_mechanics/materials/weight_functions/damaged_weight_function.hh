@@ -32,8 +32,8 @@
 /* -------------------------------------------------------------------------- */
 #include "base_weight_function.hh"
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_DAMAGED_WEIGHT_FUNCTION_HH__
-#define __AKANTU_DAMAGED_WEIGHT_FUNCTION_HH__
+#ifndef AKANTU_DAMAGED_WEIGHT_FUNCTION_HH_
+#define AKANTU_DAMAGED_WEIGHT_FUNCTION_HH_
 
 namespace akantu {
 
@@ -76,4 +76,4 @@ private:
 
 #include "damaged_weight_function_inline_impl.hh"
 
-#endif /* __AKANTU_DAMAGED_WEIGHT_FUNCTION_HH__ */
+#endif /* AKANTU_DAMAGED_WEIGHT_FUNCTION_HH_ */

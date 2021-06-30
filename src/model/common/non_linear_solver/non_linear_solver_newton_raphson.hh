@@ -33,8 +33,8 @@
 #include "non_linear_solver.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_NON_LINEAR_SOLVER_NEWTON_RAPHSON_HH__
-#define __AKANTU_NON_LINEAR_SOLVER_NEWTON_RAPHSON_HH__
+#ifndef AKANTU_NON_LINEAR_SOLVER_NEWTON_RAPHSON_HH_
+#define AKANTU_NON_LINEAR_SOLVER_NEWTON_RAPHSON_HH_
 
 namespace akantu {
 class DOFManagerDefault;
@@ -52,7 +52,7 @@ public:
   NonLinearSolverNewtonRaphson(
       DOFManagerDefault & dof_manager,
       const NonLinearSolverType & non_linear_solver_type,
-      const ID & id = "non_linear_solver_newton_raphson", UInt memory_id = 0);
+      const ID & id = "non_linear_solver_newton_raphson");
   ~NonLinearSolverNewtonRaphson() override;
 
   /* ------------------------------------------------------------------------ */
@@ -68,7 +68,7 @@ public:
 
 protected:
   /// test the convergence compare norm of array to convergence_criteria
-  bool testConvergence(const SolverVector & array);
+  bool testConvergence(const SolverVector & solver_vector);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -106,4 +106,4 @@ private:
 
 } // namespace akantu
 
-#endif /* __AKANTU_NON_LINEAR_SOLVER_NEWTON_RAPHSON_HH__ */
+#endif /* AKANTU_NON_LINEAR_SOLVER_NEWTON_RAPHSON_HH_ */

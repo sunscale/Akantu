@@ -143,8 +143,6 @@ inline void InterpolationElement<_itp_serendip_quadrangle_8>::computeDNDS(
 template <>
 inline Real
 GeometricalElement<_gt_quadrangle_8>::getInradius(const Matrix<Real> & coord) {
-  Real a, b, h;
-
   Vector<Real> u0 = coord(0);
   Vector<Real> u1 = coord(1);
   Vector<Real> u2 = coord(2);
@@ -154,9 +152,9 @@ GeometricalElement<_gt_quadrangle_8>::getInradius(const Matrix<Real> & coord) {
   Vector<Real> u6 = coord(6);
   Vector<Real> u7 = coord(7);
 
-  a = u0.distance(u4);
-  b = u4.distance(u1);
-  h = std::min(a, b);
+  auto a = u0.distance(u4);
+  auto b = u4.distance(u1);
+  auto h = std::min(a, b);
 
   a = u1.distance(u5);
   b = u5.distance(u2);

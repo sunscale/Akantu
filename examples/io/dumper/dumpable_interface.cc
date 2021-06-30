@@ -165,7 +165,7 @@ int main(int argc, char * argv[]) {
   }
 
   for (UInt i = 0; i < nb_steps; ++i) {
-    displacement.clear();
+    displacement.zero();
 
     Real step_ratio = Real(i) / Real(nb_steps);
     Real angle = step_ratio * theta;

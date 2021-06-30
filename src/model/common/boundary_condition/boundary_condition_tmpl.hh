@@ -33,8 +33,8 @@
 #include "element_group.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_BOUNDARY_CONDITION_TMPL_HH__
-#define __AKANTU_BOUNDARY_CONDITION_TMPL_HH__
+#ifndef AKANTU_BOUNDARY_CONDITION_TMPL_HH_
+#define AKANTU_BOUNDARY_CONDITION_TMPL_HH_
 
 namespace akantu {
 
@@ -188,8 +188,9 @@ template <typename FunctorType>
 inline void BoundaryCondition<ModelType>::applyBC(const FunctorType & func) {
   auto bit = model->getMesh().getGroupManager().element_group_begin();
   auto bend = model->getMesh().getGroupManager().element_group_end();
-  for (; bit != bend; ++bit)
+  for (; bit != bend; ++bit) {
     applyBC(func, *bit);
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -215,15 +216,16 @@ inline void
 BoundaryCondition<ModelType>::applyBC(const FunctorType & func,
                                       const ElementGroup & element_group) {
 #if !defined(AKANTU_NDEBUG)
-  if (element_group.getDimension() != model->getSpatialDimension() - 1)
+  if (element_group.getDimension() != model->getSpatialDimension() - 1) {
     AKANTU_DEBUG_WARNING("The group "
                          << element_group.getName()
                          << " does not contain only boundaries elements");
+  }
 #endif
 
   TemplateFunctionWrapper<FunctorType>::applyBC(func, element_group, *this);
 }
 
-#endif /* __AKANTU_BOUNDARY_CONDITION_TMPL_HH__ */
+#endif /* AKANTU_BOUNDARY_CONDITION_TMPL_HH_ */
 
 } // namespace akantu

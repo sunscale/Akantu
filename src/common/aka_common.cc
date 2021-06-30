@@ -31,7 +31,6 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "aka_random_generator.hh"
-#include "aka_static_memory.hh"
 #include "communicator.hh"
 
 #include "cppargparse.hh"
@@ -57,7 +56,6 @@ void initialize(int & argc, char **& argv) {
 /* -------------------------------------------------------------------------- */
 void initialize(const std::string & input_file, int & argc, char **& argv) {
   AKANTU_DEBUG_IN();
-  StaticMemory::getStaticMemory();
   Communicator & comm = Communicator::getStaticCommunicator(argc, argv);
 
   Tag::setMaxTag(comm.getMaxTag());
@@ -88,11 +86,12 @@ void initialize(const std::string & input_file, int & argc, char **& argv) {
   static_argparser.parse(argc, argv, cppargparse::_remove_parsed);
 
   std::string infile = static_argparser["aka_input_file"];
-  if (infile == "")
+  if (infile.empty()) {
     infile = input_file;
+  }
   debug::debugger.printBacktrace(static_argparser["aka_print_backtrace"]);
 
-  if ("" != infile) {
+  if (not infile.empty()) {
     readInputFile(infile);
   }
 
@@ -118,20 +117,7 @@ void initialize(const std::string & input_file, int & argc, char **& argv) {
 }
 
 /* -------------------------------------------------------------------------- */
-void finalize() {
-  AKANTU_DEBUG_IN();
-
-  // if (StaticCommunicator::isInstantiated()) {
-  //   StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-  //   delete &comm;
-  // }
-
-  if (StaticMemory::isInstantiated()) {
-    delete &(StaticMemory::getStaticMemory());
-  }
-
-  AKANTU_DEBUG_OUT();
-}
+void finalize() { }
 
 /* -------------------------------------------------------------------------- */
 void readInputFile(const std::string & input_file) {
@@ -155,7 +141,7 @@ std::unique_ptr<Communicator> Communicator::static_communicator;
 
 std::ostream & operator<<(std::ostream & stream, NodeFlag flag) {
   using under = std::underlying_type_t<NodeFlag>;
-  int digits = std::log(std::numeric_limits<under>::max() + 1) / std::log(16);
+  auto digits = static_cast<int>(std::log(std::numeric_limits<under>::max() + 1) / std::log(16));
   std::ios_base::fmtflags ff;
   ff = stream.flags();
   auto value = static_cast<std::common_type_t<under, unsigned int>>(flag);

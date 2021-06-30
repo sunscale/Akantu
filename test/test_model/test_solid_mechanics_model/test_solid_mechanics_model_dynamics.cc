@@ -287,7 +287,7 @@ template <typename type_>
 using TestSMMFixtureBarExplicit =
     TestSMMFixtureBar<type_, analysis_method_t<_explicit_lumped_mass>>;
 
-TYPED_TEST_SUITE(TestSMMFixtureBarExplicit, TestTypes);
+TYPED_TEST_SUITE(TestSMMFixtureBarExplicit, TestTypes, );
 
 /* -------------------------------------------------------------------------- */
 TYPED_TEST(TestSMMFixtureBarExplicit, Dynamics) {
@@ -297,11 +297,12 @@ TYPED_TEST(TestSMMFixtureBarExplicit, Dynamics) {
 }
 
 /* -------------------------------------------------------------------------- */
+#if defined(AKANTU_IMPLICIT)
 template <typename type_>
 using TestSMMFixtureBarImplicit =
     TestSMMFixtureBar<type_, analysis_method_t<_implicit_dynamic>>;
 
-TYPED_TEST_SUITE(TestSMMFixtureBarImplicit, TestTypes);
+TYPED_TEST_SUITE(TestSMMFixtureBarImplicit, TestTypes, );
 
 TYPED_TEST(TestSMMFixtureBarImplicit, Dynamics) {
   if (this->type == _segment_2 and
@@ -314,5 +315,6 @@ TYPED_TEST(TestSMMFixtureBarImplicit, Dynamics) {
   this->solveStep();
   EXPECT_NEAR(this->max_error, 0., 2e-3);
 }
+#endif
 
 } // namespace

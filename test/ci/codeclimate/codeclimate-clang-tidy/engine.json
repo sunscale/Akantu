@@ -1,0 +1,11 @@
+{
+  "name": "codeclimate-clang-tidy",
+  "description": "clang-tidy is a static analysis tool for C/C++ code.",
+  "maintainer": {
+    "name": "Nicolas Richart",
+    "email": "nicolas.richart@epfl.ch"
+  },
+  "languages" : ["C", "C++"],
+  "version": "0.0.1",
+  "spec_version": "0.2.0"
+}

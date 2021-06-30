@@ -32,8 +32,8 @@
 #include "boundary_condition_functor.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_BOUNDARY_CONDITION_FUNCTOR_INLINE_IMPL_HH__
-#define __AKANTU_BOUNDARY_CONDITION_FUNCTOR_INLINE_IMPL_HH__
+#ifndef AKANTU_BOUNDARY_CONDITION_FUNCTOR_INLINE_IMPL_HH_
+#define AKANTU_BOUNDARY_CONDITION_FUNCTOR_INLINE_IMPL_HH_
 
 /* -------------------------------------------------------------------------- */
 #define DIRICHLET_SANITY_CHECK                                                 \
@@ -151,4 +151,4 @@ namespace BC {
 } // namespace BC
 } // namespace akantu
 
-#endif /* __AKANTU_BOUNDARY_CONDITION_FUNCTOR_INLINE_IMPL_HH__ */
+#endif /* AKANTU_BOUNDARY_CONDITION_FUNCTOR_INLINE_IMPL_HH_ */

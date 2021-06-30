@@ -141,6 +141,15 @@ else()
 endif()
 
 #===============================================================================
+# GIT info
+#===============================================================================
+
+#include(AkantuBuildOptions)
+#git_version_info(akantu_git_info ALL
+#  OUTPUT_FILE ${CMAKE_CURRENT_BINARY_DIR}/akantu_git_info.hh
+#  )
+#list(APPEND AKANTU_LIBRARY_SRCS ${CMAKE_CURRENT_BINARY_DIR}/akantu_git_info.hh)
+#===============================================================================
 # Library generation
 #===============================================================================
 add_library(akantu ${AKANTU_LIBRARY_SRCS})
@@ -247,3 +256,9 @@ endforeach()
 generate_material_list()
 
 register_target_to_tidy(akantu)
+register_tidy_all(${AKANTU_LIBRARY_SRCS})
+register_code_to_format(
+  ${AKANTU_LIBRARY_SRCS}
+  ${AKANTU_LIBRARY_PUBLIC_HDRS}
+  ${AKANTU_LIBRARY_PRIVATE_HDRS}
+  )

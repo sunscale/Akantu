@@ -28,6 +28,17 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
+if(NOT SKBUILD)
+  package_get_all_include_directories(
+    AKANTU_LIBRARY_INCLUDE_DIRS
+    )
+
+  package_get_all_external_informations(
+    PRIVATE_INCLUDE AKANTU_PRIVATE_EXTERNAL_INCLUDE_DIR
+    INTERFACE_INCLUDE AKANTU_INTERFACE_EXTERNAL_INCLUDE_DIR
+    LIBRARIES AKANTU_EXTERNAL_LIBRARIES
+    )
+endif()
 
 set(PYAKANTU_SRCS
   py_aka_common.cc
@@ -39,6 +50,7 @@ set(PYAKANTU_SRCS
   py_mesh.cc
   py_model.cc
   py_parser.cc
+  py_solver.cc
   )
 
 package_is_activated(iohelper _is_activated)
@@ -61,6 +73,7 @@ package_is_activated(cohesive_element _is_activated)
 if (_is_activated)
   list(APPEND PYAKANTU_SRCS
     py_solid_mechanics_model_cohesive.cc
+    py_fragment_manager.cc
     )
 endif()
 
@@ -71,37 +84,49 @@ if (_is_activated)
     )
 endif()
 
-if(CMAKE_VERSION VERSION_LESS 3.12)
-  add_library(pyakantu INTERFACE)
-  set(_srcs)
-  foreach(_file ${PYAKANTU_SRCS})
-    list(APPEND _srcs ${CMAKE_CURRENT_SOURCE_DIR}/${_file})
-  endforeach()
-  set(AKANTU_PY11_SRCS ${_srcs} PARENT_SCOPE)
-  target_link_libraries(pyakantu INTERFACE akantu)
-else()
-  add_library(pyakantu OBJECT ${PYAKANTU_SRCS})
-  set_target_properties(pyakantu PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
-  target_link_libraries(pyakantu PUBLIC pybind11::pybind11 akantu)
+package_is_activated(phase_field _is_activated)
+if (_is_activated)
+  list(APPEND PYAKANTU_SRCS
+    py_phase_field_model.cc
+    )
 endif()
 
-target_include_directories(pyakantu INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
-
-if(CMAKE_VERSION VERSION_LESS 3.12)
-  pybind11_add_module(py11_akantu ${PYAKANTU_SRCS})
-else()
-  pybind11_add_module(py11_akantu $<TARGET_OBJECTS:pyakantu>)
+    
+package_is_activated(structural_mechanics _is_activated)
+if (_is_activated)
+  list(APPEND PYAKANTU_SRCS
+    py_structural_mechanics_model.cc
+    )
 endif()
 
-target_link_libraries(py11_akantu PUBLIC pyakantu)
-set_target_properties(py11_akantu PROPERTIES DEBUG_POSTFIX "")
+pybind11_add_module(py11_akantu ${PYAKANTU_SRCS})
 
-set(_python_install_dir
-  ${CMAKE_INSTALL_LIBDIR}/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/site-packages)
+# to avoid compilation warnings from pybind11
+target_include_directories(py11_akantu
+  SYSTEM BEFORE
+  PRIVATE ${PYBIND11_INCLUDE_DIR}
+  PRIVATE ${pybind11_INCLUDE_DIR}
+  PRIVATE ${PYTHON_INCLUDE_DIRS})
+
+target_link_libraries(py11_akantu PUBLIC akantu)
+set_target_properties(py11_akantu PROPERTIES
+  DEBUG_POSTFIX ""
+  LIBRARY_OUTPUT_DIRECTORY akantu)
+
+file(COPY akantu DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+if(NOT SKBUILD)
+  set(_python_install_dir
+    ${CMAKE_INSTALL_LIBDIR}/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/site-packages)
+else()
+  set(_python_install_dir .)
+endif()
 
 install(TARGETS py11_akantu
   LIBRARY DESTINATION ${_python_install_dir})
 
-install(DIRECTORY akantu
-  DESTINATION ${_python_install_dir}
-  FILES_MATCHING PATTERN "*.py")
+if(NOT SKBUILD)
+  install(DIRECTORY akantu
+    DESTINATION ${_python_install_dir}
+    FILES_MATCHING PATTERN "*.py")
+endif()

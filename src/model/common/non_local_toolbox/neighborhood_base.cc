@@ -41,10 +41,8 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 NeighborhoodBase::NeighborhoodBase(Model & model,
                                    const ElementTypeMapReal & quad_coordinates,
-                                   const ID & id, const MemoryID & memory_id)
-    : Memory(id, memory_id), model(model), neighborhood_radius(0.),
-      spatial_grid(nullptr), is_creating_grid(false),
-      grid_synchronizer(nullptr), quad_coordinates(quad_coordinates),
+                                   const ID & id)
+    : id(id), model(model), quad_coordinates(quad_coordinates),
       spatial_dimension(this->model.getMesh().getSpatialDimension()) {
 
   AKANTU_DEBUG_IN();
@@ -101,8 +99,9 @@ void NeighborhoodBase::updatePairList() {
     AKANTU_DEBUG_INFO("Looping on next cell");
 
     for (auto && q1 : spatial_grid->getCell(cell_id)) {
-      if (q1.ghost_type == _ghost)
+      if (q1.ghost_type == _ghost) {
         break;
+      }
       auto coords_type_1_it = this->quad_coordinates(q1.type, q1.ghost_type)
                                   .begin(spatial_dimension);
       auto q1_coords = Vector<Real>(coords_type_1_it[q1.global_num]);
@@ -155,8 +154,9 @@ void NeighborhoodBase::savePairs(const std::string & filename) const {
 
   pout.close();
 
-  if (comm.getNbProc() != 1)
+  if (comm.getNbProc() != 1) {
     return;
+  }
 
   Mesh mesh_out(spatial_dimension);
   MeshAccessor mesh_accessor(mesh_out);
@@ -167,7 +167,8 @@ void NeighborhoodBase::savePairs(const std::string & filename) const {
   std::map<IntegrationPoint, UInt> quad_to_nodes;
   UInt node = 0;
 
-  IntegrationPoint q1, q2;
+  IntegrationPoint q1;
+  IntegrationPoint q2;
   bool inserted;
   for (auto && ghost_type : ghost_types) {
     for (const auto & pair : pair_list[ghost_type]) {
@@ -177,8 +178,9 @@ void NeighborhoodBase::savePairs(const std::string & filename) const {
         std::tie(std::ignore, inserted) =
             quad_to_nodes.insert(std::make_pair(q, node));
 
-        if (not inserted)
+        if (not inserted) {
           return;
+        }
 
         auto coords_it = this->quad_coordinates(q.type, q.ghost_type)
                              .begin(spatial_dimension);
@@ -265,24 +267,31 @@ void NeighborhoodBase::onElementsRemoved(
 
   FEEngine & fem = this->model.getFEEngine();
   UInt nb_quad = 0;
-  // Change the pairs in new global numbering
-  for (auto ghost_type2 : ghost_types) {
-    for (auto && pair : pair_list[ghost_type2]) {
-      auto cleanPoint = [&](auto && q) {
-        if (new_numbering.exists(q.type, q.ghost_type)) {
-          UInt q_new_el = new_numbering(q.type, q.ghost_type)(q.element);
-          AKANTU_DEBUG_ASSERT(q_new_el != UInt(-1),
-                              "A local quadrature_point "
-                              "as been removed instead of "
-                              "just being renumbered");
-          q.element = q_new_el;
-          nb_quad = fem.getNbIntegrationPoints(q.type, q.ghost_type);
-          q.global_num = nb_quad * q.element + q.num_point;
-        }
-      };
+  auto cleanPoint = [&](auto && q) {
+    if (new_numbering.exists(q.type, q.ghost_type)) {
+      UInt q_new_el = new_numbering(q.type, q.ghost_type)(q.element);
+      AKANTU_DEBUG_ASSERT(q_new_el != UInt(-1),
+                          "A local quadrature_point "
+                              << q
+                              << " as been removed instead of "
+                                 "just being renumbered: "
+                              << id);
+      q.element = q_new_el;
+      nb_quad = fem.getNbIntegrationPoints(q.type, q.ghost_type);
+      q.global_num = nb_quad * q.element + q.num_point;
+    }
+  };
 
-      cleanPoint(pair.first);
-      cleanPoint(pair.second);
+  // Change the pairs in new global numbering
+  for (auto ghost_type : ghost_types) {
+    auto & pair_list = this->pair_list.at(ghost_type);
+    for (auto && pair : pair_list) {
+      if (pair.first.ghost_type == _ghost) {
+        cleanPoint(pair.first);
+      }
+      if (pair.second.ghost_type == _ghost) {
+        cleanPoint(pair.second);
+      }
     }
   }
 

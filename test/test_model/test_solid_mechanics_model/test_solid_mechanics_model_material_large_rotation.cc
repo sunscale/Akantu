@@ -76,7 +76,7 @@ int main(int argc, char * argv[]) {
   model.assembleMass();
   auto & M = model.getDOFManager().getMatrix("M");
   Array<Real> _mass(M.size(), 1);
-  _mass.clear();
+  _mass.zero();
   std::cout << "AAAA " << M.size() << std::endl;
   std::cout << "AAAA " << _mass.size() << std::endl;
 

@@ -30,8 +30,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_NON_LOCAL_NEIGHBORHOOD_HH__
-#define __AKANTU_NON_LOCAL_NEIGHBORHOOD_HH__
+#ifndef AKANTU_NON_LOCAL_NEIGHBORHOOD_HH_
+#define AKANTU_NON_LOCAL_NEIGHBORHOOD_HH_
 /* -------------------------------------------------------------------------- */
 #include "base_weight_function.hh"
 #include "non_local_neighborhood_base.hh"
@@ -53,8 +53,7 @@ class NonLocalNeighborhood : public NonLocalNeighborhoodBase {
 public:
   NonLocalNeighborhood(NonLocalManager & manager,
                        const ElementTypeMapReal & quad_coordinates,
-                       const ID & id = "neighborhood",
-                       const MemoryID & memory_id = 0);
+                       const ID & id = "neighborhood");
   ~NonLocalNeighborhood() override;
 
   /* ------------------------------------------------------------------------ */
@@ -73,7 +72,7 @@ public:
   weightedAverageOnNeighbours(const ElementTypeMapReal & to_accumulate,
                               ElementTypeMapReal & accumulated,
                               UInt nb_degree_of_freedom,
-                              const GhostType & ghost_type2) const override;
+                              GhostType ghost_type2) const override;
 
   /// update the weights based on the weight function
   void updateWeights() override;
@@ -82,10 +81,10 @@ public:
   // void registerNonLocalVariable(const ID & id);
 protected:
   template <class Func>
-  inline void foreach_weight(const GhostType & ghost_type, Func && func);
+  inline void foreach_weight(GhostType ghost_type, Func && func);
 
   template <class Func>
-  inline void foreach_weight(const GhostType & ghost_type, Func && func) const;
+  inline void foreach_weight(GhostType ghost_type, Func && func) const;
 
   inline UInt getNbData(const Array<Element> & elements,
                         const SynchronizationTag & tag) const override;
@@ -131,4 +130,4 @@ private:
 /* -------------------------------------------------------------------------- */
 #include "non_local_neighborhood_inline_impl.hh"
 
-#endif /* __AKANTU_NON_LOCAL_NEIGHBORHOOD_HH__ */
+#endif /* AKANTU_NON_LOCAL_NEIGHBORHOOD_HH_ */

@@ -33,8 +33,8 @@
 #include "patch_test_linear_fixture.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_PATCH_TEST_LINEAR_HEAT_TRANSFER_FIXTURE_HH__
-#define __AKANTU_PATCH_TEST_LINEAR_HEAT_TRANSFER_FIXTURE_HH__
+#ifndef AKANTU_PATCH_TEST_LINEAR_HEAT_TRANSFER_FIXTURE_HH_
+#define AKANTU_PATCH_TEST_LINEAR_HEAT_TRANSFER_FIXTURE_HH_
 
 /* -------------------------------------------------------------------------- */
 template <typename type>
@@ -71,6 +71,6 @@ public:
 
 using htm_types = gtest_list_t<TestElementTypes>;
 
-TYPED_TEST_SUITE(TestPatchTestHTMLinear, htm_types);
+TYPED_TEST_SUITE(TestPatchTestHTMLinear, htm_types, );
 
-#endif /* __AKANTU_PATCH_TEST_LINEAR_HEAT_TRANSFER_FIXTURE_HH__ */
+#endif /* AKANTU_PATCH_TEST_LINEAR_HEAT_TRANSFER_FIXTURE_HH_ */

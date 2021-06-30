@@ -39,8 +39,8 @@
 #include <boost/spirit/include/qi.hpp>
 #include <boost/variant/recursive_variant.hpp>
 
-#ifndef __AKANTU_INPUT_FILE_PARSER_HH__
-#define __AKANTU_INPUT_FILE_PARSER_HH__
+#ifndef AKANTU_INPUT_FILE_PARSER_HH_
+#define AKANTU_INPUT_FILE_PARSER_HH_
 
 namespace spirit = boost::spirit;
 namespace qi = boost::spirit::qi;
@@ -77,14 +77,16 @@ namespace parser {
   static ParserSection & create_subsection(
       const ParserType & type, const boost::optional<std::string> & opt_name,
       const boost::optional<std::string> & opt_option, ParserSection & sect) {
-    std::string option = "";
-    if (opt_option)
+    std::string option;
+    if (opt_option) {
       option = *opt_option;
+    }
 
     static size_t id = 12;
     std::string name = "anonymous_" + std::to_string(id++);
-    if (opt_name)
+    if (opt_name) {
       name = *opt_name;
+    }
 
     ParserSection sect_tmp(name, type, option, sect);
     return sect.addSubSection(sect_tmp);
@@ -264,4 +266,4 @@ namespace parser {
 
 } // namespace akantu
 
-#endif /* __AKANTU_INPUT_FILE_PARSER_HH__ */
+#endif /* AKANTU_INPUT_FILE_PARSER_HH_ */

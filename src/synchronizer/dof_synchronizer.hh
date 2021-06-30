@@ -39,8 +39,8 @@ class Mesh;
 class DOFManagerDefault;
 } // namespace akantu
 
-#ifndef __AKANTU_DOF_SYNCHRONIZER_HH__
-#define __AKANTU_DOF_SYNCHRONIZER_HH__
+#ifndef AKANTU_DOF_SYNCHRONIZER_HH_
+#define AKANTU_DOF_SYNCHRONIZER_HH_
 
 namespace akantu {
 
@@ -50,7 +50,7 @@ class DOFSynchronizer : public SynchronizerImpl<UInt> {
   /* ------------------------------------------------------------------------ */
 public:
   DOFSynchronizer(DOFManagerDefault & dof_manager,
-                  const ID & id = "dof_synchronizer", MemoryID memory_id = 0);
+                  const ID & id = "dof_synchronizer");
   ~DOFSynchronizer() override;
 
   virtual void registerDOFs(const ID & dof_id);
@@ -80,4 +80,4 @@ private:
 
 #include "dof_synchronizer_inline_impl.hh"
 
-#endif /* __AKANTU_DOF_SYNCHRONIZER_HH__ */
+#endif /* AKANTU_DOF_SYNCHRONIZER_HH_ */

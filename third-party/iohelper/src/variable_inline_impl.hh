@@ -32,11 +32,11 @@
 #include "dumper_lammps.hh"
 #include "dumper_text.hh"
 
-#ifndef __IOHELPER_VARIABLE_INLINE_IMPL_HH__
-#define __IOHELPER_VARIABLE_INLINE_IMPL_HH__
+#ifndef IOHELPER_VARIABLE_INLINE_IMPL_HH_
+#define IOHELPER_VARIABLE_INLINE_IMPL_HH_
 
 /* -------------------------------------------------------------------------- */
-__BEGIN_IOHELPER__
+namespace iohelper {
 
 template <class Cont>
 inline void Variable<Cont>::accept(Visitor & v) const {
@@ -56,6 +56,6 @@ inline void Variable<Cont>::accept(Visitor & v) const {
 
 /* -------------------------------------------------------------------------- */
 
-__END_IOHELPER__
+}
 
-#endif /* __IOHELPER_VARIABLE_INLINE_IMPL_HH__ */
+#endif /* IOHELPER_VARIABLE_INLINE_IMPL_HH_ */

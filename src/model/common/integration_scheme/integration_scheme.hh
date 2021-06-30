@@ -32,8 +32,8 @@
 #include "parsable.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_INTEGRATION_SCHEME_HH__
-#define __AKANTU_INTEGRATION_SCHEME_HH__
+#ifndef AKANTU_INTEGRATION_SCHEME_HH_
+#define AKANTU_INTEGRATION_SCHEME_HH_
 
 namespace akantu {
 class DOFManager;
@@ -50,6 +50,7 @@ public:
     _not_defined = -1,
     _displacement = 0,
     _temperature = 0,
+    _damage = 0,
     _velocity = 1,
     _temperature_rate = 1,
     _acceleration = 2,
@@ -119,4 +120,4 @@ std::istream & operator>>(std::istream & stream,
 
 } // namespace akantu
 
-#endif /* __AKANTU_INTEGRATION_SCHEME_HH__ */
+#endif /* AKANTU_INTEGRATION_SCHEME_HH_ */

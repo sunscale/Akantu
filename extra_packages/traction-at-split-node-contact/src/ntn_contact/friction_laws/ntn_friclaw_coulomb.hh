@@ -28,8 +28,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AST_NTN_FRICLAW_COULOMB_HH__
-#define __AST_NTN_FRICLAW_COULOMB_HH__
+#ifndef AST_NTN_FRICLAW_COULOMB_HH_
+#define AST_NTN_FRICLAW_COULOMB_HH_
 
 /* -------------------------------------------------------------------------- */
 // simtools
@@ -44,8 +44,7 @@ class NTNFricLawCoulomb : public Regularisation {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NTNFricLawCoulomb(NTNBaseContact & contact, const ID & id = "coulomb",
-                    const MemoryID & memory_id = 0);
+  NTNFricLawCoulomb(NTNBaseContact & contact, const ID & id = "coulomb");
   virtual ~NTNFricLawCoulomb(){};
 
   /* ------------------------------------------------------------------------ */
@@ -104,4 +103,4 @@ operator<<(std::ostream & stream,
 
 #include "ntn_friclaw_coulomb_tmpl.hh"
 
-#endif /* __AST_NTN_FRICLAW_COULOMB_HH__ */
+#endif /* AST_NTN_FRICLAW_COULOMB_HH_ */

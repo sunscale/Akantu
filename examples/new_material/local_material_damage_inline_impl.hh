@@ -30,8 +30,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_LOCAL_MATERIAL_DAMAGE_INLINE_IMPL_HH__
-#define __AKANTU_LOCAL_MATERIAL_DAMAGE_INLINE_IMPL_HH__
+#ifndef AKANTU_LOCAL_MATERIAL_DAMAGE_INLINE_IMPL_HH_
+#define AKANTU_LOCAL_MATERIAL_DAMAGE_INLINE_IMPL_HH_
 
 namespace akantu {
 
@@ -87,4 +87,4 @@ inline Real LocalMaterialDamage::getCelerity(__attribute__((unused))
 
 } // namespace akantu
 
-#endif /* __AKANTU_LOCAL_MATERIAL_DAMAGE_INLINE_IMPL_HH__ */
+#endif /* AKANTU_LOCAL_MATERIAL_DAMAGE_INLINE_IMPL_HH_ */

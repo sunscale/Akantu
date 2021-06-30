@@ -28,8 +28,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AST_NTN_BASE_FRICTION_HH__
-#define __AST_NTN_BASE_FRICTION_HH__
+#ifndef AST_NTN_BASE_FRICTION_HH_
+#define AST_NTN_BASE_FRICTION_HH_
 
 /* -------------------------------------------------------------------------- */
 // akantu
@@ -59,13 +59,12 @@ inline void ParameterTyped<akantu::SynchronizedArray<Real>>::setTyped<Real>(
 }
 
 /* -------------------------------------------------------------------------- */
-class NTNBaseFriction : protected Memory, public Parsable, public Dumpable {
+class NTNBaseFriction : public Parsable, public Dumpable {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NTNBaseFriction(NTNBaseContact & contact, const ID & id = "friction",
-                  const MemoryID & memory_id = 0);
+  NTNBaseFriction(NTNBaseContact & contact, const ID & id = "friction");
   virtual ~NTNBaseFriction() = default;
 
   /* ------------------------------------------------------------------------ */
@@ -174,4 +173,4 @@ inline std::ostream & operator<<(std::ostream & stream,
 
 } // namespace akantu
 
-#endif /* __AST_NTN_BASE_FRICTION_HH__ */
+#endif /* AST_NTN_BASE_FRICTION_HH_ */

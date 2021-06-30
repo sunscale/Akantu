@@ -47,7 +47,7 @@ void DataAccessor<Element>::packUnpackNodalDataHelper(
   GhostType current_ghost_type = _casper;
   UInt * conn = nullptr;
 
-  for (auto & el : elements) {
+  for (const auto & el : elements) {
     if (el.type != current_element_type ||
         el.ghost_type != current_ghost_type) {
       current_element_type = el.type;
@@ -62,10 +62,11 @@ void DataAccessor<Element>::packUnpackNodalDataHelper(
       Vector<T> data_vect(data.storage() + offset_conn * nb_component,
                           nb_component);
 
-      if (pack_helper)
+      if (pack_helper) {
         buffer << data_vect;
-      else
+      } else {
         buffer >> data_vect;
+      }
     }
   }
 }
@@ -83,7 +84,7 @@ void DataAccessor<Element>::packUnpackElementalDataHelper(
 
   Array<T> * vect = nullptr;
 
-  for (auto & el : element) {
+  for (const auto & el : element) {
     if (el.type != current_element_type ||
         el.ghost_type != current_ghost_type) {
       current_element_type = el.type;
@@ -100,10 +101,11 @@ void DataAccessor<Element>::packUnpackElementalDataHelper(
     Vector<T> data(vect->storage() +
                        el.element * nb_component * nb_quad_per_elem,
                    nb_component * nb_quad_per_elem);
-    if (pack_helper)
+    if (pack_helper) {
       buffer << data;
-    else
+    } else {
       buffer >> data;
+    }
   }
 }
 
@@ -114,10 +116,11 @@ void DataAccessor<UInt>::packUnpackDOFDataHelper(Array<T> & data,
                                                  const Array<UInt> & dofs) {
   T * data_ptr = data.storage();
   for (const auto & dof : dofs) {
-    if (pack_helper)
+    if (pack_helper) {
       buffer << data_ptr[dof];
-    else
+    } else {
       buffer >> data_ptr[dof];
+    }
   }
 }
 

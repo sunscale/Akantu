@@ -28,8 +28,8 @@
  *
  */
 
-#ifndef __AKANTU_DUMPER_ELEMENT_ITERATOR_HH__
-#define __AKANTU_DUMPER_ELEMENT_ITERATOR_HH__
+#ifndef AKANTU_DUMPER_ELEMENT_ITERATOR_HH_
+#define AKANTU_DUMPER_ELEMENT_ITERATOR_HH_
 /* -------------------------------------------------------------------------- */
 #include "element.hh"
 /* -------------------------------------------------------------------------- */
@@ -99,9 +99,10 @@ public:
     return Element{*tit, array_it.getCurrentIndex(), _not_ghost};
   }
 
-  UInt getNbDataPerElem(const ElementType & type) const {
-    if (!nb_data_per_elem.exists(type, ghost_type))
+  UInt getNbDataPerElem(ElementType type) const {
+    if (!nb_data_per_elem.exists(type, ghost_type)) {
       return field(type, ghost_type).getNbComponent();
+    }
 
     return nb_data_per_elem(type, ghost_type);
   }
@@ -174,4 +175,4 @@ private:
 } // namespace akantu
 /* -------------------------------------------------------------------------- */
 
-#endif /* __AKANTU_DUMPER_ELEMENT_ITERATOR_HH__ */
+#endif /* AKANTU_DUMPER_ELEMENT_ITERATOR_HH_ */

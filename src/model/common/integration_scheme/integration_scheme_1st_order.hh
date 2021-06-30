@@ -32,8 +32,8 @@
 #include "integration_scheme.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_INTEGRATION_SCHEME_1ST_ORDER_HH__
-#define __AKANTU_INTEGRATION_SCHEME_1ST_ORDER_HH__
+#ifndef AKANTU_INTEGRATION_SCHEME_1ST_ORDER_HH_
+#define AKANTU_INTEGRATION_SCHEME_1ST_ORDER_HH_
 
 namespace akantu {
 
@@ -91,4 +91,4 @@ private:
 
 #include "generalized_trapezoidal.hh"
 
-#endif /* __AKANTU_INTEGRATION_SCHEME_1ST_ORDER_HH__ */
+#endif /* AKANTU_INTEGRATION_SCHEME_1ST_ORDER_HH_ */

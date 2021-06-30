@@ -30,8 +30,8 @@
 #include "aka_common.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_COMMUNICATION_TAG_HH__
-#define __AKANTU_COMMUNICATION_TAG_HH__
+#ifndef AKANTU_COMMUNICATION_TAG_HH_
+#define AKANTU_COMMUNICATION_TAG_HH_
 
 namespace akantu {
 /**
@@ -66,44 +66,47 @@ public:
     return t;
   }
 
-  virtual void printself(std::ostream & stream, int) const {
+  virtual void printself(std::ostream & stream, int /*unused*/) const {
     int t = tag;
     stream << "TAG(";
-    if (hash != 0)
+    if (hash != 0) {
       t = t ^ hash;
+    }
     stream << (t >> 12) << ":" << (t >> 4 & 0xFF) << ":" << (t & 0xF) << " -> "
            << std::hex << "0x" << int(*this);
-    if (hash != 0)
+    if (hash != 0) {
       stream << " {hash: 0x" << hash << "}";
-    stream << " [0x" << this->max_tag << "]";
+    }
+    stream << " [0x" << max_tag << "]";
     stream << ")" << std::dec;
   }
 
   enum CommTags : int {
-    _SIZES = 1,
-    _CONNECTIVITY = 2,
-    _DATA = 3,
-    _PARTITIONS = 4,
-    _NB_NODES = 5,
-    _NODES = 6,
-    _COORDINATES = 7,
-    _NODES_TYPE = 8,
-    _MESH_DATA = 9,
-    _ELEMENT_GROUP = 10,
-    _NODE_GROUP = 11,
-    _MODIFY_SCHEME = 12,
-    _GATHER_INITIALIZATION = 1,
-    _GATHER = 2,
-    _SCATTER = 3,
-    _SYNCHRONIZE = 15,
-    _REDUCE,
-    _PERIODIC_SLAVES,
-    _PERIODIC_NODES,
+    _sizes = 1,
+    _connectivity = 2,
+    _data = 3,
+    _partitions = 4,
+    _nb_nodes = 5,
+    _nodes = 6,
+    _coordinates = 7,
+    _nodes_type = 8,
+    _mesh_data = 9,
+    _element_group = 10,
+    _node_group = 11,
+    _modify_scheme = 12,
+    _gather_initialization = 1,
+    _gather = 2,
+    _scatter = 3,
+    _synchronize = 15,
+    _reduce,
+    _periodic_slaves,
+    _periodic_nodes,
   };
 
 private:
   static void setMaxTag(int _max_tag) { max_tag = _max_tag; }
-  friend void initialize(const std::string &, int &, char **&);
+  friend void initialize(const std::string & /*input_file*/, int & /*argc*/,
+                         char **& /*argv*/);
 
 private:
   int tag{0};
@@ -120,4 +123,4 @@ inline std::ostream & operator<<(std::ostream & stream, const Tag & _this) {
 /* -------------------------------------------------------------------------- */
 } // namespace akantu
 
-#endif /* __AKANTU_COMMUNICATION_TAG_HH__ */
+#endif /* AKANTU_COMMUNICATION_TAG_HH_ */

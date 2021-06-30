@@ -29,8 +29,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AST_NTN_FRICREG_SIMPLIFIED_PRAKASH_CLIFTON_HH__
-#define __AST_NTN_FRICREG_SIMPLIFIED_PRAKASH_CLIFTON_HH__
+#ifndef AST_NTN_FRICREG_SIMPLIFIED_PRAKASH_CLIFTON_HH_
+#define AST_NTN_FRICREG_SIMPLIFIED_PRAKASH_CLIFTON_HH_
 
 /* -------------------------------------------------------------------------- */
 // simtools
@@ -45,8 +45,7 @@ class NTNFricRegSimplifiedPrakashClifton : public NTNFricRegNoRegularisation {
   /* ------------------------------------------------------------------------ */
 public:
   NTNFricRegSimplifiedPrakashClifton(
-      NTNBaseContact & contact, const ID & id = "simplified_prakash_clifton",
-      const MemoryID & memory_id = 0);
+      NTNBaseContact & contact, const ID & id = "simplified_prakash_clifton");
   virtual ~NTNFricRegSimplifiedPrakashClifton(){};
 
   /* ------------------------------------------------------------------------ */
@@ -109,4 +108,4 @@ operator<<(std::ostream & stream,
 
 } // namespace akantu
 
-#endif /* __AST_NTN_FRICREG_SIMPLIFIED_PRAKASH_CLIFTON_HH__ */
+#endif /* AST_NTN_FRICREG_SIMPLIFIED_PRAKASH_CLIFTON_HH_ */

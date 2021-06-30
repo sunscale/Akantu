@@ -38,9 +38,8 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-NTNBaseFriction::NTNBaseFriction(NTNBaseContact & contact, const ID & id,
-                                 const MemoryID & memory_id)
-    : Memory(id, memory_id), Parsable(ParserType::_friction, id), Dumpable(),
+NTNBaseFriction::NTNBaseFriction(NTNBaseContact & contact, const ID & id)
+    : Parsable(ParserType::_friction, id), Dumpable(),
       contact(contact),
       is_sticking(0, 1, true, id + ":is_sticking", true, "is_sticking"),
       frictional_strength(0, 1, 0., id + ":frictional_strength", 0.,
@@ -114,7 +113,7 @@ void NTNBaseFriction::computeFrictionTraction() {
       const_cast<Array<Real> &>(this->friction_traction.getArray());
   Array<Real>::iterator<Vector<Real>> it_fric_trac = traction.begin(dim);
 
-  this->is_sticking.clear(); // set to not sticking
+  this->is_sticking.zero(); // set to not sticking
 
   UInt nb_contact_nodes = this->contact.getNbContactNodes();
   for (UInt n = 0; n < nb_contact_nodes; ++n) {
@@ -194,7 +193,7 @@ void NTNBaseFriction::computeStickTraction() {
     Vector<Real> fric_trac = it_fric_trac[n];
     // node pair is NOT in contact
     if (!is_in_contact(n)) {
-      fric_trac.clear(); // set to zero
+      fric_trac.zero(); // set to zero
     }
 
     // node pair is in contact

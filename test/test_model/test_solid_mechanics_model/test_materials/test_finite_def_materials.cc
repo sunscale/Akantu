@@ -68,7 +68,7 @@ namespace {
 template <typename T>
 class TestFiniteDefMaterialFixture : public ::TestMaterialFixture<T> {};
 
-TYPED_TEST_SUITE(TestFiniteDefMaterialFixture, mat_types);
+TYPED_TEST_SUITE(TestFiniteDefMaterialFixture, mat_types, );
 
 TYPED_TEST(TestFiniteDefMaterialFixture, DISABLED_ComputeStress) {
   this->material->testComputeStress();

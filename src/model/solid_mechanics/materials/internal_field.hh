@@ -32,8 +32,8 @@
 #include "element_type_map.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_INTERNAL_FIELD_HH__
-#define __AKANTU_INTERNAL_FIELD_HH__
+#ifndef AKANTU_INTERNAL_FIELD_HH_
+#define AKANTU_INTERNAL_FIELD_HH_
 
 namespace akantu {
 
@@ -44,26 +44,28 @@ class FEEngine;
  * class for the internal fields of materials
  * to store values for each quadrature
  */
-template <typename T> class InternalField : public ElementTypeMapArray<T> {
+  template <class Material, typename T> class InternalFieldTmpl : public ElementTypeMapArray<T> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  InternalField(const ID & id, Material & material);
-  ~InternalField() override;
+  InternalFieldTmpl(const ID & id, Material & material);
+  ~InternalFieldTmpl() override;
 
   /// This constructor is only here to let cohesive elements compile
-  InternalField(const ID & id, Material & material, FEEngine & fem,
-                const ElementTypeMapArray<UInt> & element_filter);
+  InternalFieldTmpl(const ID & id, Material & material, FEEngine & fem,
+		    const ElementTypeMapArray<UInt> & element_filter);
 
   /// More general constructor
-  InternalField(const ID & id, Material & material, UInt dim, FEEngine & fem,
-                const ElementTypeMapArray<UInt> & element_filter);
+  InternalFieldTmpl(const ID & id, Material & material, UInt dim, FEEngine & fem,
+		    const ElementTypeMapArray<UInt> & element_filter);
 
-  InternalField(const ID & id, const InternalField<T> & other);
+    InternalFieldTmpl(const ID & id, const InternalFieldTmpl<Material, T> & other);
+
 
 private:
-  InternalField operator=(const InternalField &) = delete;
+  InternalFieldTmpl operator=(const InternalFieldTmpl &) = delete;
+
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -128,13 +130,13 @@ public:
   //     typename ElementTypeMapArray<UInt>::type_iterator;
 
   // /// get the type iterator on all types contained in the internal field
-  // type_iterator firstType(const GhostType & ghost_type = _not_ghost) const {
+  // type_iterator firstType(GhostType ghost_type = _not_ghost) const {
   //   return ElementTypeMapArray<T>::firstType(this->spatial_dimension,
   //                                            ghost_type, this->element_kind);
   // }
 
   // /// get the type iterator on the last type contained in the internal field
-  // type_iterator lastType(const GhostType & ghost_type = _not_ghost) const {
+  // type_iterator lastType(GhostType ghost_type = _not_ghost) const {
   //   return ElementTypeMapArray<T>::lastType(this->spatial_dimension,
   //   ghost_type,
   //                                           this->element_kind);
@@ -142,7 +144,7 @@ public:
 
   // /// get the type iterator on all types contained in the internal field
   // filter_type_iterator
-  // filterFirstType(const GhostType & ghost_type = _not_ghost) const {
+  // filterFirstType(GhostType ghost_type = _not_ghost) const {
   //   return this->element_filter.firstType(this->spatial_dimension,
   //   ghost_type,
   //                                         this->element_kind);
@@ -150,20 +152,20 @@ public:
 
   // /// get the type iterator on the last type contained in the internal field
   // filter_type_iterator
-  // filterLastType(const GhostType & ghost_type = _not_ghost) const {
+  // filterLastType(GhostType ghost_type = _not_ghost) const {
   //   return this->element_filter.lastType(this->spatial_dimension, ghost_type,
   //                                        this->element_kind);
   // }
 
   /// get filter types for range loop
-  decltype(auto) elementTypes(const GhostType & ghost_type = _not_ghost) const {
+  decltype(auto) elementTypes(GhostType ghost_type = _not_ghost) const {
     return ElementTypeMapArray<T>::elementTypes(
         _spatial_dimension = this->spatial_dimension,
         _element_kind = this->element_kind, _ghost_type = ghost_type);
   }
 
   /// get filter types for range loop
-  decltype(auto) filterTypes(const GhostType & ghost_type = _not_ghost) const {
+  decltype(auto) filterTypes(GhostType ghost_type = _not_ghost) const {
     return this->element_filter.elementTypes(
         _spatial_dimension = this->spatial_dimension,
         _element_kind = this->element_kind, _ghost_type = ghost_type);
@@ -171,25 +173,25 @@ public:
 
   /// get the array for a given type of the element_filter
   const Array<UInt> &
-  getFilter(const ElementType & type,
-            const GhostType & ghost_type = _not_ghost) const {
+  getFilter(ElementType type,
+            GhostType ghost_type = _not_ghost) const {
     return this->element_filter(type, ghost_type);
   }
 
   /// get the Array corresponding to the type en ghost_type specified
-  virtual Array<T> & operator()(const ElementType & type,
-                                const GhostType & ghost_type = _not_ghost) {
+  virtual Array<T> & operator()(ElementType type,
+                                GhostType ghost_type = _not_ghost) {
     return ElementTypeMapArray<T>::operator()(type, ghost_type);
   }
 
   virtual const Array<T> &
-  operator()(const ElementType & type,
-             const GhostType & ghost_type = _not_ghost) const {
+  operator()(ElementType type,
+             GhostType ghost_type = _not_ghost) const {
     return ElementTypeMapArray<T>::operator()(type, ghost_type);
   }
 
-  virtual Array<T> & previous(const ElementType & type,
-                              const GhostType & ghost_type = _not_ghost) {
+  virtual Array<T> & previous(ElementType type,
+                              GhostType ghost_type = _not_ghost) {
     AKANTU_DEBUG_ASSERT(previous_values != nullptr,
                         "The history of the internal "
                             << this->getID() << " has not been activated");
@@ -197,22 +199,22 @@ public:
   }
 
   virtual const Array<T> &
-  previous(const ElementType & type,
-           const GhostType & ghost_type = _not_ghost) const {
+  previous(ElementType type,
+           GhostType ghost_type = _not_ghost) const {
     AKANTU_DEBUG_ASSERT(previous_values != nullptr,
                         "The history of the internal "
                             << this->getID() << " has not been activated");
     return this->previous_values->operator()(type, ghost_type);
   }
 
-  virtual InternalField<T> & previous() {
+  virtual InternalFieldTmpl<Material, T> & previous() {
     AKANTU_DEBUG_ASSERT(previous_values != nullptr,
                         "The history of the internal "
                             << this->getID() << " has not been activated");
     return *(this->previous_values);
   }
 
-  virtual const InternalField<T> & previous() const {
+    virtual const InternalFieldTmpl<Material, T> & previous() const {
     AKANTU_DEBUG_ASSERT(previous_values != nullptr,
                         "The history of the internal "
                             << this->getID() << " has not been activated");
@@ -223,7 +225,7 @@ public:
   bool hasHistory() const { return (previous_values != nullptr); }
 
   /// get the kind treated by the internal
-  const ElementKind & getElementKind() const { return element_kind; }
+  ElementKind getElementKind() const { return element_kind; }
 
   /// return the number of components
   UInt getNbComponent() const { return nb_component; }
@@ -261,17 +263,21 @@ protected:
   bool is_init{false};
 
   /// previous values
-  std::unique_ptr<InternalField<T>> previous_values;
+  std::unique_ptr<InternalFieldTmpl<Material, T>> previous_values;
 };
 
+  
 /// standard output stream operator
-template <typename T>
+template <class Material, typename T>
 inline std::ostream & operator<<(std::ostream & stream,
-                                 const InternalField<T> & _this) {
+                                 const InternalFieldTmpl<Material, T> & _this) {
   _this.printself(stream);
   return stream;
 }
 
+template<typename T>  
+using InternalField = InternalFieldTmpl<Material, T>;  
+
 } // namespace akantu
 
-#endif /* __AKANTU_INTERNAL_FIELD_HH__ */
+#endif /* AKANTU_INTERNAL_FIELD_HH_ */

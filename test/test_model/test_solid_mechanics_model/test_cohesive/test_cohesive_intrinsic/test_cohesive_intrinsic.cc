@@ -163,7 +163,7 @@ static void updateDisplacement(SolidMechanicsModelCohesive & model,
   const Array<UInt> & connectivity = mesh.getConnectivity(type);
   Array<Real> & displacement = model.getDisplacement();
   Array<bool> update(nb_nodes);
-  update.clear();
+  update.zero();
 
   for (UInt el = 0; el < nb_element; ++el) {
     for (UInt n = 0; n < nb_nodes_per_element; ++n) {

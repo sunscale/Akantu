@@ -36,8 +36,8 @@
 #include <vector>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_ELASTIC_LINEAR_ANISOTROPIC_HH__
-#define __AKANTU_MATERIAL_ELASTIC_LINEAR_ANISOTROPIC_HH__
+#ifndef AKANTU_MATERIAL_ELASTIC_LINEAR_ANISOTROPIC_HH_
+#define AKANTU_MATERIAL_ELASTIC_LINEAR_ANISOTROPIC_HH_
 
 namespace akantu {
 
@@ -69,8 +69,7 @@ public:
                      GhostType ghost_type = _not_ghost) override;
 
   /// compute the tangent stiffness matrix for an element type
-  void computeTangentModuli(const ElementType & el_type,
-                            Array<Real> & tangent_matrix,
+  void computeTangentModuli(ElementType el_type, Array<Real> & tangent_matrix,
                             GhostType ghost_type = _not_ghost) override;
 
   /// compute the elastic potential energy
@@ -82,9 +81,7 @@ public:
     return (not was_stiffness_assembled);
   }
 
-  MatrixType getTangentType() override {
-    return _symmetric;
-  }
+  MatrixType getTangentType() override { return _symmetric; }
 
 protected:
   // compute C from Cprime
@@ -129,9 +126,6 @@ protected:
 
   bool symmetric;
 
-  /// viscous proportion
-  Real alpha;
-
   /// defines if the stiffness was computed
   bool was_stiffness_assembled;
 };
@@ -139,4 +133,4 @@ protected:
 
 #include "material_elastic_linear_anisotropic_inline_impl.hh"
 
-#endif /* __AKANTU_MATERIAL_ELASTIC_LINEAR_ANISOTROPIC_HH__ */
+#endif /* AKANTU_MATERIAL_ELASTIC_LINEAR_ANISOTROPIC_HH_ */

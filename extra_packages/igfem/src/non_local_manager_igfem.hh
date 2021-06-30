@@ -27,8 +27,8 @@
 
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_DAMAGE_NON_LOCAL
-#ifndef __AKANTU_NON_LOCAL_MANAGER_IGFEM_HH__
-#define __AKANTU_NON_LOCAL_MANAGER_IGFEM_HH__
+#ifndef AKANTU_NON_LOCAL_MANAGER_IGFEM_HH_
+#define AKANTU_NON_LOCAL_MANAGER_IGFEM_HH_
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model_igfem.hh"
 /* -------------------------------------------------------------------------- */
@@ -41,8 +41,7 @@ class NonLocalManagerIGFEM : public NonLocalManager {
   /* ------------------------------------------------------------------------ */
 public:
   NonLocalManagerIGFEM(SolidMechanicsModelIGFEM & model,
-                       const ID & id = "non_local_manager_igfem",
-                       const MemoryID & memory_id = 0);
+                       const ID & id = "non_local_manager_igfem");
   virtual ~NonLocalManagerIGFEM();
 
   /* --------------------------------------------------------------------------
@@ -93,5 +92,5 @@ private:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-#endif /* __AKANTU_NON_LOCAL_MANAGER_IGFEM_HH__ */
+#endif /* AKANTU_NON_LOCAL_MANAGER_IGFEM_HH_ */
 #endif /* AKANTU_DAMAGE_NON_LOCAL */

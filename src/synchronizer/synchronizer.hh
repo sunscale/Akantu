@@ -28,15 +28,14 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
-#include "aka_memory.hh"
+#include "aka_common.hh"
 /* -------------------------------------------------------------------------- */
 #include <map>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_SYNCHRONIZER_HH__
-#define __AKANTU_SYNCHRONIZER_HH__
+#ifndef AKANTU_SYNCHRONIZER_HH_
+#define AKANTU_SYNCHRONIZER_HH_
 
 namespace akantu {
 class Communicator;
@@ -47,17 +46,16 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 /* Base class for synchronizers                                               */
 /* -------------------------------------------------------------------------- */
-class Synchronizer : protected Memory {
+class Synchronizer {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  Synchronizer(const Communicator & comm, const ID & id = "synchronizer",
-               MemoryID memory_id = 0);
+  Synchronizer(const Communicator & comm, const ID & id = "synchronizer");
 
   Synchronizer(const Synchronizer & other) = default;
 
-  ~Synchronizer() override = default;
+  virtual ~Synchronizer()  = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -126,4 +124,4 @@ protected:
 
 #include "synchronizer_tmpl.hh"
 
-#endif /* __AKANTU_SYNCHRONIZER_HH__ */
+#endif /* AKANTU_SYNCHRONIZER_HH_ */

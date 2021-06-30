@@ -42,7 +42,7 @@ if(EXISTS "${AKANTU_CMAKE_DIR}/CMakeCache.txt")
   include(AkantuSimulationMacros)
 else()
   # In install tree
-  set(AKANTU_INCLUDE_DIRS "${AKANTU_CMAKE_DIR}/../../include/akantu")
+  set(AKANTU_INCLUDE_DIRS "@CMAKE_INSTALL_PREFIX@/include/akantu")
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${AKANTU_CMAKE_DIR}")
   include(AkantuSimulationMacros)
 endif()
@@ -57,8 +57,11 @@ set(AKANTU_BUILD_TYPE @CMAKE_BUILD_TYPE@)
 # find_akantu_dependencies()
 set(AKANTU_LIBRARY akantu)
 
-list(APPEND AKANTU_LIBRARIES ${AKANTU_LIBRARY} ${AKANTU_EXTRA_LIBRARIES})
+set(_akantu_libraries ${AKANTU_LIBRARIES})
+list(APPEND _akantu_libraries ${AKANTU_LIBRARY} ${AKANTU_EXTRA_LIBRARIES})
 list(APPEND AKANTU_INCLUDE_DIRS ${AKANTU_EXTRA_INCLUDE_DIR})
+
+set(AKANTU_LIBRARIES ${_akantu_libraries} CACHE INTERNAL "List of akantu necessary libraries" FORCE)
 
 # set(AKANTU_VERSION @AKANTU_VERSION@)
 # set_and_check(AKANTU_INCLUDE_DIR "@PACKAGE_INCLUDE_INSTALL_DIR@")

@@ -29,8 +29,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_DUMPER_PARAVIEW_HH__
-#define __AKANTU_DUMPER_PARAVIEW_HH__
+#ifndef AKANTU_DUMPER_PARAVIEW_HH_
+#define AKANTU_DUMPER_PARAVIEW_HH_
 
 #include "dumper_iohelper.hh"
 /* -------------------------------------------------------------------------- */
@@ -67,4 +67,4 @@ private:
 
 } // namespace akantu
 
-#endif /* __AKANTU_DUMPER_PARAVIEW_HH__ */
+#endif /* AKANTU_DUMPER_PARAVIEW_HH_ */

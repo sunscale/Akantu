@@ -32,19 +32,12 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_KIRCHHOFF_SHELL_HH__
-#define __AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_KIRCHHOFF_SHELL_HH__
+#ifndef AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_KIRCHHOFF_SHELL_HH_
+#define AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_KIRCHHOFF_SHELL_HH_
 
 #include "structural_mechanics_model.hh"
 
 namespace akantu {
-
-/* -------------------------------------------------------------------------- */
-template <>
-inline void
-StructuralMechanicsModel::assembleMass<_discrete_kirchhoff_triangle_18>() {
-  AKANTU_TO_IMPLEMENT();
-}
 
 /* -------------------------------------------------------------------------- */
 template <>
@@ -64,7 +57,7 @@ void StructuralMechanicsModel::computeTangentModuli<
 
     for (UInt q = 0; q < nb_quad; ++q, ++H_it) {
       auto & H = *H_it;
-      H.clear();
+      H.zero();
       Matrix<Real> D = {{1, m.nu, 0}, {m.nu, 1, 0}, {0, 0, (1 - m.nu) / 2}};
       D *= m.E * m.t / (1 - m.nu * m.nu);
       H.block(D, 0, 0);                           // in plane membrane behavior
@@ -75,5 +68,5 @@ void StructuralMechanicsModel::computeTangentModuli<
 
 } // namespace akantu
 
-#endif /* __AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_DISCRETE_KIRCHHOFF_TRIANGLE_18_HH__ \
+#endif /* AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_DISCRETE_KIRCHHOFF_TRIANGLE_18_HH_ \
         */

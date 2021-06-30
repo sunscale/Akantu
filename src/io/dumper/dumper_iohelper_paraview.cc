@@ -40,7 +40,7 @@ namespace akantu {
 
 DumperParaview::DumperParaview(const std::string & filename,
                                const std::string & directory, bool parallel)
-    : DumperIOHelper() {
+     {
   dumper = std::make_unique<iohelper::DumperParaview>();
   setBaseName(filename);
 

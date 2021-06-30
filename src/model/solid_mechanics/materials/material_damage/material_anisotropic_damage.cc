@@ -35,20 +35,20 @@ namespace akantu {
 namespace {
   template <UInt dim>
   std::unique_ptr<Material>
-  materialAnisotropicDamage(std::integral_constant<UInt, dim>,
+  materialAnisotropicDamage(std::integral_constant<UInt, dim> /*unused*/,
                             const ID & option, SolidMechanicsModel & model,
                             const ID & id) {
-    if (option == "" or option == "mazars") {
+    if (option.empty() or option == "mazars") {
       return std::make_unique<MaterialAnisotropicDamage<
           dim, EquivalentStrainMazars, DamageThresholdTan>>(model, id);
-    } else if (option == "mazars-drucker-prager") {
+    }
+    if (option == "mazars-drucker-prager") {
       return std::make_unique<MaterialAnisotropicDamage<
           dim, EquivalentStrainMazarsDruckerPrager, DamageThresholdTan>>(model,
                                                                          id);
-    } else {
-      AKANTU_EXCEPTION("The option "
-                       << option << " is not valid for the material " << id);
     }
+    AKANTU_EXCEPTION("The option " << option
+                                   << " is not valid for the material " << id);
   }
 
   template <class... Args>
@@ -63,7 +63,9 @@ namespace {
     case 3:
       return materialAnisotropicDamage(std::integral_constant<UInt, 3>{},
                                        std::forward<Args>(args)...);
-    default: { AKANTU_EXCEPTION("In what dimension are you leaving ?"); }
+    default: {
+      AKANTU_EXCEPTION("In what dimension are you leaving ?");
+    }
     }
   }
 } // namespace

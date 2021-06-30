@@ -200,7 +200,7 @@ void imposeOpening(SolidMechanicsModelCohesive & model, Real opening) {
   UInt nb_nodes = mesh.getNbNodes();
 
   Array<bool> update(nb_nodes);
-  update.clear();
+  update.zero();
 
   Mesh::type_iterator it = mesh.firstType(spatial_dimension);
   Mesh::type_iterator end = mesh.lastType(spatial_dimension);

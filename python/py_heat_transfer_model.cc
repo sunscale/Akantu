@@ -37,9 +37,9 @@ void register_heat_transfer_model(py::module & mod) {
 
   py::class_<HeatTransferModel, Model>(mod, "HeatTransferModel",
                                        py::multiple_inheritance())
-      .def(py::init<Mesh &, UInt, const ID &, const MemoryID &>(),
+      .def(py::init<Mesh &, UInt, const ID &>(),
            py::arg("mesh"), py::arg("spatial_dimension") = _all_dimensions,
-           py::arg("id") = "heat_transfer_model", py::arg("memory_id") = 0)
+           py::arg("id") = "heat_transfer_model")
       .def("initFull",
            [](HeatTransferModel & self,
               const HeatTransferModelOptions & options) {

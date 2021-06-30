@@ -33,8 +33,8 @@
 #include "parser.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_PARSABLE_HH__
-#define __AKANTU_PARSABLE_HH__
+#ifndef AKANTU_PARSABLE_HH_
+#define AKANTU_PARSABLE_HH_
 
 namespace akantu {
 
@@ -55,7 +55,7 @@ public:
 public:
   virtual void parseSection(const ParserSection & section);
   virtual void parseSubSection(const ParserSection & section);
-  virtual void parseParam(const ParserParameter & parameter);
+  virtual void parseParam(const ParserParameter & in_param);
 
 private:
   ParserType section_type;
@@ -69,4 +69,4 @@ private:
 
 } // namespace akantu
 
-#endif /* __AKANTU_PARSABLE_HH__ */
+#endif /* AKANTU_PARSABLE_HH_ */

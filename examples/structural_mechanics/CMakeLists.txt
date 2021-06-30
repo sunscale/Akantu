@@ -32,6 +32,6 @@
 #===============================================================================
 
 #===============================================================================
-#register_example(bernoulli_beam_2_exemple
-#  SOURCES bernoulli_beam_2_exemple.cc
-#  )
+register_example(bernoulli_beam_2_example
+  SOURCES bernoulli_beam_2_example.cc
+  )

@@ -28,8 +28,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AST_NODE_FILTER_HH__
-#define __AST_NODE_FILTER_HH__
+#ifndef AST_NODE_FILTER_HH_
+#define AST_NODE_FILTER_HH_
 
 /* -------------------------------------------------------------------------- */
 // akantu
@@ -109,4 +109,4 @@ public:
 
 } // namespace akantu
 
-#endif /* __AST_NODE_FILTER_HH__ */
+#endif /* AST_NODE_FILTER_HH_ */

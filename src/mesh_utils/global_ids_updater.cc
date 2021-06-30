@@ -39,8 +39,9 @@
 namespace akantu {
 
 UInt GlobalIdsUpdater::updateGlobalIDs(UInt local_nb_new_nodes) {
-  if (mesh.getCommunicator().getNbProc() == 1)
+  if (mesh.getCommunicator().getNbProc() == 1) {
     return local_nb_new_nodes;
+  }
 
   UInt total_nb_new_nodes = this->updateGlobalIDsLocally(local_nb_new_nodes);
 
@@ -53,8 +54,9 @@ UInt GlobalIdsUpdater::updateGlobalIDs(UInt local_nb_new_nodes) {
 UInt GlobalIdsUpdater::updateGlobalIDsLocally(UInt local_nb_new_nodes) {
   const auto & comm = mesh.getCommunicator();
   Int nb_proc = comm.getNbProc();
-  if (nb_proc == 1)
+  if (nb_proc == 1) {
     return local_nb_new_nodes;
+  }
 
   /// resize global ids array
   MeshAccessor mesh_accessor(mesh);
@@ -63,18 +65,20 @@ UInt GlobalIdsUpdater::updateGlobalIDsLocally(UInt local_nb_new_nodes) {
 
   nodes_global_ids.resize(mesh.getNbNodes(), -1);
 
-  /// compute the number of global nodes based on the number of old nodes
+  auto && local_or_master_pred = [this](auto && n) {
+    return this->mesh.isLocalOrMasterNode(n);
+  };
+
   Vector<UInt> local_master_nodes(2, 0);
+  /// compute the number of global nodes based on the number of old nodes
   auto range_old = arange(old_nb_nodes);
   local_master_nodes(0) =
-      aka::count_if(range_old.begin(), range_old.end(),
-                    [&](auto && n) { return mesh.isLocalOrMasterNode(n); });
+      std::count_if(range_old.begin(), range_old.end(), local_or_master_pred);
 
   /// compute amount of local or master doubled nodes
   auto range_new = arange(old_nb_nodes, mesh.getNbNodes());
   local_master_nodes(1) =
-      aka::count_if(range_new.begin(), range_new.end(),
-                    [&](auto && n) { return mesh.isLocalOrMasterNode(n); });
+      std::count_if(range_new.begin(), range_new.end(), local_or_master_pred);
 
   auto starting_index = local_master_nodes(1);
 
@@ -83,8 +87,9 @@ UInt GlobalIdsUpdater::updateGlobalIDsLocally(UInt local_nb_new_nodes) {
   UInt old_global_nodes = local_master_nodes(0);
   UInt total_nb_new_nodes = local_master_nodes(1);
 
-  if (total_nb_new_nodes == 0)
+  if (total_nb_new_nodes == 0) {
     return 0;
+  }
 
   /// set global ids of local and master nodes
   comm.exclusiveScan(starting_index);
@@ -109,13 +114,15 @@ void GlobalIdsUpdater::synchronizeGlobalIDs() {
 #ifndef AKANTU_NDEBUG
   for (auto node : nodes_flags) {
     auto node_flag = mesh.getNodeFlag(node.first);
-    if (node_flag != NodeFlag::_pure_ghost)
+    if (node_flag != NodeFlag::_pure_ghost) {
       continue;
-    auto n = 0u;
+    }
+    auto n = 0U;
 
     for (auto & pair : node.second) {
-      if (std::get<1>(pair) == NodeFlag::_pure_ghost)
+      if (std::get<1>(pair) == NodeFlag::_pure_ghost) {
         ++n;
+      }
     }
 
     if (n == node.second.size()) {

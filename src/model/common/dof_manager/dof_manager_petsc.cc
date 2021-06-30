@@ -51,14 +51,14 @@ private:
   PETScSingleton() {
     PETSc_call(PetscInitialized, &is_initialized);
 
-    if (not is_initialized) {
+    if (is_initialized == 0U) {
       cppargparse::ArgumentParser & argparser = getStaticArgumentParser();
       int & argc = argparser.getArgC();
       char **& argv = argparser.getArgV();
-      PETSc_call(PetscInitialize, &argc, &argv, NULL, NULL);
+      PETSc_call(PetscInitialize, &argc, &argv, nullptr, nullptr);
       PETSc_call(
           PetscPopErrorHandler); // remove the default PETSc signal handler
-      PETSc_call(PetscPushErrorHandler, PetscIgnoreErrorHandler, NULL);
+      PETSc_call(PetscPushErrorHandler, PetscIgnoreErrorHandler, nullptr);
     }
   }
 
@@ -67,7 +67,7 @@ public:
   PETScSingleton & operator=(const PETScSingleton &) = delete;
 
   ~PETScSingleton() {
-    if (not is_initialized) {
+    if (is_initialized == 0U) {
       PetscFinalize();
     }
   }
@@ -86,15 +86,14 @@ DOFManagerPETSc::DOFDataPETSc::DOFDataPETSc(const ID & dof_id)
     : DOFData(dof_id) {}
 
 /* -------------------------------------------------------------------------- */
-DOFManagerPETSc::DOFManagerPETSc(const ID & id, const MemoryID & memory_id)
-    : DOFManager(id, memory_id) {
+DOFManagerPETSc::DOFManagerPETSc(const ID & id)
+    : DOFManager(id) {
   init();
 }
 
 /* -------------------------------------------------------------------------- */
-DOFManagerPETSc::DOFManagerPETSc(Mesh & mesh, const ID & id,
-                                 const MemoryID & memory_id)
-    : DOFManager(mesh, id, memory_id) {
+DOFManagerPETSc::DOFManagerPETSc(Mesh & mesh, const ID & id)
+    : DOFManager(mesh, id) {
   init();
 }
 
@@ -120,12 +119,6 @@ void DOFManagerPETSc::init() {
 }
 
 /* -------------------------------------------------------------------------- */
-DOFManagerPETSc::~DOFManagerPETSc() {
-  // if (is_ltog_map)
-  //   PETSc_call(ISLocalToGlobalMappingDestroy, &is_ltog_map);
-}
-
-/* -------------------------------------------------------------------------- */
 auto DOFManagerPETSc::getNewDOFData(const ID & dof_id)
     -> std::unique_ptr<DOFData> {
   return std::make_unique<DOFDataPETSc>(dof_id);
@@ -137,11 +130,12 @@ DOFManagerPETSc::registerDOFsInternal(const ID & dof_id,
                                       Array<Real> & dofs_array) {
   dofs_ids.push_back(dof_id);
   auto ret = DOFManager::registerDOFsInternal(dof_id, dofs_array);
-  UInt nb_dofs, nb_pure_local_dofs;
+  UInt nb_dofs;
+  UInt nb_pure_local_dofs;
   std::tie(nb_dofs, nb_pure_local_dofs, std::ignore) = ret;
 
   auto && vector = std::make_unique<SolverVectorPETSc>(*this, id + ":solution");
-  auto x = vector->getVec();
+  auto *x = vector->getVec();
   PETSc_call(VecGetLocalToGlobalMapping, x, &is_ltog_map);
 
   // redoing the indexes based on the petsc numbering
@@ -154,7 +148,7 @@ DOFManagerPETSc::registerDOFsInternal(const ID & dof_id,
     }
 
     auto & lidx = dof_data.local_equation_number_petsc;
-    if (is_ltog_map) {
+    if (is_ltog_map != nullptr) {
       lidx.resize(gidx.size());
 
       PetscInt n;
@@ -208,7 +202,7 @@ void DOFManagerPETSc::getArrayPerDOFs(const ID & dof_id,
 /* -------------------------------------------------------------------------- */
 void DOFManagerPETSc::assembleElementalMatricesToMatrix(
     const ID & matrix_id, const ID & dof_id, const Array<Real> & elementary_mat,
-    const ElementType & type, const GhostType & ghost_type,
+    ElementType type, GhostType ghost_type,
     const MatrixType & elemental_matrix_type,
     const Array<UInt> & filter_elements) {
   auto & A = getMatrix(matrix_id);
@@ -302,9 +296,8 @@ const SolverVectorPETSc & DOFManagerPETSc::getResidual() const {
 static bool dof_manager_is_registered [[gnu::unused]] =
     DOFManagerFactory::getInstance().registerAllocator(
         "petsc",
-        [](Mesh & mesh, const ID & id,
-           const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
-          return std::make_unique<DOFManagerPETSc>(mesh, id, mem_id);
+        [](Mesh & mesh, const ID & id) -> std::unique_ptr<DOFManager> {
+          return std::make_unique<DOFManagerPETSc>(mesh, id);
         });
 
 } // namespace akantu

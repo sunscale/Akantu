@@ -29,8 +29,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AST_NTN_FRICTION_HH__
-#define __AST_NTN_FRICTION_HH__
+#ifndef AST_NTN_FRICTION_HH_
+#define AST_NTN_FRICTION_HH_
 
 /* -------------------------------------------------------------------------- */
 // simtools
@@ -47,8 +47,7 @@ class NTNFriction : public FrictionLaw<Regularisation> {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NTNFriction(NTNBaseContact & contact, const ID & id = "friction",
-              const MemoryID & memory_id = 0);
+  NTNFriction(NTNBaseContact & contact, const ID & id = "friction");
   virtual ~NTNFriction(){};
 
   /* ------------------------------------------------------------------------ */
@@ -96,4 +95,4 @@ operator<<(std::ostream & stream,
 
 #include "ntn_friction_tmpl.hh"
 
-#endif /* __AST_NTN_FRICTION_HH__ */
+#endif /* AST_NTN_FRICTION_HH_ */

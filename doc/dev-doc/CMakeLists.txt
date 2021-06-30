@@ -9,6 +9,7 @@ set(SPHINX_CACHE_DIR "${CMAKE_CURRENT_BINARY_DIR}/_doctrees")
 # HTML output directory
 set(SPHINX_HTML_DIR "${CMAKE_CURRENT_BINARY_DIR}/html")
 set(SPHINX_OUTPUT "${SPHINX_HTML_DIR}/index.html")
+set(SPHINX_INPUT "${CMAKE_CURRENT_BINARY_DIR}/conf.py")
 
 # ---------------------------------------------------------------------------- #
 # Doxygen                                                                      #
@@ -60,7 +61,7 @@ if (CMAKE_VERSION VERSION_GREATER 3.9.5)
     "endrst=\\endverbatim"
     )
   set(DOXYGEN_WARN_IF_UNDOCUMENTED NO)
-  set(DOXYGEN_WARN_IF_DOC_ERROR YES)
+  set(DOXYGEN_WARN_IF_DOC_ERROR NO)
   set(DOXYGEN_WARN_AS_ERROR NO)
   set(DOXYGEN_EXCLUDE  "${PROJECT_SOURCE_DIR}/src/common/aka_fwd.hh")
   set(DOXYGEN_RECURSIVE YES)
@@ -85,10 +86,10 @@ if (CMAKE_VERSION VERSION_GREATER 3.9.5)
   set(DOXYGEN_PREDEFINED
     ${AKANTU_DEFINITIONS}
     "DOXYGEN"
-    "AKANTU_TO_IMPLEMENT()="
-    "DECLARE_NAMED_ARGUMENT()="
-    "OPTIONAL_NAMED_ARGUMENT(n, v)=v"
-    "REQUIRED_NAMED_ARGUMENT(n)="
+#    "AKANTU_TO_IMPLEMENT()="
+#    "DECLARE_NAMED_ARGUMENT()="
+#    "OPTIONAL_NAMED_ARGUMENT(n, v)=v"
+#    "REQUIRED_NAMED_ARGUMENT(n)="
     )
   set(DOXYGEN_COLLABORATION_GRAPH NO)
   set(DOXYGEN_UML_LOOK YES)
@@ -100,6 +101,8 @@ if (CMAKE_VERSION VERSION_GREATER 3.9.5)
   set(DOXYGEN_LOOKUP_CACHE_SIZE 9)
 
   set(_SRCS
+    ${PROJECT_BINARY_DIR}/src/aka_config.hh
+    ${PROJECT_BINARY_DIR}/src/aka_element_classes_info.hh
     ${AKANTU_LIBRARY_SRCS}
     ${AKANTU_LIBRARY_PUBLIC_HDRS}
     ${AKANTU_LIBRARY_PRIVATE_HDRS}
@@ -150,13 +153,25 @@ if(CMAKE_VERBOSE_MAKEFILE)
   set(SPHINX_VERBOSE_FLAG)
 endif(CMAKE_VERBOSE_MAKEFILE)
 
+# set(AKANTU_IN_READTHEDOC TRUE)
+# configure_file(
+#   "${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in"
+#   "${CMAKE_CURRENT_SOURCE_DIR}/conf_rtd.py"
+#   @ONLY)
+
+set(AKANTU_IN_READTHEDOC FALSE)
 configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/conf.py"
+  "${SPHINX_INPUT}"
   @ONLY)
 
+set(SPHINX_PARALLEL_FLAG)
+if (SPHINX_VERSION VERSION_GREATER_EQUAL 1.7.0)
+  set(SPHINX_PARALLEL_FLAG -j auto)
+endif()
+
 set(_sphinx_command ${SPHINX_BUILD_EXECUTABLE}
-  -j auto
+  ${SPHINX_PARALLEL_FLAG}
   ${SPHINX_VERBOSE_FLAG} -b html
   -c "${CMAKE_CURRENT_BINARY_DIR}"
   -d "${SPHINX_CACHE_DIR}"
@@ -164,10 +179,13 @@ set(_sphinx_command ${SPHINX_BUILD_EXECUTABLE}
   "${SPHINX_HTML_DIR}"
   )
 
+file(GLOB_RECURSE _SPHINX_SRCS
+  "*.rst")
+
 add_custom_command(
   OUTPUT ${SPHINX_OUTPUT}
   COMMAND ${_sphinx_command}
-  DEPENDS doxygen-doc ${SPHINX_INPUT}
+  DEPENDS doxygen-doc ${SPHINX_INPUT} ${_SPHINX_SRCS}
   COMMENT "Building HTML documentation with Sphinx in ${SPHINX_HTML_DIR}"
   )
 

@@ -20,8 +20,8 @@
 #include "material_plastic.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_VISCOPLASTIC_HH__
-#define __AKANTU_MATERIAL_VISCOPLASTIC_HH__
+#ifndef AKANTU_MATERIAL_VISCOPLASTIC_HH_
+#define AKANTU_MATERIAL_VISCOPLASTIC_HH_
 
 namespace akantu {
 
@@ -54,7 +54,7 @@ public:
                              GhostType ghost_type = _not_ghost);
 
   /// compute the tangent stiffness matrix for an element type
-  void computeTangentModuli(const ElementType & el_type,
+  void computeTangentModuli(ElementType el_type,
                             Array<Real> & tangent_matrix,
                             GhostType ghost_type = _not_ghost);
 
@@ -96,4 +96,4 @@ private:
 
 } // namespace akantu
 
-#endif /* __AKANTU_MATERIAL_VISCOPLASTIC_HH__ */
+#endif /* AKANTU_MATERIAL_VISCOPLASTIC_HH_ */

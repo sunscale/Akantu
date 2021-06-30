@@ -61,7 +61,7 @@ public:
       return;
 
     auto & K = dynamic_cast<SparseMatrixAIJ &>(dof_manager.getMatrix("K"));
-    K.clear();
+    K.zero();
 
     for (UInt i = 1; i < nb_dofs - 1; ++i)
       K.add(i, i, 2.);

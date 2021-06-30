@@ -199,6 +199,10 @@
 #
 #
 #]=======================================================================]
+if (DEFINED CMAKE_PACKAGES_SYSTEM_LOADED)
+  return()
+endif()
+set(CMAKE_PACKAGES_SYSTEM_LOADED TRUE)
 
 
 include(CMakeParseArguments)
@@ -271,11 +275,19 @@ function(package_add_third_party_script_variable pkg var)
 endfunction()
 
 # ------------------------------------------------------------------------------
-# Set if system package or compile external lib
+# Add package's targets to the export list
 # ------------------------------------------------------------------------------
 function(package_add_to_export_list pkg)
   package_get_name(${pkg} _pkg_name)
   _package_add_to_export_list(${_pkg_name} ${ARGN})
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Removes packages's targets from export list
+# ------------------------------------------------------------------------------
+function(package_remove_from_export_list pkg)
+  package_get_name(${pkg} _pkg_name)
+  _package_remove_from_export_list(${_pkg_name} ${ARGN})
 endfunction()
 
 # ------------------------------------------------------------------------------

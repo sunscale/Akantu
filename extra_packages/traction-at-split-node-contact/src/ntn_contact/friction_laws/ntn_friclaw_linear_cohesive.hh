@@ -28,8 +28,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AST_NTN_FRICLAW_LINEAR_COHESIVE_HH__
-#define __AST_NTN_FRICLAW_LINEAR_COHESIVE_HH__
+#ifndef AST_NTN_FRICLAW_LINEAR_COHESIVE_HH_
+#define AST_NTN_FRICLAW_LINEAR_COHESIVE_HH_
 
 /* -------------------------------------------------------------------------- */
 // simtools
@@ -45,8 +45,7 @@ class NTNFricLawLinearCohesive : public Regularisation {
   /* ------------------------------------------------------------------------ */
 public:
   NTNFricLawLinearCohesive(NTNBaseContact & contact,
-                           const ID & id = "linear_cohesive",
-                           const MemoryID & memory_id = 0);
+                           const ID & id = "linear_cohesive");
   virtual ~NTNFricLawLinearCohesive(){};
 
   /* ------------------------------------------------------------------------ */
@@ -111,4 +110,4 @@ operator<<(std::ostream & stream,
 
 #include "ntn_friclaw_linear_cohesive_tmpl.hh"
 
-#endif /* __AST_NTN_FRICLAW_LINEAR_COHESIVE_HH__ */
+#endif /* AST_NTN_FRICLAW_LINEAR_COHESIVE_HH_ */

@@ -30,8 +30,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_AKA_SAFE_ENUM_HH__
-#define __AKANTU_AKA_SAFE_ENUM_HH__
+#ifndef AKANTU_AKA_SAFE_ENUM_HH_
+#define AKANTU_AKA_SAFE_ENUM_HH_
 
 namespace akantu {
 
@@ -41,45 +41,54 @@ class safe_enum : public def {
   using type = typename def::type;
 
 public:
-  explicit safe_enum(type v = def::_end_) : val(v) {}
-  safe_enum(safe_enum && other) = default;
-  safe_enum & operator=(safe_enum && other) = default;
+  constexpr explicit safe_enum(type v = def::_end_) : val(v) {}
 
-  inner underlying() const { return val; }
+  constexpr inner underlying() const { return val; }
 
-  bool operator==(const safe_enum & s) const { return this->val == s.val; }
-  bool operator!=(const safe_enum & s) const { return this->val != s.val; }
-  bool operator<(const safe_enum & s) const { return this->val < s.val; }
-  bool operator<=(const safe_enum & s) const { return this->val <= s.val; }
-  bool operator>(const safe_enum & s) const { return this->val > s.val; }
-  bool operator>=(const safe_enum & s) const { return this->val >= s.val; }
+  constexpr bool operator==(const safe_enum & s) const {
+    return this->val == s.val;
+  }
+  constexpr bool operator!=(const safe_enum & s) const {
+    return this->val != s.val;
+  }
+  constexpr bool operator<(const safe_enum & s) const {
+    return this->val < s.val;
+  }
+  constexpr bool operator<=(const safe_enum & s) const {
+    return this->val <= s.val;
+  }
+  constexpr bool operator>(const safe_enum & s) const {
+    return this->val > s.val;
+  }
+  constexpr bool operator>=(const safe_enum & s) const {
+    return this->val >= s.val;
+  }
 
-  operator inner() { return val; };
+  constexpr operator inner() { return val; };
 
 public:
   // Works only if enumerations are contiguous.
-  class iterator {
+  class const_iterator {
   public:
-    explicit iterator(type v) : it(v) {}
-    iterator & operator++() {
+    constexpr explicit const_iterator(type v) : it(v) {}
+    constexpr const_iterator & operator++() {
       ++it;
       return *this;
     }
-    safe_enum operator*() { return safe_enum(static_cast<type>(it)); }
-    bool operator!=(iterator const & it) { return it.it != this->it; }
+    constexpr safe_enum operator*() { return safe_enum(static_cast<type>(it)); }
+    constexpr bool operator!=(const_iterator const & it) { return it.it != this->it; }
 
   private:
     int it;
   };
 
-  static iterator begin() { return iterator(def::_begin_); }
+  constexpr auto begin() const { return const_iterator(def::_begin_); }
+  constexpr auto end() const { return const_iterator(def::_end_); }
 
-  static iterator end() { return iterator(def::_end_); }
-
-protected:
+private:
   inner val;
 };
 
 } // namespace akantu
 
-#endif /* __AKANTU_AKA_SAFE_ENUM_HH__ */
+#endif /* AKANTU_AKA_SAFE_ENUM_HH_ */

@@ -39,11 +39,13 @@ inline void MaterialMazars<spatial_dimension>::computeStressOnQuad(
     const Matrix<Real> & grad_u, Matrix<Real> & sigma, Real & dam,
     Real & Ehat) {
   Matrix<Real> epsilon(3, 3);
-  epsilon.clear();
+  epsilon.zero();
 
-  for (UInt i = 0; i < spatial_dimension; ++i)
-    for (UInt j = 0; j < spatial_dimension; ++j)
+  for (UInt i = 0; i < spatial_dimension; ++i) {
+    for (UInt j = 0; j < spatial_dimension; ++j) {
       epsilon(i, j) = .5 * (grad_u(i, j) + grad_u(j, i));
+    }
+  }
 
   Vector<Real> Fdiag(3);
   Math::matrixEig(3, epsilon.storage(), Fdiag.storage());
@@ -73,13 +75,15 @@ inline void MaterialMazars<spatial_dimension>::computeDamageAndStressOnQuad(
     Real & Ehat) {
   if (!damage_in_compute_stress) {
     Vector<Real> Fdiag(3);
-    Fdiag.clear();
+    Fdiag.zero();
 
     Matrix<Real> epsilon(3, 3);
-    epsilon.clear();
-    for (UInt i = 0; i < spatial_dimension; ++i)
-      for (UInt j = 0; j < spatial_dimension; ++j)
+    epsilon.zero();
+    for (UInt i = 0; i < spatial_dimension; ++i) {
+      for (UInt j = 0; j < spatial_dimension; ++j) {
         epsilon(i, j) = .5 * (grad_u(i, j) + grad_u(j, i));
+      }
+    }
 
     Math::matrixEig(3, epsilon.storage(), Fdiag.storage());
 
@@ -116,8 +120,9 @@ inline void MaterialMazars<spatial_dimension>::computeDamageOnQuad(
                      this->lambda * (epsilon_princ(1) + epsilon_princ(0));
 
     Vector<Real> sigma_p(3);
-    for (UInt i = 0; i < 3; i++)
+    for (UInt i = 0; i < 3; i++) {
       sigma_p(i) = std::max(Real(0.), sigma_princ(i));
+    }
     // sigma_p *= 1. - dam;
 
     Real trace_p = this->nu / this->E * (sigma_p(0) + sigma_p(1) + sigma_p(2));

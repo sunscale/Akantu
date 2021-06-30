@@ -54,7 +54,6 @@ register_test(test_solid_mechanics_model_material_large_rotation
   )
 
 #===============================================================================
-
 register_test(test_material_selector
   SOURCES test_material_selector.cc
   FILES_TO_COPY material_selector.dat material_selector.msh

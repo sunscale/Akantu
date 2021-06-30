@@ -30,8 +30,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AST_FORCE_BASED_DIRICHLET_HH__
-#define __AST_FORCE_BASED_DIRICHLET_HH__
+#ifndef AST_FORCE_BASED_DIRICHLET_HH_
+#define AST_FORCE_BASED_DIRICHLET_HH_
 
 // akantu
 #include "aka_common.hh"
@@ -125,4 +125,4 @@ protected:
 
 } // namespace akantu
 
-#endif /* __AST_FORCE_BASED_DIRICHLET_HH__ */
+#endif /* AST_FORCE_BASED_DIRICHLET_HH_ */

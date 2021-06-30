@@ -56,15 +56,15 @@ public:
   }
 
   bool operator()(const Vector<Real> & coords_n1,
-                  const Vector<Real> & coords_n2) {
+                  const Vector<Real> & coords_n2) const {
     Real diff = coords_n1(dir_1) - coords_n2(dir_1);
     ;
-    if (dim == 2 || std::abs(diff) / normalization > tolerance)
-      return diff > 0. ? false : true;
-    else if (dim > 2) {
+    if (dim == 2 || std::abs(diff) / normalization > tolerance) {
+      return (diff <= 0.);
+    }
+    if (dim > 2) {
       diff = coords_n1(dir_2) - coords_n2(dir_2);
-      ;
-      return diff > 0 ? false : true;
+      return (diff <= 0);
     }
     return true;
   }
@@ -88,8 +88,9 @@ void MeshUtils::computePBCMap(const Mesh & mesh, const UInt dir,
   auto it = mesh.getNodes().begin(dim);
   auto end = mesh.getNodes().end(dim);
 
-  if (dim <= dir)
+  if (dim <= dir) {
     return;
+  }
 
   const Vector<Real> & lower_bounds = mesh.getLowerBounds();
   const Vector<Real> & upper_bounds = mesh.getUpperBounds();
@@ -145,8 +146,10 @@ void MeshUtils::computePBCMap(const Mesh & mesh,
   const UInt dim = mesh.getSpatialDimension();
 
   // variables to find min and max of surfaces
-  Real first_max[3], first_min[3];
-  Real second_max[3], second_min[3];
+  Real first_max[3];
+  Real first_min[3];
+  Real second_max[3];
+  Real second_min[3];
   for (UInt i = 0; i < dim; ++i) {
     first_min[i] = std::numeric_limits<Real>::max();
     second_min[i] = std::numeric_limits<Real>::max();
@@ -157,18 +160,22 @@ void MeshUtils::computePBCMap(const Mesh & mesh,
   // find min and max of surface nodes
   for (auto it = selected_first.begin(); it != selected_first.end(); ++it) {
     for (UInt i = 0; i < dim; ++i) {
-      if (first_min[i] > coords(*it, i))
+      if (first_min[i] > coords(*it, i)) {
         first_min[i] = coords(*it, i);
-      if (first_max[i] < coords(*it, i))
+      }
+      if (first_max[i] < coords(*it, i)) {
         first_max[i] = coords(*it, i);
+      }
     }
   }
   for (auto it = selected_second.begin(); it != selected_second.end(); ++it) {
     for (UInt i = 0; i < dim; ++i) {
-      if (second_min[i] > coords(*it, i))
+      if (second_min[i] > coords(*it, i)) {
         second_min[i] = coords(*it, i);
-      if (second_max[i] < coords(*it, i))
+      }
+      if (second_max[i] < coords(*it, i)) {
         second_max[i] = coords(*it, i);
+      }
     }
   }
 
@@ -196,12 +203,13 @@ void MeshUtils::computePBCMap(const Mesh & mesh,
   UInt dir = first_dir;
 
   // match pairs
-  if (first_min[dir] < second_min[dir])
+  if (first_min[dir] < second_min[dir]) {
     MeshUtils::matchPBCPairs(mesh, dir, selected_first, selected_second,
                              pbc_pair);
-  else
+  } else {
     MeshUtils::matchPBCPairs(mesh, dir, selected_second, selected_first,
                              pbc_pair);
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -220,7 +228,8 @@ void MeshUtils::matchPBCPairs(const Mesh & mesh, const UInt dir,
                       "In matchPBCPairs: The normalization is zero. "
                           << "Did you compute the bounding box of the mesh?");
 
-  auto odir_1 = UInt(-1), odir_2 = UInt(-1);
+  auto odir_1 = UInt(-1);
+  auto odir_2 = UInt(-1);
 
   if (dim == 3) {
     if (dir == _x) {
@@ -268,14 +277,16 @@ void MeshUtils::matchPBCPairs(const Mesh & mesh, const UInt dir,
 
     Real dx = 0.0;
     Real dy = 0.0;
-    if (dim >= 2)
+    if (dim >= 2) {
       dx = coords1(odir_1) - coords2(odir_1);
-    if (dim == 3)
+    }
+    if (dim == 3) {
       dy = coords1(odir_2) - coords2(odir_2);
+    }
 
     if (std::abs(dx * dx + dy * dy) / normalization < tolerance) {
       // then i match these pairs
-      if (pbc_pair.count(i2)) {
+      if (pbc_pair.count(i2) != 0U) {
         i2 = pbc_pair[i2];
       }
       pbc_pair[i1] = i2;

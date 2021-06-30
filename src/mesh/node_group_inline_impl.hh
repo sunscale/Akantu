@@ -51,10 +51,10 @@ inline NodeGroup::const_node_iterator NodeGroup::add(UInt node,
       return (node_group.end() - 1);
     }
     return it;
-  } else {
-    node_group.push_back(node);
-    return (node_group.end() - 1);
   }
+
+  node_group.push_back(node);
+  return (node_group.end() - 1);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -69,6 +69,9 @@ inline void NodeGroup::remove(UInt node) {
   }
   AKANTU_DEBUG_ASSERT(it != end, "The node was not found!");
 }
+
+/* -------------------------------------------------------------------------- */
+inline bool NodeGroup::empty() const { return node_group.empty(); }
 
 /* -------------------------------------------------------------------------- */
 inline UInt NodeGroup::size() const { return node_group.size(); }

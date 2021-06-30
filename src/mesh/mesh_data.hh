@@ -30,11 +30,10 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MESH_DATA_HH__
-#define __AKANTU_MESH_DATA_HH__
+#ifndef AKANTU_MESH_DATA_HH_
+#define AKANTU_MESH_DATA_HH_
 
 /* -------------------------------------------------------------------------- */
-#include "aka_memory.hh"
 #include "element_type_map.hh"
 #include <map>
 #include <string>
@@ -75,8 +74,7 @@ private:
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  MeshData(const ID & id = "mesh_data", const ID & parent_id = "",
-           const MemoryID & memory_id = 0);
+  MeshData(const ID & id = "mesh_data", const ID & parent_id = "");
 
   /* ------------------------------------------------------------------------ */
   /* Methods and accessors                                                    */
@@ -84,8 +82,8 @@ public:
 public:
   /// tells if the given array exists
   template <typename T>
-  bool hasData(const ID & data_name, const ElementType & el_type,
-               const GhostType & ghost_type = _not_ghost) const;
+  bool hasData(const ID & data_name, ElementType elem_type,
+               GhostType ghost_type = _not_ghost) const;
 
   /// tells if the given data exists
   bool hasData(const ID & data_name,
@@ -94,8 +92,8 @@ public:
   bool hasData(MeshDataType type = MeshDataType::_elemental) const;
 
   /// get the names of the data stored in elemental_data
-  inline auto getTagNames(const ElementType & type,
-                          const GhostType & ghost_type = _not_ghost) const;
+  inline auto getTagNames(ElementType type,
+                          GhostType ghost_type = _not_ghost) const;
 
   /// get the names of the data stored in elemental_data
   inline auto getTagNames() const;
@@ -109,26 +107,25 @@ public:
   /// Get an existing elemental data array
   template <typename T>
   const Array<T> &
-  getElementalDataArray(const ID & data_name, const ElementType & el_type,
-                        const GhostType & ghost_type = _not_ghost) const;
+  getElementalDataArray(const ID & data_name, ElementType elem_type,
+                        GhostType ghost_type = _not_ghost) const;
   template <typename T>
   Array<T> & getElementalDataArray(const ID & data_name,
-                                   const ElementType & el_type,
-                                   const GhostType & ghost_type = _not_ghost);
+                                   ElementType elem_type,
+                                   GhostType ghost_type = _not_ghost);
 
   /// Get an elemental data array, if it does not exist: allocate it
   template <typename T>
-  Array<T> &
-  getElementalDataArrayAlloc(const ID & data_name, const ElementType & el_type,
-                             const GhostType & ghost_type = _not_ghost,
-                             UInt nb_component = 1);
+  Array<T> & getElementalDataArrayAlloc(
+      const ID & data_name, ElementType elem_type,
+      GhostType ghost_type = _not_ghost, UInt nb_component = 1);
 
   template <typename T>
   inline UInt getNbComponentTemplated(const ID & name,
-                                      const ElementType & el_type,
-                                      const GhostType & ghost_type) const;
-  inline UInt getNbComponent(const ID & name, const ElementType & el_type,
-                             const GhostType & ghost_type = _not_ghost) const;
+                                      ElementType el_type,
+                                      GhostType ghost_type) const;
+  inline UInt getNbComponent(const ID & name, ElementType el_type,
+                             GhostType ghost_type = _not_ghost) const;
 
   inline UInt getNbComponent(const ID & name) const;
 
@@ -171,7 +168,6 @@ private:
   /* ------------------------------------------------------------------------ */
 private:
   ID _id;
-  UInt _memory_id{0};
 
   /// Map when elemental data is stored as ElementTypeMap
   ElementalDataMap elemental_data;
@@ -189,4 +185,4 @@ private:
 #include "mesh_data_tmpl.hh"
 #undef AKANTU_MESH_DATA_TUPLE_FIRST_ELEM
 
-#endif /* __AKANTU_MESH_DATA_HH__ */
+#endif /* AKANTU_MESH_DATA_HH_ */

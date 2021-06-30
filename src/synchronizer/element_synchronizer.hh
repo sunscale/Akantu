@@ -33,8 +33,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_ELEMENT_SYNCHRONIZER_HH__
-#define __AKANTU_ELEMENT_SYNCHRONIZER_HH__
+#ifndef AKANTU_ELEMENT_SYNCHRONIZER_HH_
+#define AKANTU_ELEMENT_SYNCHRONIZER_HH_
 
 /* -------------------------------------------------------------------------- */
 #include "aka_array.hh"
@@ -56,7 +56,6 @@ class ElementSynchronizer : public SynchronizerImpl<Element>,
   /* ------------------------------------------------------------------------ */
 public:
   ElementSynchronizer(Mesh & mesh, const ID & id = "element_synchronizer",
-                      MemoryID memory_id = 0,
                       bool register_to_event_manager = true,
                       EventHandlerPriority event_priority = _ehp_synchronizer);
 
@@ -81,7 +80,7 @@ public:
                          const ChangedElementsEvent & event) override;
 
   /// mesh event handler onRemovedElement
-  void onElementsRemoved(const Array<Element> & element_list,
+  void onElementsRemoved(const Array<Element> & element_to_remove,
                          const ElementTypeMapArray<UInt> & new_numbering,
                          const RemovedElementsEvent & event) override;
 
@@ -99,27 +98,27 @@ protected:
   /// fill the nodes type vector
   void fillNodesType(const MeshData & mesh_data,
                      DynamicCommunicationBuffer * buffers,
-                     const std::string & tag_name, const ElementType & el_type,
+                     const std::string & tag_name, ElementType el_type,
                      const Array<UInt> & partition_num);
 
   template <typename T>
   void fillTagBufferTemplated(const MeshData & mesh_data,
                               DynamicCommunicationBuffer * buffers,
                               const std::string & tag_name,
-                              const ElementType & el_type,
+                              ElementType el_type,
                               const Array<UInt> & partition_num,
                               const CSR<UInt> & ghost_partition);
 
   void fillTagBuffer(const MeshData & mesh_data,
                      DynamicCommunicationBuffer * buffers,
-                     const std::string & tag_name, const ElementType & el_type,
+                     const std::string & tag_name, ElementType el_type,
                      const Array<UInt> & partition_num,
                      const CSR<UInt> & ghost_partition);
 
   /// function that handels the MeshData to be split (root side)
   static void synchronizeTagsSend(ElementSynchronizer & communicator, UInt root,
                                   Mesh & mesh, UInt nb_tags,
-                                  const ElementType & type,
+                                  ElementType type,
                                   const Array<UInt> & partition_num,
                                   const CSR<UInt> & ghost_partition,
                                   UInt nb_local_element, UInt nb_ghost_element);
@@ -127,13 +126,13 @@ protected:
   /// function that handles the MeshData to be split (other nodes)
   static void synchronizeTagsRecv(ElementSynchronizer & communicator, UInt root,
                                   Mesh & mesh, UInt nb_tags,
-                                  const ElementType & type,
+                                  ElementType type,
                                   UInt nb_local_element, UInt nb_ghost_element);
 
   /// function that handles the preexisting groups in the mesh
   static void synchronizeElementGroups(ElementSynchronizer & communicator,
                                        UInt root, Mesh & mesh,
-                                       const ElementType & type,
+                                       ElementType type,
                                        const Array<UInt> & partition_num,
                                        const CSR<UInt> & ghost_partition,
                                        UInt nb_element);
@@ -141,7 +140,7 @@ protected:
   /// function that handles the preexisting groups in the mesh
   static void synchronizeElementGroups(ElementSynchronizer & communicator,
                                        UInt root, Mesh & mesh,
-                                       const ElementType & type);
+                                       ElementType type);
 
   /// function that handles the preexisting groups in the mesh
   static void synchronizeNodeGroupsMaster(ElementSynchronizer & communicator,
@@ -198,4 +197,4 @@ protected:
 /* -------------------------------------------------------------------------- */
 } // namespace akantu
 
-#endif /* __AKANTU_ELEMENT_SYNCHRONIZER_HH__ */
+#endif /* AKANTU_ELEMENT_SYNCHRONIZER_HH_ */

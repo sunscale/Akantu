@@ -49,8 +49,8 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-DOFManagerDefault::DOFManagerDefault(const ID & id, const MemoryID & memory_id)
-    : DOFManager(id, memory_id), synchronizer(nullptr) {
+DOFManagerDefault::DOFManagerDefault(const ID & id)
+    : DOFManager(id), synchronizer(nullptr) {
   residual = std::make_unique<SolverVectorDefault>(
       *this, std::string(id + ":residual"));
   solution = std::make_unique<SolverVectorDefault>(
@@ -60,12 +60,11 @@ DOFManagerDefault::DOFManagerDefault(const ID & id, const MemoryID & memory_id)
 }
 
 /* -------------------------------------------------------------------------- */
-DOFManagerDefault::DOFManagerDefault(Mesh & mesh, const ID & id,
-                                     const MemoryID & memory_id)
-    : DOFManager(mesh, id, memory_id), synchronizer(nullptr) {
+DOFManagerDefault::DOFManagerDefault(Mesh & mesh, const ID & id)
+    : DOFManager(mesh, id), synchronizer(nullptr) {
   if (this->mesh->isDistributed()) {
     this->synchronizer = std::make_unique<DOFSynchronizer>(
-        *this, this->id + ":dof_synchronizer", this->memory_id);
+        *this, this->id + ":dof_synchronizer");
     residual = std::make_unique<SolverVectorDistributed>(
         *this, std::string(id + ":residual"));
     solution = std::make_unique<SolverVectorDistributed>(
@@ -90,11 +89,13 @@ DOFManagerDefault::~DOFManagerDefault() = default;
 void DOFManagerDefault::makeConsistentForPeriodicity(const ID & dof_id,
                                                      SolverVector & array) {
   auto & dof_data = this->getDOFDataTyped<DOFDataDefault>(dof_id);
-  if (dof_data.support_type != _dst_nodal)
+  if (dof_data.support_type != _dst_nodal) {
     return;
+  }
 
-  if (not mesh->isPeriodic())
+  if (not mesh->isPeriodic()) {
     return;
+  }
 
   this->mesh->getPeriodicNodeSynchronizer()
       .reduceSynchronizeWithPBCSlaves<AddOperation>(
@@ -171,8 +172,9 @@ DOFManagerDefault::registerDOFsInternal(const ID & dof_id,
   auto ret = DOFManager::registerDOFsInternal(dof_id, dofs_array);
 
   // update the synchronizer if needed
-  if (this->synchronizer)
+  if (this->synchronizer) {
     this->synchronizer->registerDOFs(dof_id);
+  }
 
   return ret;
 }
@@ -274,7 +276,7 @@ void DOFManagerDefault::assembleLumpedMatMulVectToResidual(
   const Array<Real> & A = this->getLumpedMatrix(A_id);
   auto & cache = aka::as_type<SolverVectorArray>(*this->data_cache);
 
-  cache.clear();
+  cache.zero();
   this->assembleToGlobalArray(dof_id, x, cache.getVector(), scale_factor);
 
   for (auto && data : zip(make_view(A), make_view(cache.getVector()),
@@ -289,7 +291,7 @@ void DOFManagerDefault::assembleLumpedMatMulVectToResidual(
 /* -------------------------------------------------------------------------- */
 void DOFManagerDefault::assembleElementalMatricesToMatrix(
     const ID & matrix_id, const ID & dof_id, const Array<Real> & elementary_mat,
-    const ElementType & type, const GhostType & ghost_type,
+    ElementType type, GhostType ghost_type,
     const MatrixType & elemental_matrix_type,
     const Array<UInt> & filter_elements) {
   this->addToProfile(matrix_id, dof_id, type, ghost_type);
@@ -324,14 +326,14 @@ void DOFManagerDefault::assembleMatMulVectToArray(const ID & dof_id,
 
 /* -------------------------------------------------------------------------- */
 void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id,
-                                     const ElementType & type,
-                                     const GhostType & ghost_type) {
+                                     ElementType type, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   const auto & dof_data = this->getDOFData(dof_id);
 
-  if (dof_data.support_type != _dst_nodal)
+  if (dof_data.support_type != _dst_nodal) {
     return;
+  }
 
   auto mat_dof = std::make_pair(matrix_id, dof_id);
   auto type_pair = std::make_pair(type, ghost_type);
@@ -339,8 +341,9 @@ void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id,
   auto prof_it = this->matrix_profiled_dofs.find(mat_dof);
   if (prof_it != this->matrix_profiled_dofs.end() &&
       std::find(prof_it->second.begin(), prof_it->second.end(), type_pair) !=
-          prof_it->second.end())
+          prof_it->second.end()) {
     return;
+  }
 
   auto nb_degree_of_freedom_per_node = dof_data.dof->getNbComponent();
 
@@ -370,8 +373,9 @@ void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id,
   Vector<Int> element_eq_nb(size_mat);
 
   for (UInt e = 0; e < nb_elements; ++e) {
-    if (ge_it)
+    if (ge_it != nullptr) {
       cit = cbegin + *ge_it;
+    }
 
     this->extractElementEquationNumber(
         equation_number, *cit, nb_degree_of_freedom_per_node, element_eq_nb);
@@ -380,10 +384,11 @@ void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id,
         element_eq_nb.storage(),
         [&](auto & local) { return this->localToGlobalEquationNumber(local); });
 
-    if (ge_it)
+    if (ge_it != nullptr) {
       ++ge_it;
-    else
+    } else {
       ++cit;
+    }
 
     for (UInt i = 0; i < size_mat; ++i) {
       UInt c_irn = element_eq_nb(i);
@@ -423,16 +428,17 @@ void DOFManagerDefault::onNodesAdded(const Array<UInt> & nodes_list,
                                      const NewNodesEvent & event) {
   DOFManager::onNodesAdded(nodes_list, event);
 
-  if (this->synchronizer)
+  if (this->synchronizer) {
     this->synchronizer->onNodesAdded(nodes_list);
+  }
 }
 
 /* -------------------------------------------------------------------------- */
 void DOFManagerDefault::resizeGlobalArrays() {
   DOFManager::resizeGlobalArrays();
 
-  this->global_blocked_dofs.resize(this->local_system_size, true);
-  this->previous_global_blocked_dofs.resize(this->local_system_size, true);
+  this->global_blocked_dofs.resize(this->local_system_size, 1);
+  this->previous_global_blocked_dofs.resize(this->local_system_size, 1);
 
   matrix_profiled_dofs.clear();
 }
@@ -442,8 +448,9 @@ void DOFManagerDefault::updateGlobalBlockedDofs() {
   DOFManager::updateGlobalBlockedDofs();
 
   if (this->global_blocked_dofs_release ==
-      this->previous_global_blocked_dofs_release)
+      this->previous_global_blocked_dofs_release) {
     return;
+  }
 
   global_blocked_dofs_uint.resize(local_system_size);
   global_blocked_dofs_uint.set(false);
@@ -463,29 +470,18 @@ const Array<bool> & DOFManagerDefault::getBlockedDOFs() const {
 }
 
 /* -------------------------------------------------------------------------- */
-// register in factory
-// static bool default_dof_manager_is_registered [[gnu::unused]] =
-//     DefaultDOFManagerFactory::getInstance().registerAllocator(
-//         "default",
-//         [](const ID & id,
-//            const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
-//           return std::make_unique<DOFManagerDefault>(id, mem_id);
-//         });
-
 static bool dof_manager_is_registered [[gnu::unused]] =
     DOFManagerFactory::getInstance().registerAllocator(
         "default",
-        [](Mesh & mesh, const ID & id,
-           const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
-          return std::make_unique<DOFManagerDefault>(mesh, id, mem_id);
+        [](Mesh & mesh, const ID & id) -> std::unique_ptr<DOFManager> {
+          return std::make_unique<DOFManagerDefault>(mesh, id);
         });
 
 static bool dof_manager_is_registered_mumps [[gnu::unused]] =
     DOFManagerFactory::getInstance().registerAllocator(
         "mumps",
-        [](Mesh & mesh, const ID & id,
-           const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
-          return std::make_unique<DOFManagerDefault>(mesh, id, mem_id);
+        [](Mesh & mesh, const ID & id) -> std::unique_ptr<DOFManager> {
+          return std::make_unique<DOFManagerDefault>(mesh, id);
         });
 
 } // namespace akantu

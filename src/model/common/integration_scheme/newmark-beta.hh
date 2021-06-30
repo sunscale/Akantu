@@ -34,8 +34,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_NEWMARK_BETA_HH__
-#define __AKANTU_NEWMARK_BETA_HH__
+#ifndef AKANTU_NEWMARK_BETA_HH_
+#define AKANTU_NEWMARK_BETA_HH_
 
 /* -------------------------------------------------------------------------- */
 
@@ -191,4 +191,4 @@ public:
 
 } // namespace akantu
 
-#endif /* __AKANTU_NEWMARK_BETA_HH__ */
+#endif /* AKANTU_NEWMARK_BETA_HH_ */

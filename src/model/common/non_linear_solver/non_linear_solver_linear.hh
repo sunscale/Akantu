@@ -34,8 +34,8 @@
 #include "sparse_solver_mumps.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_NON_LINEAR_SOLVER_LINEAR_HH__
-#define __AKANTU_NON_LINEAR_SOLVER_LINEAR_HH__
+#ifndef AKANTU_NON_LINEAR_SOLVER_LINEAR_HH_
+#define AKANTU_NON_LINEAR_SOLVER_LINEAR_HH_
 
 namespace akantu {
 class DOFManagerDefault;
@@ -50,8 +50,7 @@ class NonLinearSolverLinear : public NonLinearSolver {
 public:
   NonLinearSolverLinear(DOFManagerDefault & dof_manager,
                         const NonLinearSolverType & non_linear_solver_type,
-                        const ID & id = "non_linear_solver_linear",
-                        UInt memory_id = 0);
+                        const ID & id = "non_linear_solver_linear");
   ~NonLinearSolverLinear() override;
 
   /* ------------------------------------------------------------------------ */
@@ -76,4 +75,4 @@ protected:
 
 } // namespace akantu
 
-#endif /* __AKANTU_NON_LINEAR_SOLVER_LINEAR_HH__ */
+#endif /* AKANTU_NON_LINEAR_SOLVER_LINEAR_HH_ */

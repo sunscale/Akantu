@@ -29,11 +29,10 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_NEIGHBORHOOD_BASE_HH__
-#define __AKANTU_NEIGHBORHOOD_BASE_HH__
+#ifndef AKANTU_NEIGHBORHOOD_BASE_HH_
+#define AKANTU_NEIGHBORHOOD_BASE_HH_
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
-#include "aka_memory.hh"
 #include "data_accessor.hh"
 #include "integration_point.hh"
 #include "synchronizer_registry.hh"
@@ -47,8 +46,7 @@ class RemovedElementsEvent;
 } // namespace akantu
 
 namespace akantu {
-class NeighborhoodBase : protected Memory,
-                         public DataAccessor<Element>,
+class NeighborhoodBase : public DataAccessor<Element>,
                          public SynchronizerRegistry {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -56,8 +54,7 @@ class NeighborhoodBase : protected Memory,
 public:
   NeighborhoodBase(Model & model,
                    const ElementTypeMapArray<Real> & quad_coordinates,
-                   const ID & id = "neighborhood",
-                   const MemoryID & memory_id = 0);
+                   const ID & id = "neighborhood");
   ~NeighborhoodBase() override;
 
   using PairList = std::vector<std::pair<IntegrationPoint, IntegrationPoint>>;
@@ -108,30 +105,34 @@ public:
   AKANTU_GET_MACRO(SpatialDimension, spatial_dimension, UInt);
   AKANTU_GET_MACRO(Model, model, const Model &);
   /// return the object handling synchronizers
-  AKANTU_GET_MACRO(PairLists, pair_list, const PairList *);
+  const PairList & getPairLists(GhostType type) {
+    return pair_list[type == _not_ghost ? 0 : 1];
+  }
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
+  ID id;
+
   /// the model to which the neighborhood belongs
   Model & model;
 
   /// Radius of impact: to determine if two quadrature points influence each
   /// other
-  Real neighborhood_radius;
+  Real neighborhood_radius{0.};
 
   /**
    * the pairs of quadrature points
    * 0: not ghost to not ghost
    * 1: not ghost to ghost
    */
-  PairList pair_list[2];
+  std::array<PairList, 2> pair_list;
 
   /// the regular grid to construct/update the pair lists
   std::unique_ptr<SpatialGrid<IntegrationPoint>> spatial_grid;
 
-  bool is_creating_grid;
+  bool is_creating_grid{false};
 
   /// the grid synchronizer for parallel computations
   std::unique_ptr<GridSynchronizer> grid_synchronizer;
@@ -147,4 +148,4 @@ protected:
 
 #include "neighborhood_base_inline_impl.hh"
 
-#endif /* __AKANTU_NEIGHBORHOOD_BASE_HH__ */
+#endif /* AKANTU_NEIGHBORHOOD_BASE_HH_ */

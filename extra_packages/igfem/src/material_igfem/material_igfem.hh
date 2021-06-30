@@ -19,8 +19,8 @@
 #include "material.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_IGFEM_HH__
-#define __AKANTU_MATERIAL_IGFEM_HH__
+#ifndef AKANTU_MATERIAL_IGFEM_HH_
+#define AKANTU_MATERIAL_IGFEM_HH_
 
 /* -------------------------------------------------------------------------- */
 namespace akantu {
@@ -64,7 +64,7 @@ public:
   /* ------------------------------------------------------------------------ */
   virtual void computeQuadraturePointsCoordinates(
       ElementTypeMapArray<Real> & quadrature_points_coordinates,
-      const GhostType & ghost_type) const;
+      GhostType ghost_type) const;
   // virtual void onElementsAdded(const Array<Element> & element_list,
   //                              const NewElementsEvent & event) {};
 
@@ -131,4 +131,4 @@ protected:
 
 #include "igfem_internal_field_tmpl.hh"
 
-#endif /* __AKANTU_MATERIAL_IGFEM_HH__ */
+#endif /* AKANTU_MATERIAL_IGFEM_HH_ */

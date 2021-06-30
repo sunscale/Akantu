@@ -31,8 +31,8 @@
 #include "group_manager.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_FRAGMENT_MANAGER_HH__
-#define __AKANTU_FRAGMENT_MANAGER_HH__
+#ifndef AKANTU_FRAGMENT_MANAGER_HH_
+#define AKANTU_FRAGMENT_MANAGER_HH_
 
 namespace akantu {
 class SolidMechanicsModelCohesive;
@@ -47,8 +47,7 @@ class FragmentManager : public GroupManager {
   /* ------------------------------------------------------------------------ */
 public:
   FragmentManager(SolidMechanicsModelCohesive & model, bool dump_data = true,
-                  const ID & id = "fragment_manager",
-                  const MemoryID & memory_id = 0);
+                  const ID & id = "fragment_manager");
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -86,7 +85,7 @@ public:
   void computeInertiaMoments();
 
   /// compute all fragments' data
-  void computeAllData();
+  void computeAllData(Real damage_limit = 1.);
 
   /// compute number of elements per fragment
   void computeNbElementsPerFragment();
@@ -165,4 +164,4 @@ private:
 
 } // namespace akantu
 
-#endif /* __AKANTU_FRAGMENT_MANAGER_HH__ */
+#endif /* AKANTU_FRAGMENT_MANAGER_HH_ */

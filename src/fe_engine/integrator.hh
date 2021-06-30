@@ -28,31 +28,29 @@
  *
  */
 
-#ifndef __AKANTU_INTEGRATOR_HH__
-#define __AKANTU_INTEGRATOR_HH__
+#ifndef AKANTU_INTEGRATOR_HH_
+#define AKANTU_INTEGRATOR_HH_
 
 /* -------------------------------------------------------------------------- */
-#include "aka_memory.hh"
 #include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 
-class Integrator : protected Memory {
+class Integrator {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   Integrator(const Mesh & mesh, UInt spatial_dimension,
-             const ID & id = "integrator", const MemoryID & memory_id = 0)
-      : Memory(id, memory_id), mesh(mesh),
-        _spatial_dimension(spatial_dimension),
-        jacobians("jacobians", id, memory_id) {
+             const ID & id = "integrator")
+      : mesh(mesh), _spatial_dimension(spatial_dimension),
+        jacobians("jacobians", id) {
     AKANTU_DEBUG_IN();
 
     AKANTU_DEBUG_OUT();
   };
 
-  ~Integrator() override = default;
+  virtual ~Integrator() = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -72,8 +70,9 @@ public:
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const {
     std::string space;
-    for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
+    for (Int i = 0; i < indent; i++, space += AKANTU_INDENT) {
       ;
+    }
     stream << space << "Integrator [" << std::endl;
     jacobians.printself(stream, indent + 1);
     stream << space << "]" << std::endl;
@@ -81,9 +80,9 @@ public:
 
   /* ------------------------------------------------------------------------ */
 public:
-  virtual void onElementsAdded(const Array<Element> &) {}
+  virtual void onElementsAdded(const Array<Element> & /*unused*/) {}
   virtual void
-  onElementsRemoved(const Array<Element> &,
+  onElementsRemoved(const Array<Element> & /*unused*/,
                     const ElementTypeMapArray<UInt> & new_numbering) {
     jacobians.onElementsRemoved(new_numbering);
   }
@@ -92,15 +91,14 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// access to the jacobians
-  Array<Real> & getJacobians(const ElementType & type,
-                             const GhostType & ghost_type = _not_ghost) {
+  Array<Real> & getJacobians(ElementType type,
+                             GhostType ghost_type = _not_ghost) {
     return jacobians(type, ghost_type);
   };
 
   /// access to the jacobians const
-  const Array<Real> &
-  getJacobians(const ElementType & type,
-               const GhostType & ghost_type = _not_ghost) const {
+  const Array<Real> & getJacobians(ElementType type,
+                                   GhostType ghost_type = _not_ghost) const {
     return jacobians(type, ghost_type);
   };
 
@@ -135,4 +133,4 @@ inline std::ostream & operator<<(std::ostream & stream,
 
 } // namespace akantu
 
-#endif /* __AKANTU_INTEGRATOR_HH__ */
+#endif /* AKANTU_INTEGRATOR_HH_ */

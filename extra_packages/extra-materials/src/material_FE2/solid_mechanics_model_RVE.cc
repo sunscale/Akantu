@@ -43,9 +43,8 @@ namespace akantu {
 SolidMechanicsModelRVE::SolidMechanicsModelRVE(Mesh & mesh,
                                                bool use_RVE_mat_selector,
                                                UInt nb_gel_pockets, UInt dim,
-                                               const ID & id,
-                                               const MemoryID & memory_id)
-    : SolidMechanicsModel(mesh, dim, id, memory_id), volume(0.),
+                                               const ID & id)
+    : SolidMechanicsModel(mesh, dim, id), volume(0.),
       use_RVE_mat_selector(use_RVE_mat_selector),
       nb_gel_pockets(nb_gel_pockets), nb_dumps(0) {
   AKANTU_DEBUG_IN();
@@ -110,7 +109,7 @@ void SolidMechanicsModelRVE::initFullImpl(const ModelOptions & options) {
 
   /// dumping
   std::stringstream base_name;
-  base_name << this->id; // << this->memory_id - 1;
+  base_name << this->id;
   this->setBaseName(base_name.str());
   this->addDumpFieldVector("displacement");
   this->addDumpField("stress");
@@ -441,12 +440,12 @@ void SolidMechanicsModelRVE::homogenizeStiffness(Matrix<Real> & C_macro) {
   this->performVirtualTesting(H, stresses, strains, 0);
 
   /// virtual test 2:
-  H.clear();
+  H.zero();
   H(1, 1) = 0.01;
   this->performVirtualTesting(H, stresses, strains, 1);
 
   /// virtual test 3:
-  H.clear();
+  H.zero();
   H(0, 1) = 0.01;
   this->performVirtualTesting(H, stresses, strains, 2);
 

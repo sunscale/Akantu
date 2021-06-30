@@ -45,8 +45,8 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 FacetSynchronizer::FacetSynchronizer(
     Mesh & mesh, const ElementSynchronizer & element_synchronizer,
-    const ID & id, MemoryID memory_id)
-    : ElementSynchronizer(mesh, id, memory_id) {
+    const ID & id)
+    : ElementSynchronizer(mesh, id) {
 
   auto spatial_dimension = mesh.getSpatialDimension();
 
@@ -68,21 +68,24 @@ FacetSynchronizer::FacetSynchronizer(
 
       for (UInt f = 0; f < facets.size(); ++f) {
         const auto & facet = facets(f);
-        if (facet == ElementNull)
+        if (facet == ElementNull) {
           continue;
+        }
 
-        if (facet.ghost_type == _not_ghost)
+        if (facet.ghost_type == _not_ghost) {
           continue;
+        }
 
         auto & facet_rank = element_to_prank(facet);
-        if ((proc < UInt(facet_rank)) || (UInt(facet_rank) == rank))
+        if ((proc < UInt(facet_rank)) || (UInt(facet_rank) == rank)) {
           facet_rank = proc;
+        }
       }
     }
   }
 
   ElementTypeMapArray<UInt> facet_global_connectivities(
-      "facet_global_connectivities", id, memory_id);
+      "facet_global_connectivities", id);
   facet_global_connectivities.initialize(
       mesh, _spatial_dimension = spatial_dimension - 1, _with_nb_element = true,
       _with_nb_nodes_per_element = true);
@@ -100,7 +103,7 @@ FacetSynchronizer::FacetSynchronizer(
   }
 
   /// init facet check tracking
-  ElementTypeMapArray<bool> facet_checked("facet_checked", id, memory_id);
+  ElementTypeMapArray<bool> facet_checked("facet_checked", id);
   std::map<UInt, ElementTypeMapArray<UInt>> recv_connectivities;
 
   /// Generate the recv scheme and connnectivities to send to the other
@@ -137,22 +140,26 @@ FacetSynchronizer::FacetSynchronizer(
         auto & facet = facets(f);
 
         // exclude no valid facets
-        if (facet == ElementNull)
+        if (facet == ElementNull) {
           continue;
+        }
 
         // exclude _ghost facet from send scheme and _not_ghost from receive
-        if (facet.ghost_type != _ghost)
+        if (facet.ghost_type != _ghost) {
           continue;
+        }
 
         // exclude facet from other processors then the one of current
         // interest in case of receive scheme
-        if (UInt(element_to_prank(facet)) != proc)
+        if (UInt(element_to_prank(facet)) != proc) {
           continue;
+        }
 
         auto & checked = facet_checked(facet);
         // skip already checked facets
-        if (checked)
+        if (checked) {
           continue;
+        }
 
         checked = true;
 

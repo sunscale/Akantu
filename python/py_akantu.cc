@@ -9,6 +9,7 @@
 #include "py_mesh.hh"
 #include "py_model.hh"
 #include "py_parser.hh"
+#include "py_solver.hh"
 
 #if defined(AKANTU_USE_IOHELPER)
 #include "py_dumpable.hh"
@@ -24,12 +25,24 @@
 #endif
 
 #if defined(AKANTU_COHESIVE_ELEMENT)
+#include "py_fragment_manager.hh"
 #include "py_solid_mechanics_model_cohesive.hh"
 #endif
+
+#if defined(AKANTU_PHASE_FIELD)
+#include "py_phase_field_model.hh"
+#endif
+
+#if defined(AKANTU_STRUCTURAL_MECHANICS)
+#include "py_structural_mechanics_model.hh"
+#endif
+
 /* -------------------------------------------------------------------------- */
 #include <aka_error.hh>
 /* -------------------------------------------------------------------------- */
 #include <pybind11/pybind11.h>
+/* -------------------------------------------------------------------------- */
+#include <iostream>
 /* -------------------------------------------------------------------------- */
 
 namespace py = pybind11;
@@ -41,6 +54,7 @@ void register_all(pybind11::module & mod) {
   register_error(mod);
   register_functions(mod);
   register_parser(mod);
+  register_solvers(mod);
 
   register_group_manager(mod);
 #if defined(AKANTU_USE_IOHELPER)
@@ -63,6 +77,16 @@ void register_all(pybind11::module & mod) {
 
 #if defined(AKANTU_COHESIVE_ELEMENT)
   register_solid_mechanics_model_cohesive(mod);
+  register_fragment_manager(mod);
+#endif
+
+#if defined(AKANTU_STRUCTURAL_MECHANICS)
+  register_structural_mechanics_model(mod);
+#endif
+
+#if defined(AKANTU_PHASE_FIELD)
+  register_phase_field_model(mod);
+  register_phase_field_coupler(mod);
 #endif
 }
 } // namespace akantu
@@ -74,16 +98,28 @@ PYBIND11_MODULE(py11_akantu, mod) {
 
   static py::exception<akantu::debug::Exception> akantu_exception(mod,
                                                                   "Exception");
-  py::register_exception_translator([](std::exception_ptr p) {
+
+  py::register_exception_translator([](std::exception_ptr ptr) {
     try {
-      if (p)
-        std::rethrow_exception(p);
+      if (ptr) {
+        std::rethrow_exception(ptr);
+      }
     } catch (akantu::debug::Exception & e) {
-      if (akantu::debug::debugger.printBacktrace())
-        akantu::debug::printBacktrace(15);
+      if (akantu::debug::debugger.printBacktrace()) {
+        akantu::debug::printBacktrace();
+      }
       akantu_exception(e.info().c_str());
     }
   });
 
   akantu::register_all(mod);
+
+  mod.def("has_mpi", []() {
+#if defined(AKANTU_USE_MPI)
+    return true;
+#else
+    return false;
+#endif
+  });
+
 } // Module akantu
